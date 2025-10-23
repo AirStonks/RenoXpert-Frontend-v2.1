@@ -1151,27 +1151,6 @@ function OrderDetail() {
                             </div>
                         </div>
 
-                        {/* Reno Agreement Detail Card */}
-                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
-                            <div className="px-6 py-4 border-b border-gray-200/50">
-                                <h3 className="text-lg font-semibold text-gray-900">Reno Agreement Detail</h3>
-                            </div>
-                            <div className="p-6">
-                                <div className="space-y-4">
-                                    <div className="flex justify-between">
-                                        <span className="text-sm text-gray-600">Completion Day(s):</span>
-                                        <span className="text-sm font-medium text-gray-900">{orderDetail.completion_day} Working Days</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-sm text-gray-600">Payment Schedule:</span>
-                                        <span className="text-sm font-medium text-gray-900">
-                                            {orderDetail.is_progressive_payment ? "Progressive Payment" : "Full Payment"}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         {/* Revision History Card */}
                         <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
                             <div className="px-6 py-4 border-b border-gray-200/50">

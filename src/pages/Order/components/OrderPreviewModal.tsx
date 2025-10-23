@@ -51,7 +51,6 @@ const OrderPreviewModal = ({
 }: OrderPreviewModalProps) => {
     const [activeTab, setActiveTab] = useState('tab_1_1');
     const [agreeTnc, setAgreeTnc] = useState(false);
-    const [agreeRenoAgreement, setAgreeRenoAgreement] = useState(false);
     const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>({});
     const [selectedPlan, setSelectedPlan] = useState<string>("60")
     const [selectedProgram, setSelectedProgram] = useState<string>("normal")
@@ -101,13 +100,11 @@ const OrderPreviewModal = ({
             if (orderDetail.is_be_powered) {
                 setSelectedPlan("60")
                 setSelectedProgram("bePowered")
-                setAgreeRenoAgreement(true)
             }
 
             if (orderDetail.is_rnpl) {
                 setSelectedPlan("60")
                 setSelectedProgram("rnpl")
-                setAgreeRenoAgreement(true)
             }
 
         }
@@ -129,9 +126,6 @@ const OrderPreviewModal = ({
         setAgreeTnc(event.target.checked);
     };
 
-    const handleAgreeRenoAgreementChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setAgreeRenoAgreement(event.target.checked);
-    };
 
     const handleProgramChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedProgram = e.target.value
@@ -506,207 +500,6 @@ const OrderPreviewModal = ({
         </div>
     )
 
-    const renoAgreement = !orderDetail.is_be_powered && !orderDetail.is_rnpl ? (
-        <div className='flex flex-col w-full text-sm text-justify'>
-            <div className="flex flex-col items-center justify-center gap-6 text-center mb-6">
-                <span>THIS AGREEMENT is made this day of <strong>{orderDetail.status === 'confirmed' ? formatDate(orderDetail.confirmed_at) : getCurrentDate()}</strong></span>
-                <span>BETWEEN</span>
-                <span><strong>RENOXPERT SDN. BHD. [Registration No.202401032588 (1578437-W)]</strong> of <strong>42-46, Ground Floor, Jalan SS 19/1d, SS 19, 46500 Subang Jaya, Selangor</strong> (“the Contractor”) of the one part;</span>
-                <span>AND</span>
-                <span><strong>{orderDetail.user ? orderDetail.user.name : '[Owner Name]'} (NRIC No. {orderDetail.user ? orderDetail.user.ic : "[Owner IC]"})</strong> of <strong>{address ? address : "[Owner Address]"}</strong> ("the Owner") of the other part</span>
-            </div>
-            <div className="flex flex-col gap-6 mb-6">
-                <span className='font-bold'>WHEREAS:</span>
-                <span>The Contractor desires to provide renovation services to the Owner and the Owner desires to utilize the services of the Contractor for the renovation of the Owner’s property described as <strong>A (1) unit of Service Residence known as {orderDetail.block ? orderDetail.block : '[Block]'}-{orderDetail.floor ? orderDetail.floor : '[Floor]'}-{orderDetail.unit_no ? orderDetail.unit_no : '[Unit No]'}, {orderDetail.property ? orderDetail.property.name : '[Property Name]'}, {propertyAddress ? propertyAddress : '[Property Address]'}</strong> (the “Property”) subject to the terms and conditions hereinafter appearing.</span>
-                <span><strong>NOW THIS AGREEMENT WITNESSETH</strong> as follows:-</span>
-                <div className="flex flex-col gap-3">
-                    <span><strong>1. CONTRACT SUM</strong></span>
-                    <span>1.1 The Owner hereby appoints the Contractor and the Contractor agrees to accept such appointment of making improvements to the Property, to carry out, execute and complete the upgrading and alteration works to the Property which are more particularly described and set out in the <strong>Quotation</strong> hereto (“Works”) at an agreed lump sum of <strong>Ringgit Malaysia (RM) ONLY</strong> (the “said Contract Sum”) payable by instalments/progressive payment in accordance with the <strong>First Schedule</strong> hereof, subject to the Owner’s right of inspection as set forth below.</span>
-                    <span>1.2 Any change in the Contract Sum, change in the Works or change in the contract time that to be defined herein must be agreed by all parties herein and set forth in writing signed by the Owner and the Contractor.</span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span><strong>2. DURATION</strong></span>
-                    <span>2.1 The renovation agreement and renovation Phase 1 shall commence upon the following conditions precedent have been fulfilled:-</span>
-                    <div className="flex flex-col gap-3 pl-5">
-                        <span>(a) the Owner shall make the first Fifty (50%) per cent as stated in the <strong>First Schedule</strong> as deposit;</span>
-                        <span>(b) defects of the Property shall be duly rectified, repaired and fixed by the Developer’s defects’ teams and workers with the Owner or the Contractor’s approval;</span>
-                        <span>(c) the Owner or the Contractor has obtained the working permit granted by the relevant authorities; and</span>
-                        <span>(d) the full set of keys and access cards of the Property (if required) have been passed to the Contractor,</span>
-                        <span>the commencement date for renovation work shall be after <strong>Seven (7) working days</strong> from the date when the <strong>clause 2.1(a), (b), (c) and (d)</strong> have been fulfilled following the sequence of <strong>clause 2.1(a), (b), (c) and (d)</strong>. Failure to comply with the above-mentioned conditions, the Owner shall unconditionally allow the Contractor to extend the commencement and completion date without any interest.</span>
-                    </div>
-                    <span>2.2 The renovation Phase 2 shall commence upon the following conditions precedent have been fulfilled:-</span>
-                    <div className="flex flex-col gap-3 pl-5">
-                        <span>(a) the Contractor has completed renovation Phase 1 works; and</span>
-                        <span>(b) the Owner has made the second Fifty (50%) per cent as stated in the <strong>First Schedule</strong> as deposit;</span>
-                        <span>the commencement date for renovation work shall be after <strong>Seven (7) working days</strong> from the date when the <strong>clause 2.2(a) and (b)</strong> have been fulfilled following the sequence of <strong>clause 2.2(a) and (b)</strong>. Failure to comply with the above-mentioned conditions, the Owner shall unconditionally allow the Contractor to extend the commencement and completion date without any interest.</span>
-                    </div>
-                    <span>2.3 The period for this renovation work shall take <strong>{convertToWords(orderDetail.completion_day).toUpperCase()} {orderDetail.completion_day} working days</strong> or any approved extension period by all parties (“the said Contract Time”). Time wherever mentioned shall be of the essence of this Agreement.</span>
-                    <span>2.4 For the avoidance of doubt, renovation Phase 1 includes wiring, painting, and installation of smart devices while renovation Phase 2 includes the supply and installation of furniture and loose items.</span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span><strong>3. FORCE MAJEURE</strong></span>
-                    <span>3.1 Notwithstanding <strong>Clause 4</strong>, no party shall be held liable in the performance of any obligations under this Agreement resulting from “Force Majeure” which shall include Movement Control Order (“MCO”), Full Movement Control Order (“FMCO”), Extended Movement Control Order (“EMCO”), acts of God, fire, or other catastrophe, storms, curfew, blockade, government restrictions and/or change in government policies, war, strikes or other labour disturbances, acute shortage of building materials, acts of civil or military authorities or any other causes beyond the control of the party thereby affected whether similar or dissimilar from the foregoing <strong>PROVIDED ALWAYS THAT</strong> the party claiming to be affected by any event of force majeure shall as soon as practicable give written notice of such claim to the other party with full particulars thereof.</span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span><strong>4. CONTRACTOR’S DUTIES, OBLIGATIONS, RIGHTS AND INTERESTS</strong></span>
-                    <span>4.1 The Contractor shall be responsible for the purchase and delivery of materials, except in the event that the Owner volunteers for economic considerations. All materials at the Property shall be at the risk of the Contractor during the said Contract Time and if the Owner volunteered for the purchase and delivery of materials, such risk shall be passed to the Owner.</span>
-                    <span>4.2 The Works shall be constructed in a good and workmanlike manner in accordance with the description and specification as set out in the Quotation hereto, which description and specification have been duly accepted and approved by the Owner, as the Owner hereby acknowledges via the instant messaging services such as email and/or WhatsApp.</span>
-                    <span>4.3 The Contractor will furnish and be fully responsible for all equipment, labour, transportation, construction equipment and machinery, tools, appliances, fuel, power, light, heat and all other facilities and incidentals necessary for the furnishing, performance, testing, start-up, and completion of the Work.</span>
-                    <span>4.4 The Contractor will provide competent, suitable personnel to perform services as required and will at all times maintain good discipline and order at the Property.</span>
-                    <span>4.5 The Contractor may sub-contract the Works or any part thereof to any subcontractor(s) or party(ies) as is customary in the construction industry provided that the Contractor shall be solely liable to the Owner for any act or default by its subcontractor(s).</span>
-                    <span>4.6 The Contractor may update the Owner from time to time on the progress of works by attach the photos of the works done by the Contractor and/or subcontractor(s), the photos and description of works shall form part of this Agreement by way of video or photos to be sent to the Owner by way of WhatsApp or any way the Contractor deems appropriate.</span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span><strong>5. NOTICES</strong></span>
-                    <span>5.1 Any notice required to be given under this Agreement shall be deemed to be sufficiently served if sent by registered post or ordinary post to the party to whom such notice is being served at its address given herein and such notice shall be deemed to be received in the ordinary course of post <strong>three (3) working days</strong> after posting.</span>
-                    <span>5.2 Notwithstanding <strong>Clause 5.1</strong> above, any notice required to be given under this Agreement shall be deemed to be sufficiently served by way of instant messaging services such as email and/or WhatsApp to the party to whom such notice is being served at its email address and/or WhatsApp number/account given herein and such notice shall be deemed to be received instantly within <strong>twenty four (24) hours</strong> after sent out.</span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span><strong>6. COSTS</strong></span>
-                    <span>6.1 Unless otherwise agreed, all the legal costs, stamp duty of and incidental to this Agreement shall be borne and paid by the Contractor solely.</span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span><strong>7. SPECIAL CONDITIONS, SCHEDULES AND APPENDIX</strong></span>
-                    <span>7.1 The Special Conditions, Schedules and Appendix hereinafter stipulated shall for an integral part of this Agreement and in the event of any inconsistency or repugnant terms in the aforementioned Agreement, the provisions contained in the Special Conditions shall prevail.</span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span><strong>8. GOVERNING LAW</strong></span>
-                    <span>8.1 This Agreement shall in all respect, include all matters of construction, validity and performance be governed by, construed and enforced exclusively in accordance with the laws of Malaysia. The parties shall submit to the exclusive jurisdiction of the Malaysian courts.</span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span><strong>9. WARRANTY AND DEFECT PERIOD</strong></span>
-                    <span>9.1 The Contractor warrants that each Product sold, installed and provided by the Contractor under this Agreement will conform to its Specifications for the Warranty and Defect period (the “said Product Warranty”). In the event if the Products are not conformed to its Specifications due to the Contractor’s fault, the Contractor shall grant Product Warranty and Defect claims to the Owner. The Product Warranty and Defect claims must be in written and serve to The Contractor in pursuant to the Clause 5 of this Agreement.</span>
-                    <span>9.2 The Warranty and Defect period varies from <strong>Six (6) to Twelve (12) months</strong>, depending on the type of the Products. The Warranty period for each of the Products models are described clearly in the Second Schedule of this Agreement.</span>
-                    <span>9.3 The Warranty and Defect period shall start from the date the Contractor installed the products and ceases upon the expiration of the period. The Owner shall furnish to us this agreement together with the sales receipt or original purchase invoice to the Contractor.</span>
-                    <span>In addition, this Warranty shall not applies in the following circumstances:-</span>
-                    <div className="flex flex-col gap-3 pl-5">
-                        <span>(a) if any damages, abuse, negligent act or use, misuse, tampering, or wrongful usage including failure or neglect to maintain the correct, proper and normal usage by the Owner, any end-users or third parties;</span>
-                        <span>(b) if any damages, defects, malfunctions or non-functioning to or in the Product howsoever arising from, caused by or incidental to any external cause (including accidents, fire, lightning, Act of God, exposure to water or moisture, or caused by or during any or any attempted burglary, theft and/or riot), and any corrosion, rust, staining or any other such like matters; and</span>
-                        <span>(c) any damages and defect caused by the Owner, any end-users or third parties.</span>
-                    </div>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span><strong>10. NON-COMPLETION/ FAILURE TO HAND OVER</strong></span>
-                    <span>10.1 In the event where the Contractor fails and/or delay in handing over the Property in good, adequate and final conditions as per the terms and conditions mentioned in this Agreement.</span>
-                    <span>10.2 In default by the Contractor to hand over the Property in good, adequate and final conditions within the said Contract Time, the Contractor shall be liable to pay penalty at the rate of <strong>eight per centum (8%) per annum</strong> on daily basis on the undelivered items stated in the Quotation, with the maximum claim sum not more than the said Contract Sum (the “said Liquidated Damages”).</span>
-                    <span>10.3 The Contractor shall not be liable to pay the said Liquidated Damages in pursuant to <strong>Clause 10.2</strong> in the event where the <strong>Clause 2.1 & 2.2</strong> above is not complied with.</span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span><strong>11. NO VARIATION</strong></span>
-                    <span>11.1 No variation of this Agreement of whatever nature shall be made or purported to be made by any party or parties nor shall any variation or purported variation be valid or enforceable unless the same is in writing and duly agreed to and executed by the parties concerned.</span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span><strong>12. SEVERABILITY</strong></span>
-                    <span>12.1 If any provision of this Agreement for any reason shall be declared invalid, void, illegal or otherwise unenforceable, the remaining provisions of this Agreement shall remain in full force and effect. The parties shall amend that provision in such reasonable manner so as to achieve the intention of the parties without illegality or where it is not practicable to do so, that provision shall be severed from this Agreement.</span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span><strong>13. BINDING EFFECTS</strong></span>
-                    <span>13.1 This Agreement shall be binding on the respective heirs, personal representatives, successors in title and assigns of the parties hereto.</span>
-                </div>
-            </div>
-            <div className="flex flex-col items-center justify-center gap-6 text-center mb-6">
-                <div className="flex flex-col">
-                    <span className='font-bold underline'>FIRST SCHEDULE</span>
-                    <span>(to be taken read and construed as an essential part of this Agreement)</span>
-                </div>
-                <span className='font-bold'>-</span>
-                <span className='font-bold'>PROGRESSIVE PAYMENT OF THE CONTRACT SUM</span>
-                {orderDetail && orderDetail.is_progressive_payment ? (
-                    <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
-                        <thead>
-                            <tr>
-                                <th>Description</th>
-                                <th className='text-center'>%</th>
-                                <th className='text-center'>Amount (RM)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Upon Confirmation and before Commencement of Phase 1</td>
-                                <td className='text-center'>50</td>
-                                <td className='text-center'>
-                                    {orderDetail.final_amount > 0
-                                        ? `RM ${(
-                                            (orderDetail.final_amount -
-                                                (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
-                                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                        : `RM ${((totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
-                                <td className='text-center'>50</td>
-                                <td className='text-center'>
-                                    {orderDetail.final_amount > 0
-                                        ? `RM ${(
-                                            (orderDetail.final_amount -
-                                                (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
-                                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                        : `RM ${((totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                </td>
-                            </tr>
-                            <tr className='font-bold'>
-                                <td>Total:</td>
-                                <td className='text-center'>100</td>
-                                <td className='text-center'>
-                                    {orderDetail.final_amount > 0
-                                        ? `RM ${(
-                                            orderDetail.final_amount -
-                                            (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
-                                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                        : `RM ${(totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                ) : (
-                    <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
-                        <thead>
-                            <tr>
-                                <th>Description</th>
-                                <th className='text-center'>%</th>
-                                <th className='text-center'>Amount (RM)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Upon Confirmation of Agreement</td>
-                                <td className='text-center'>100</td>
-                                <td className='text-center'>
-                                    {orderDetail && orderDetail.final_amount > 0
-                                        ? `RM ${(
-                                            orderDetail.final_amount -
-                                            (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
-                                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                        : orderDetail
-                                            ? `RM ${(totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                            : 'RM 0.00'}
-                                </td>
-                            </tr>
-                            <tr className='font-bold'>
-                                <td>Total:</td>
-                                <td className='text-center'>100</td>
-                                <td className='text-center'>
-                                    {orderDetail && orderDetail.final_amount > 0
-                                        ? `RM ${(
-                                            orderDetail.final_amount -
-                                            (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
-                                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                        : orderDetail
-                                            ? `RM ${(totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                            : 'RM 0.00'}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                )}
-                <span>In the event of a default by the Owner of the payment hereunder when due, the Owner shall be liable to pay interest at the rate of eight per centum (8%) per annum on the outstanding sum from the date due for payment until the date of actual payment.</span>
-            </div>
-        </div>
-    ) : (
-        ""
-    );
-
     const packages = orderDetail.latest_quotation.packages
 
     const upfrontAmount = packages.reduce((acc, pkg) => acc + (
@@ -781,14 +574,6 @@ const OrderPreviewModal = ({
                             T&C
                         </button>
 
-                        {!orderDetail.is_be_powered && !orderDetail.is_rnpl && (
-                            <button
-                                className={`tab ${activeTab === 'tab_1_3' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('tab_1_3')}
-                            >
-                                Reno Agreement
-                            </button>
-                        )}
                     </div>
                     <div className={activeTab === 'tab_1_1' ? 'block' : 'hidden'} id="tab_1_1">
                         {/* Progress Bar */}
@@ -1267,17 +1052,6 @@ const OrderPreviewModal = ({
                                         onChange: handleAgreeTncChange,
                                         tab: "tab_1_2",
                                     },
-                                    ...(orderDetail.is_be_powered || orderDetail.is_rnpl
-                                        ? []
-                                        : [
-                                            {
-                                                name: "agree_reno_agreement",
-                                                label: "Reno Agreement",
-                                                checked: agreeRenoAgreement,
-                                                onChange: handleAgreeRenoAgreementChange,
-                                                tab: "tab_1_3",
-                                            },
-                                        ]),
                                 ].map(({ name, label, checked, onChange, tab }) => (
                                     <label key={name} className="flex items-center gap-2">
                                         <input
@@ -1599,9 +1373,6 @@ const OrderPreviewModal = ({
                     </div>
                     <div className={activeTab === 'tab_1_2' ? 'block' : 'hidden'} id="tab_1_2">
                         <div className="prose max-w-none p-4 text-xs">{tnc}</div>
-                    </div>
-                    <div className={activeTab === 'tab_1_3' ? 'block' : 'hidden'} id="tab_1_3">
-                        <div className="prose max-w-none p-4 text-xs">{renoAgreement}</div>
                     </div>
                 </div>
 
@@ -1983,7 +1754,7 @@ const OrderPreviewModal = ({
                                                     <span className="text-xs text-gray-600">for {selectedPlan === "60" ? "60" : "36"} months</span>
                                                 </p>
                                                 <button
-                                                    className="md:hidden italic underline text-blue-600 text-xs"
+                                                    className="italic underline text-blue-600 text-xs"
                                                     onClick={() => toggleAccordion("amount_breakdown")}
                                                 >
                                                     {openAccordions["amount_breakdown"] ? "Hide Details" : "View Details"}

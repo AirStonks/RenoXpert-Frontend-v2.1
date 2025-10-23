@@ -81,7 +81,6 @@ function OrderOverview() {
     const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>({})
 
     const [agreeTnc, setAgreeTnc] = useState(false)
-    const [agreeRenoAgreement, setAgreeRenoAgreement] = useState(false)
     const [agreePartitionRisk, setAgreePartitionRisk] = useState(false)
 
     const [isRoiModalOpen, setIsRoiModalOpen] = useState(false)
@@ -284,13 +283,11 @@ function OrderOverview() {
             if (orderDetail.is_be_powered) {
                 setSelectedPlan("60")
                 setSelectedProgram("bePowered")
-                setAgreeRenoAgreement(true)
             }
 
             if (orderDetail.is_rnpl) {
                 setSelectedPlan("60")
                 setSelectedProgram("rnpl")
-                setAgreeRenoAgreement(true)
             }
         }
     }, [orderDetail])
@@ -383,9 +380,6 @@ function OrderOverview() {
         setAgreeTnc(event.target.checked)
     }
 
-    const handleAgreeRenoAgreementChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setAgreeRenoAgreement(event.target.checked)
-    }
 
     const handleAgreePartitionRisk = () => {
         // If not check, show modal
@@ -531,166 +525,166 @@ function OrderOverview() {
             {selectedProgram === "normal" && (
                 <>
                     <h3 className="text-base font-bold mt-4 mb-2">3.A Full Payment (50–50 Method)</h3>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.A.1</strong> The Owner agrees to pay the total renovation contract sum in two (2) equal instalments of fifty percent (50%) each, in accordance with the following schedule:
-            </p>
-            <p className="text-justify leading-relaxed mb-3 pl-6">
-                (a) <strong>First 50% (Downpayment):</strong> Payable upon signing of this quotation and before commencement of Phase 1 works.<br />
-                (b) <strong>Second 50%:</strong> Payable upon completion of Phase 1 works (wiring, painting, and installation of smart devices) and before commencement of Phase 2 works (installation of built-in furniture, kitchen cabinets, wardrobes, beds, and other fittings).
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.A.2</strong> The Company shall issue progress notifications, site updates, and photographic evidence (where applicable) to the Owner before requesting each milestone payment.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.A.3</strong> The Company shall not be obliged to commence or continue any work unless and until the respective milestone payment has been received in full. Any delay in payment shall automatically entitle the Company to suspend work, extend the renovation period without penalty, and reschedule activities on a best-effort basis.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.A.4</strong> If the Owner fails to make any due payment within three (3) working days of notification, the Company reserves the right to:
-            </p>
-            <p className="text-justify leading-relaxed mb-3 pl-6">
-                (a) Suspend all works on-site without liability;<br />
-                (b) Impose compensation for idle manpower, material storage, or project rescheduling costs; and<br />
-                (c) Recover from the Owner any additional expenses, damages, or losses arising directly or indirectly from the delay.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.A.5</strong> All payments made by the Owner to the Company shall be deemed fully earned and are strictly non-refundable, including in cases of cancellation, withdrawal, or termination by the Owner after the commencement of any preparatory or renovation works. This applies regardless of the stage of completion or reason for termination, and without prejudice to the Company's right to claim further losses, damages, or costs incurred as a result of such cancellation or termination.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.A.6</strong> Payments may be made via bank transfer, FPX, or credit/debit card. A two percent (2%) administrative fee applies for credit/debit card transactions, and all bank, gateway, or financing charges (including Easy Payment Plan or similar schemes) shall be borne solely by the Owner. The Company shall not be liable for any delays, failures, or additional charges arising from third-party payment platforms or financial institutions. The Company reserves the right to suspend or withhold further works, services, or deliveries in the event of delayed, failed, or reversed payments until such issues are fully resolved to the Company's satisfaction.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.A.7 Default Interest Rate:</strong> Any overdue payment shall accrue interest at eight percent (8%) per annum from the due date until full settlement, without prejudice to any other rights or remedies available to the Company.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>Retention of Title:</strong> Ownership and legal title to all furniture, fixtures, fittings, and materials supplied or installed under this quotation shall remain vested exclusively in the Company until full and final settlement of all sums due and payable (including any additional charges or interest or costs incurred) have been received in full. In the event of non-payment, default, or breach by the Owner, the Company reserves the right, without notice and without incurring any liability, to:
-            </p>
-            <p className="text-justify leading-relaxed mb-3 pl-6">
-                (a) remove or recover any such items from the premises,<br />
-                (b) suspend further works or services, and/or<br />
-                (c) claim monetary compensation equivalent to the value of the unpaid items or associated losses.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                The Owner shall grant the Company or its authorised agents unrestricted access to the premises for the purposes of exercising its rights under this clause.
-            </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.A.1</strong> The Owner agrees to pay the total renovation contract sum in two (2) equal instalments of fifty percent (50%) each, in accordance with the following schedule:
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3 pl-6">
+                        (a) <strong>First 50% (Downpayment):</strong> Payable upon signing of this quotation and before commencement of Phase 1 works.<br />
+                        (b) <strong>Second 50%:</strong> Payable upon completion of Phase 1 works (wiring, painting, and installation of smart devices) and before commencement of Phase 2 works (installation of built-in furniture, kitchen cabinets, wardrobes, beds, and other fittings).
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.A.2</strong> The Company shall issue progress notifications, site updates, and photographic evidence (where applicable) to the Owner before requesting each milestone payment.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.A.3</strong> The Company shall not be obliged to commence or continue any work unless and until the respective milestone payment has been received in full. Any delay in payment shall automatically entitle the Company to suspend work, extend the renovation period without penalty, and reschedule activities on a best-effort basis.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.A.4</strong> If the Owner fails to make any due payment within three (3) working days of notification, the Company reserves the right to:
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3 pl-6">
+                        (a) Suspend all works on-site without liability;<br />
+                        (b) Impose compensation for idle manpower, material storage, or project rescheduling costs; and<br />
+                        (c) Recover from the Owner any additional expenses, damages, or losses arising directly or indirectly from the delay.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.A.5</strong> All payments made by the Owner to the Company shall be deemed fully earned and are strictly non-refundable, including in cases of cancellation, withdrawal, or termination by the Owner after the commencement of any preparatory or renovation works. This applies regardless of the stage of completion or reason for termination, and without prejudice to the Company's right to claim further losses, damages, or costs incurred as a result of such cancellation or termination.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.A.6</strong> Payments may be made via bank transfer, FPX, or credit/debit card. A two percent (2%) administrative fee applies for credit/debit card transactions, and all bank, gateway, or financing charges (including Easy Payment Plan or similar schemes) shall be borne solely by the Owner. The Company shall not be liable for any delays, failures, or additional charges arising from third-party payment platforms or financial institutions. The Company reserves the right to suspend or withhold further works, services, or deliveries in the event of delayed, failed, or reversed payments until such issues are fully resolved to the Company's satisfaction.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.A.7 Default Interest Rate:</strong> Any overdue payment shall accrue interest at eight percent (8%) per annum from the due date until full settlement, without prejudice to any other rights or remedies available to the Company.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>Retention of Title:</strong> Ownership and legal title to all furniture, fixtures, fittings, and materials supplied or installed under this quotation shall remain vested exclusively in the Company until full and final settlement of all sums due and payable (including any additional charges or interest or costs incurred) have been received in full. In the event of non-payment, default, or breach by the Owner, the Company reserves the right, without notice and without incurring any liability, to:
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3 pl-6">
+                        (a) remove or recover any such items from the premises,<br />
+                        (b) suspend further works or services, and/or<br />
+                        (c) claim monetary compensation equivalent to the value of the unpaid items or associated losses.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        The Owner shall grant the Company or its authorised agents unrestricted access to the premises for the purposes of exercising its rights under this clause.
+                    </p>
                 </>
             )}
 
             {selectedProgram === "rnpl" && (
                 <>
                     <h3 className="text-base font-bold mt-4 mb-2">3.B RenoNow PayLater Method</h3>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.B1 Initial Down Payment</strong><br />
-                The Owner shall pay the upfront down payment as stated in the quotation ("Initial Down Payment") upon signing of this quotation. No renovation or procurement works shall commence until the Initial Down Payment has been received in full and all commencement conditions under Clause 2.2 are met.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.B2 Deferred Balance & Rental Deduction Mechanism</strong><br />
-                (a) The remaining renovation balance ("Deferred Balance") shall be recovered by Company through monthly deductions from the gross rental proceeds collected under the Owner Collaboration Agreement ("OCA").<br />
-                (b) The Owner hereby irrevocably authorises Company to deduct the agreed monthly repayment directly from rental income before remitting the balance to the Owner.<br />
-                (c) Monthly deductions shall commence from the first month in which the Property generates rental income under Company's management.<br />
-                (d) Any month without rental income shall not waive or extinguish the payment obligation; such instalments shall automatically carry forward and be recovered from subsequent months or directly from the Owner upon demand.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.B3 Repayment Duration and Liability</strong><br />
-                (a) The Deferred Balance shall be repaid in full within the agreed repayment period stated in the quotation ("Repayment Period").<br />
-                (b) The Owner remains wholly liable for the entire Deferred Balance, irrespective of tenancy turnover, vacancy periods, or temporary rental shortfall.<br />
-                (c) Upon termination, sale, or transfer of ownership of the Property, all outstanding Deferred Balance shall become immediately due and payable in full.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.B4 Exclusive Management & Rental Control</strong><br />
-                (a) During the Repayment Period, the Owner shall not rent, market, or manage the Property through any third party or directly without Company's written consent.<br />
-                (b) Any such act shall constitute a material breach, entitling Company to immediate recovery of the full outstanding Deferred Balance and termination of all management services.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.B5 Payment Default and Enforcement</strong><br />
-                (a) Any unpaid instalment outstanding for more than fourteen (14) days shall accrue interest at eight percent (8%) per annum until full payment.<br />
-                (b) Company reserves the right to suspend all renovation warranties and/or lodge a private caveat on the Property until full settlement.<br />
-                (c) Any dispute raised by the Owner shall not suspend or delay Company's right to recover payments under this clause.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.B6 Non-Refundability</strong><br />
-                All payments made under this quotation shall be deemed irrevocably earned and strictly non-refundable, including in cases of Owner's withdrawal, termination of engagement, or vacancy of the property for any reason.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.B7 Financing & Administrative Charges</strong><br />
-                All fees, charges, or costs associated with the use of payment gateway, credit/debit card, or third-party financing channels, including but not limited to Easy Payment Plan (EPP) or similar instalment services, shall be borne solely by the Owner and are non-refundable under any circumstances.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.B8 Retention of Title</strong><br />
-                All furniture, fixtures, and installations supplied under this arrangement shall remain the sole and exclusive property of Company until the full Deferred Balance is received and settled. In the event of default or non-payment, Company reserves the right, without prior notice and without incurring any liability, to remove such items from the premises or to pursue recovery of their equivalent monetary value through legal means. The Owner expressly agrees to grant Company or its authorised representatives access to the premises, if necessary, to exercise its rights under this clause.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.B9 Performance Disclaimer</strong><br />
-                Company shall exercise its best commercial efforts to secure tenancy and optimize rental returns for the Property; however, the Owner acknowledges and accepts that occupancy rates and rental yields are subject to market forces, seasonal demand, and other external factors beyond Company's control. Accordingly, Company shall not be held liable for any periods of vacancy, rental fluctuations, or shortfalls in expected returns.
-            </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.B1 Initial Down Payment</strong><br />
+                        The Owner shall pay the upfront down payment as stated in the quotation ("Initial Down Payment") upon signing of this quotation. No renovation or procurement works shall commence until the Initial Down Payment has been received in full and all commencement conditions under Clause 2.2 are met.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.B2 Deferred Balance & Rental Deduction Mechanism</strong><br />
+                        (a) The remaining renovation balance ("Deferred Balance") shall be recovered by Company through monthly deductions from the gross rental proceeds collected under the Owner Collaboration Agreement ("OCA").<br />
+                        (b) The Owner hereby irrevocably authorises Company to deduct the agreed monthly repayment directly from rental income before remitting the balance to the Owner.<br />
+                        (c) Monthly deductions shall commence from the first month in which the Property generates rental income under Company's management.<br />
+                        (d) Any month without rental income shall not waive or extinguish the payment obligation; such instalments shall automatically carry forward and be recovered from subsequent months or directly from the Owner upon demand.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.B3 Repayment Duration and Liability</strong><br />
+                        (a) The Deferred Balance shall be repaid in full within the agreed repayment period stated in the quotation ("Repayment Period").<br />
+                        (b) The Owner remains wholly liable for the entire Deferred Balance, irrespective of tenancy turnover, vacancy periods, or temporary rental shortfall.<br />
+                        (c) Upon termination, sale, or transfer of ownership of the Property, all outstanding Deferred Balance shall become immediately due and payable in full.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.B4 Exclusive Management & Rental Control</strong><br />
+                        (a) During the Repayment Period, the Owner shall not rent, market, or manage the Property through any third party or directly without Company's written consent.<br />
+                        (b) Any such act shall constitute a material breach, entitling Company to immediate recovery of the full outstanding Deferred Balance and termination of all management services.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.B5 Payment Default and Enforcement</strong><br />
+                        (a) Any unpaid instalment outstanding for more than fourteen (14) days shall accrue interest at eight percent (8%) per annum until full payment.<br />
+                        (b) Company reserves the right to suspend all renovation warranties and/or lodge a private caveat on the Property until full settlement.<br />
+                        (c) Any dispute raised by the Owner shall not suspend or delay Company's right to recover payments under this clause.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.B6 Non-Refundability</strong><br />
+                        All payments made under this quotation shall be deemed irrevocably earned and strictly non-refundable, including in cases of Owner's withdrawal, termination of engagement, or vacancy of the property for any reason.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.B7 Financing & Administrative Charges</strong><br />
+                        All fees, charges, or costs associated with the use of payment gateway, credit/debit card, or third-party financing channels, including but not limited to Easy Payment Plan (EPP) or similar instalment services, shall be borne solely by the Owner and are non-refundable under any circumstances.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.B8 Retention of Title</strong><br />
+                        All furniture, fixtures, and installations supplied under this arrangement shall remain the sole and exclusive property of Company until the full Deferred Balance is received and settled. In the event of default or non-payment, Company reserves the right, without prior notice and without incurring any liability, to remove such items from the premises or to pursue recovery of their equivalent monetary value through legal means. The Owner expressly agrees to grant Company or its authorised representatives access to the premises, if necessary, to exercise its rights under this clause.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.B9 Performance Disclaimer</strong><br />
+                        Company shall exercise its best commercial efforts to secure tenancy and optimize rental returns for the Property; however, the Owner acknowledges and accepts that occupancy rates and rental yields are subject to market forces, seasonal demand, and other external factors beyond Company's control. Accordingly, Company shall not be held liable for any periods of vacancy, rental fluctuations, or shortfalls in expected returns.
+                    </p>
                 </>
             )}
 
             {selectedProgram === "bePowered" && (
                 <>
                     <h3 className="text-base font-bold mt-4 mb-2">3.C Payment Terms – Reno Subscription Method (60-Month Tenure)</h3>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.C1 Initial Down Payment</strong><br />
-                The Owner shall pay the agreed upfront down payment as stated in the quotation ("Initial Down Payment") upon signing of this quotation. No renovation, furnishing, or procurement works shall commence until full payment of the Initial Down Payment and fulfilment of all commencement conditions under Clause 2.2.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.C2 Subscription Tenure and Fixed Monthly Payment</strong><br />
-                (a) The remaining renovation balance ("Subscription Balance") shall be payable by the Owner to Company in sixty (60) consecutive fixed monthly instalments ("Subscription Payments") as specified in the quotation.<br />
-                (b) Each Subscription Payment shall be due on the same calendar date of every month, commencing from the month following the handover or issuance of the completion notice, whichever occurs first.<br />
-                (c) The Subscription Payments are fixed and shall not vary regardless of the Property's rental income, occupancy rate, or tenancy status.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.C3 Authorisation for Automatic Deduction</strong><br />
-                (a) The Owner irrevocably authorises Company to deduct each monthly Subscription Payment directly from the rental proceeds collected under the Owner Collaboration Agreement ("OCA"), prior to releasing any balance to the Owner.<br />
-                (b) In months where the rental proceeds are insufficient to cover the due Subscription Payment, the Owner shall settle the shortfall directly to Company within seven (7) calendar days of written notice.<br />
-                (c) Any outstanding balance shall automatically carry forward and be recoverable from subsequent rental proceeds or direct payments without prejudice to Company's rights to enforce full recovery.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.C4 Owner's Commitment and Continuing Liability</strong><br />
-                (a) The Owner acknowledges that this Subscription arrangement constitutes a fixed payment obligation, not a profit-sharing or rental-dependent scheme.<br />
-                (b) The Owner shall remain fully liable for all Subscription Payments throughout the 60-month tenure, irrespective of occupancy rate, vacancy, tenant behaviour, or rental performance.<br />
-                (c) In the event of any sale, transfer of ownership, or early termination of the OCA, all remaining unpaid Subscription Payments shall become immediately due and payable in full.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.C5 Survival of Payment Obligation</strong><br />
-                The Owner's payment obligation under this clause shall survive the expiry or termination of this quotation and the OCA, regardless of the reason for such termination. Termination, cancellation, or withdrawal by either Party shall not affect Company's right to recover all outstanding sums due under this Subscription arrangement.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.C6 No Set-Off or Counterclaim</strong><br />
-                The Owner shall not be entitled to withhold, delay, or deduct any Subscription Payment by way of set-off, counterclaim, or dispute against Company. All payments are to be made in full and without condition.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.C7 Cross-Default with OCA Breaches</strong><br />
-                Any default, non-payment, or breach of this Subscription clause shall constitute an immediate cross-default under the Owner Collaboration Agreement. Company shall be entitled to exercise any and all remedies available under the OCA, including suspension of management services, deduction of outstanding sums from rental proceeds, and legal recovery of debt.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.C8 Early Settlement Option</strong><br />
-                The Owner may elect to fully settle the outstanding Subscription Balance prior to the expiry of the 60-month tenure without penalty, provided that written notice is submitted to Company at least thirty (30) days in advance.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.C9 Default and Enforcement</strong><br />
-                (a) Any Subscription Payment not received within fourteen (14) days of its due date shall accrue interest at eight percent (8%) per annum until full settlement.<br />
-                (b) Company reserves the right to suspend renovation warranties, management services, or tenant operations if payment default persists beyond thirty (30) days.<br />
-                (c) In the event of continued default, Company may lodge a private caveat over the Property, recover sums directly from rental income, or initiate legal proceedings for debt recovery and damages.<br />
-                (d) Any complaint, dispute, or claim raised by the Owner shall not suspend or defer the Owner's payment obligations herein.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.C10 Retention of Title and Ownership</strong><br />
-                All furniture, fixtures, fittings, and materials installed or supplied under the Reno Subscription program shall remain the sole and exclusive property of Company until the Owner has fully settled all 60 Subscription Payments and any outstanding charges, fees, or penalties. In the event of non-payment, early termination or default by the Owner, Company reserves the right to remove, reclaim, or recover the equivalent monetary value for such items without liability. The Owner expressly agrees to grant Company or its authorised representatives access to the property for the purposes of exercising its rights under this clause.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.C11 Administrative and Financing Fees</strong><br />
-                Any bank fees, administrative charges, or financing charges associated with this Subscription arrangement, including but not limited to Easy Payment Plan (EPP) or similar instalment facilities, shall be fully borne by the Owner.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.C12 Non-Refundability and Termination</strong><br />
-                (a) All payments made under this quotation are strictly non-refundable and deemed earned for services rendered or work completed.<br />
-                (b) Should the Owner terminate the collaboration or transfer management before the expiry of the 60-month Subscription tenure, all remaining unpaid Subscription Payments shall become immediately due in full.<br />
-                (c) Company shall have no obligation to refund or offset any prior payments made.
-            </p>
-            <p className="text-justify leading-relaxed mb-3">
-                <strong>3.C13 Performance Disclaimer</strong><br />
-                Company shall exercise its best commercial efforts to optimise rental performance and maintain occupancy of the Property; however, the Owner acknowledges that Subscription Payments are independent of rental income or tenant occupancy, and shall remain payable in full regardless of any vacancy, rental fluctuations, or tenant defaults.
-            </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.C1 Initial Down Payment</strong><br />
+                        The Owner shall pay the agreed upfront down payment as stated in the quotation ("Initial Down Payment") upon signing of this quotation. No renovation, furnishing, or procurement works shall commence until full payment of the Initial Down Payment and fulfilment of all commencement conditions under Clause 2.2.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.C2 Subscription Tenure and Fixed Monthly Payment</strong><br />
+                        (a) The remaining renovation balance ("Subscription Balance") shall be payable by the Owner to Company in sixty (60) consecutive fixed monthly instalments ("Subscription Payments") as specified in the quotation.<br />
+                        (b) Each Subscription Payment shall be due on the same calendar date of every month, commencing from the month following the handover or issuance of the completion notice, whichever occurs first.<br />
+                        (c) The Subscription Payments are fixed and shall not vary regardless of the Property's rental income, occupancy rate, or tenancy status.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.C3 Authorisation for Automatic Deduction</strong><br />
+                        (a) The Owner irrevocably authorises Company to deduct each monthly Subscription Payment directly from the rental proceeds collected under the Owner Collaboration Agreement ("OCA"), prior to releasing any balance to the Owner.<br />
+                        (b) In months where the rental proceeds are insufficient to cover the due Subscription Payment, the Owner shall settle the shortfall directly to Company within seven (7) calendar days of written notice.<br />
+                        (c) Any outstanding balance shall automatically carry forward and be recoverable from subsequent rental proceeds or direct payments without prejudice to Company's rights to enforce full recovery.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.C4 Owner's Commitment and Continuing Liability</strong><br />
+                        (a) The Owner acknowledges that this Subscription arrangement constitutes a fixed payment obligation, not a profit-sharing or rental-dependent scheme.<br />
+                        (b) The Owner shall remain fully liable for all Subscription Payments throughout the 60-month tenure, irrespective of occupancy rate, vacancy, tenant behaviour, or rental performance.<br />
+                        (c) In the event of any sale, transfer of ownership, or early termination of the OCA, all remaining unpaid Subscription Payments shall become immediately due and payable in full.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.C5 Survival of Payment Obligation</strong><br />
+                        The Owner's payment obligation under this clause shall survive the expiry or termination of this quotation and the OCA, regardless of the reason for such termination. Termination, cancellation, or withdrawal by either Party shall not affect Company's right to recover all outstanding sums due under this Subscription arrangement.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.C6 No Set-Off or Counterclaim</strong><br />
+                        The Owner shall not be entitled to withhold, delay, or deduct any Subscription Payment by way of set-off, counterclaim, or dispute against Company. All payments are to be made in full and without condition.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.C7 Cross-Default with OCA Breaches</strong><br />
+                        Any default, non-payment, or breach of this Subscription clause shall constitute an immediate cross-default under the Owner Collaboration Agreement. Company shall be entitled to exercise any and all remedies available under the OCA, including suspension of management services, deduction of outstanding sums from rental proceeds, and legal recovery of debt.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.C8 Early Settlement Option</strong><br />
+                        The Owner may elect to fully settle the outstanding Subscription Balance prior to the expiry of the 60-month tenure without penalty, provided that written notice is submitted to Company at least thirty (30) days in advance.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.C9 Default and Enforcement</strong><br />
+                        (a) Any Subscription Payment not received within fourteen (14) days of its due date shall accrue interest at eight percent (8%) per annum until full settlement.<br />
+                        (b) Company reserves the right to suspend renovation warranties, management services, or tenant operations if payment default persists beyond thirty (30) days.<br />
+                        (c) In the event of continued default, Company may lodge a private caveat over the Property, recover sums directly from rental income, or initiate legal proceedings for debt recovery and damages.<br />
+                        (d) Any complaint, dispute, or claim raised by the Owner shall not suspend or defer the Owner's payment obligations herein.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.C10 Retention of Title and Ownership</strong><br />
+                        All furniture, fixtures, fittings, and materials installed or supplied under the Reno Subscription program shall remain the sole and exclusive property of Company until the Owner has fully settled all 60 Subscription Payments and any outstanding charges, fees, or penalties. In the event of non-payment, early termination or default by the Owner, Company reserves the right to remove, reclaim, or recover the equivalent monetary value for such items without liability. The Owner expressly agrees to grant Company or its authorised representatives access to the property for the purposes of exercising its rights under this clause.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.C11 Administrative and Financing Fees</strong><br />
+                        Any bank fees, administrative charges, or financing charges associated with this Subscription arrangement, including but not limited to Easy Payment Plan (EPP) or similar instalment facilities, shall be fully borne by the Owner.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.C12 Non-Refundability and Termination</strong><br />
+                        (a) All payments made under this quotation are strictly non-refundable and deemed earned for services rendered or work completed.<br />
+                        (b) Should the Owner terminate the collaboration or transfer management before the expiry of the 60-month Subscription tenure, all remaining unpaid Subscription Payments shall become immediately due in full.<br />
+                        (c) Company shall have no obligation to refund or offset any prior payments made.
+                    </p>
+                    <p className="text-justify leading-relaxed mb-3">
+                        <strong>3.C13 Performance Disclaimer</strong><br />
+                        Company shall exercise its best commercial efforts to optimise rental performance and maintain occupancy of the Property; however, the Owner acknowledges that Subscription Payments are independent of rental income or tenant occupancy, and shall remain payable in full regardless of any vacancy, rental fluctuations, or tenant defaults.
+                    </p>
                 </>
             )}
 
@@ -833,406 +827,8 @@ function OrderOverview() {
             : 0)
         , 0);
 
-    const renoAgreement = !orderDetail.is_be_powered ? (
-        <div className="flex flex-col w-full text-sm text-justify">
-            <div className="flex flex-col items-center justify-center gap-6 text-center mb-6">
-                <span>
-                    THIS AGREEMENT is made this day of{" "}
-                    <strong>{orderDetail.status === "confirmed" ? formatDate(orderDetail.updated_at) : getCurrentDate()}</strong>
-                </span>
-                <span>BETWEEN</span>
-                <span>
-                    <strong>RENOXPERT SDN. BHD. [Registration No.202401032588 (1578437-W)]</strong> of{" "}
-                    <strong>42-46, Ground Floor, Jalan SS 19/1d, SS 19, 46500 Subang Jaya, Selangor</strong> (“the Contractor”) of
-                    the one part;
-                </span>
-                <span>AND</span>
-                <span>
-                    <strong>
-                        {orderDetail.user ? orderDetail.user.name : "[Owner Name]"} (NRIC No.{" "}
-                        {orderDetail.user ? orderDetail.user.ic : "[Owner IC]"})
-                    </strong>{" "}
-                    of <strong>{address ? address : "[Owner Address]"}</strong> ("the Owner") of the other part
-                </span>
-            </div>
-            <div className="flex flex-col gap-6 mb-6">
-                <span className="font-bold">WHEREAS:</span>
-                <span>
-                    The Contractor desires to provide renovation services to the Owner and the Owner desires to utilize the
-                    services of the Contractor for the renovation of the Owner’s property described as{" "}
-                    <strong>
-                        A (1) unit of Service Residence known as {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no},{" "}
-                        {orderDetail.property.name}, {propertyAddress}
-                    </strong>{" "}
-                    (the “Property”) subject to the terms and conditions hereinafter appearing.
-                </span>
-                <span>
-                    <strong>NOW THIS AGREEMENT WITNESSETH</strong> as follows:-
-                </span>
-                <div className="flex flex-col gap-3">
-                    <span>
-                        <strong>1. CONTRACT SUM</strong>
-                    </span>
-                    <span>
-                        1.1 The Owner hereby appoints the Contractor and the Contractor agrees to accept such appointment of making
-                        improvements to the Property, to carry out, execute and complete the upgrading and alteration works to the
-                        Property which are more particularly described and set out in the <strong>Quotation</strong> hereto
-                        (“Works”) at an agreed lump sum of <strong>Ringgit Malaysia (RM) ONLY</strong> (the “said Contract Sum”)
-                        payable by instalments/progressive payment in accordance with the <strong>First Schedule</strong> hereof,
-                        subject to the Owner’s right of inspection as set forth below.
-                    </span>
-                    <span>
-                        1.2 Any change in the Contract Sum, change in the Works or change in the contract time that to be defined
-                        herein must be agreed by all parties herein and set forth in writing signed by the Owner and the Contractor.
-                    </span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span>
-                        <strong>2. DURATION</strong>
-                    </span>
-                    <span>
-                        2.1 The renovation agreement and renovation Phase 1 shall commence upon the following conditions precedent
-                        have been fulfilled:-
-                    </span>
-                    <div className="flex flex-col gap-3 pl-5">
-                        <span>
-                            (a) the Owner shall make the first Fifty (50%) per cent as stated in the <strong>First Schedule</strong>{" "}
-                            as deposit;
-                        </span>
-                        <span>
-                            (b) defects of the Property shall be duly rectified, repaired and fixed by the Developer’s defects’ teams
-                            and workers with the Owner or the Contractor’s approval;
-                        </span>
-                        <span>
-                            (c) the Owner or the Contractor has obtained the working permit granted by the relevant authorities; and
-                        </span>
-                        <span>
-                            (d) the full set of keys and access cards of the Property (if required) have been passed to the
-                            Contractor,
-                        </span>
-                        <span>
-                            the commencement date for renovation work shall be after <strong>Seven (7) working days</strong> from the
-                            date when the <strong>clause 2.1(a), (b), (c) and (d)</strong> have been fulfilled following the sequence
-                            of <strong>clause 2.1(a), (b), (c) and (d)</strong>. Failure to comply with the above-mentioned
-                            conditions, the Owner shall unconditionally allow the Contractor to extend the commencement and completion
-                            date without any interest.
-                        </span>
-                    </div>
-                    <span>
-                        2.2 The renovation Phase 2 shall commence upon the following conditions precedent have been fulfilled:-
-                    </span>
-                    <div className="flex flex-col gap-3 pl-5">
-                        <span>(a) the Contractor has completed renovation Phase 1 works; and</span>
-                        <span>
-                            (b) the Owner has made the second Fifty (50%) per cent as stated in the <strong>First Schedule</strong> as
-                            deposit;
-                        </span>
-                        <span>
-                            the commencement date for renovation work shall be after <strong>Seven (7) working days</strong> from the
-                            date when the <strong>clause 2.2(a) and (b)</strong> have been fulfilled following the sequence of{" "}
-                            <strong>clause 2.2(a) and (b)</strong>. Failure to comply with the above-mentioned conditions, the Owner
-                            shall unconditionally allow the Contractor to extend the commencement and completion date without any
-                            interest.
-                        </span>
-                    </div>
-                    <span>
-                        2.3 The period for this renovation work shall take{" "}
-                        <strong>
-                            {convertToWords(orderDetail.completion_day).toUpperCase()} {orderDetail.completion_day} working days
-                        </strong>{" "}
-                        or any approved extension period by all parties (“the said Contract Time”). Time wherever mentioned shall be
-                        of the essence of this Agreement.
-                    </span>
-                    <span>
-                        2.4 For the avoidance of doubt, renovation Phase 1 includes wiring, painting, and installation of smart
-                        devices while renovation Phase 2 includes the supply and installation of furniture and loose items.
-                    </span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span>
-                        <strong>3. FORCE MAJEURE</strong>
-                    </span>
-                    <span>
-                        3.1 Notwithstanding <strong>Clause 4</strong>, no party shall be held liable in the performance of any
-                        obligations under this Agreement resulting from “Force Majeure” which shall include Movement Control Order
-                        (“MCO”), Full Movement Control Order (“FMCO”), Extended Movement Control Order (“EMCO”), acts of God, fire,
-                        or other catastrophe, storms, curfew, blockade, government restrictions and/or change in government
-                        policies, war, strikes or other labour disturbances, acute shortage of building materials, acts of civil or
-                        military authorities or any other causes beyond the control of the party thereby affected whether similar or
-                        dissimilar from the foregoing <strong>PROVIDED ALWAYS THAT</strong> the party claiming to be affected by any
-                        event of force majeure shall as soon as practicable give written notice of such claim to the other party
-                        with full particulars thereof.
-                    </span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span>
-                        <strong>4. CONTRACTOR’S DUTIES, OBLIGATIONS, RIGHTS AND INTERESTS</strong>
-                    </span>
-                    <span>
-                        4.1 The Contractor shall be responsible for the purchase and delivery of materials, except in the event that
-                        the Owner volunteers for economic considerations. All materials at the Property shall be at the risk of the
-                        Contractor during the said Contract Time and if the Owner volunteered for the purchase and delivery of
-                        materials, such risk shall be passed to the Owner.
-                    </span>
-                    <span>
-                        4.2 The Works shall be constructed in a good and workmanlike manner in accordance with the description and
-                        specification as set out in the Quotation hereto, which description and specification have been duly
-                        accepted and approved by the Owner, as the Owner hereby acknowledges via the instant messaging services such
-                        as email and/or WhatsApp.
-                    </span>
-                    <span>
-                        4.3 The Contractor will furnish and be fully responsible for all equipment, labour, transportation,
-                        construction equipment and machinery, tools, appliances, fuel, power, light, heat and all other facilities
-                        and incidentals necessary for the furnishing, performance, testing, start-up, and completion of the Work.
-                    </span>
-                    <span>
-                        4.4 The Contractor will provide competent, suitable personnel to perform services as required and will at
-                        all times maintain good discipline and order at the Property.
-                    </span>
-                    <span>
-                        4.5 The Contractor may sub-contract the Works or any part thereof to any subcontractor(s) or party(ies) as
-                        is customary in the construction industry provided that the Contractor shall be solely liable to the Owner
-                        for any act or default by its subcontractor(s).
-                    </span>
-                    <span>
-                        4.6 The Contractor may update the Owner from time to time on the progress of works by attach the photos of
-                        the works done by the Contractor and/or subcontractor(s), the photos and description of works shall form
-                        part of this Agreement by way of video or photos to be sent to the Owner by way of WhatsApp or any way the
-                        Contractor deems appropriate.
-                    </span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span>
-                        <strong>5. NOTICES</strong>
-                    </span>
-                    <span>
-                        5.1 Any notice required to be given under this Agreement shall be deemed to be sufficiently served if sent
-                        by registered post or ordinary post to the party to whom such notice is being served at its address given
-                        herein and such notice shall be deemed to be received in the ordinary course of post{" "}
-                        <strong>three (3) working days</strong> after posting.
-                    </span>
-                    <span>
-                        5.2 Notwithstanding <strong>Clause 5.1</strong> above, any notice required to be given under this Agreement
-                        shall be deemed to be sufficiently served by way of instant messaging services such as email and/or WhatsApp
-                        to the party to whom such notice is being served at its email address and/or WhatsApp number/account given
-                        herein and such notice shall be deemed to be received instantly within{" "}
-                        <strong>twenty four (24) hours</strong> after sent out.
-                    </span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span>
-                        <strong>6. COSTS</strong>
-                    </span>
-                    <span>
-                        6.1 Unless otherwise agreed, all the legal costs, stamp duty of and incidental to this Agreement shall be
-                        borne and paid by the Contractor solely.
-                    </span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span>
-                        <strong>7. SPECIAL CONDITIONS, SCHEDULES AND APPENDIX</strong>
-                    </span>
-                    <span>
-                        7.1 The Special Conditions, Schedules and Appendix hereinafter stipulated shall for an integral part of this
-                        Agreement and in the event of any inconsistency or repugnant terms in the aforementioned Agreement, the
-                        provisions contained in the Special Conditions shall prevail.
-                    </span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span>
-                        <strong>8. GOVERNING LAW</strong>
-                    </span>
-                    <span>
-                        8.1 This Agreement shall in all respect, include all matters of construction, validity and performance be
-                        governed by, construed and enforced exclusively in accordance with the laws of Malaysia. The parties shall
-                        submit to the exclusive jurisdiction of the Malaysian courts.
-                    </span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span>
-                        <strong>9. WARRANTY AND DEFECT PERIOD</strong>
-                    </span>
-                    <span>
-                        9.1 The Contractor warrants that each Product sold, installed and provided by the Contractor under this
-                        Agreement will conform to its Specifications for the Warranty and Defect period (the “said Product
-                        Warranty”). In the event if the Products are not conformed to its Specifications due to the Contractor’s
-                        fault, the Contractor shall grant Product Warranty and Defect claims to the Owner. The Product Warranty and
-                        Defect claims must be in written and serve to The Contractor in pursuant to the Clause 5 of this Agreement.
-                    </span>
-                    <span>
-                        9.2 The Warranty and Defect period varies from <strong>Six (6) to Twelve (12) months</strong>, depending on
-                        the type of the Products. The Warranty period for each of the Products models are described clearly in the
-                        Second Schedule of this Agreement.
-                    </span>
-                    <span>
-                        9.3 The Warranty and Defect period shall start from the date the Contractor installed the products and
-                        ceases upon the expiration of the period. The Owner shall furnish to us this agreement together with the
-                        sales receipt or original purchase invoice to the Contractor.
-                    </span>
-                    <span>In addition, this Warranty shall not applies in the following circumstances:-</span>
-                    <div className="flex flex-col gap-3 pl-5">
-                        <span>
-                            (a) if any damages, abuse, negligent act or use, misuse, tampering, or wrongful usage including failure or
-                            neglect to maintain the correct, proper and normal usage by the Owner, any end-users or third parties;
-                        </span>
-                        <span>
-                            (b) if any damages, defects, malfunctions or non-functioning to or in the Product howsoever arising from,
-                            caused by or incidental to any external cause (including accidents, fire, lightning, Act of God, exposure
-                            to water or moisture, or caused by or during any or any attempted burglary, theft and/or riot), and any
-                            corrosion, rust, staining or any other such like matters; and
-                        </span>
-                        <span>(c) any damages and defect caused by the Owner, any end-users or third parties.</span>
-                    </div>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span>
-                        <strong>10. NON-COMPLETION/ FAILURE TO HAND OVER</strong>
-                    </span>
-                    <span>
-                        10.1 In the event where the Contractor fails and/or delay in handing over the Property in good, adequate and
-                        final conditions as per the terms and conditions mentioned in this Agreement.
-                    </span>
-                    <span>
-                        10.2 In default by the Contractor to hand over the Property in good, adequate and final conditions within
-                        the said Contract Time, the Contractor shall be liable to pay penalty at the rate of{" "}
-                        <strong>eight per centum (8%) per annum</strong> on daily basis on the undelivered items stated in the
-                        Quotation, with the maximum claim sum not more than the said Contract Sum (the “said Liquidated Damages”).
-                    </span>
-                    <span>
-                        10.3 The Contractor shall not be liable to pay the said Liquidated Damages in pursuant to{" "}
-                        <strong>Clause 10.2</strong> in the event where the <strong>Clause 2.1 & 2.2</strong> above is not complied
-                        with.
-                    </span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span>
-                        <strong>11. NO VARIATION</strong>
-                    </span>
-                    <span>
-                        11.1 No variation of this Agreement of whatever nature shall be made or purported to be made by any party or
-                        parties nor shall any variation or purported variation be valid or enforceable unless the same is in writing
-                        and duly agreed to and executed by the parties concerned.
-                    </span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span>
-                        <strong>12. SEVERABILITY</strong>
-                    </span>
-                    <span>
-                        12.1 If any provision of this Agreement for any reason shall be declared invalid, void, illegal or otherwise
-                        unenforceable, the remaining provisions of this Agreement shall remain in full force and effect. The parties
-                        shall amend that provision in such reasonable manner so as to achieve the intention of the parties without
-                        illegality or where it is not practicable to do so, that provision shall be severed from this Agreement.
-                    </span>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <span>
-                        <strong>13. BINDING EFFECTS</strong>
-                    </span>
-                    <span>
-                        13.1 This Agreement shall be binding on the respective heirs, personal representatives, successors in title
-                        and assigns of the parties hereto.
-                    </span>
-                </div>
-            </div>
-            <div className="flex flex-col items-center justify-center gap-6 text-center mb-6">
-                <div className="flex flex-col">
-                    <span className="font-bold underline">FIRST SCHEDULE</span>
-                    <span>(to be taken read and construed as an essential part of this Agreement)</span>
-                </div>
-                <span className="font-bold">-</span>
-                <span className="font-bold">PROGRESSIVE PAYMENT OF THE CONTRACT SUM</span>
-                {orderDetail && orderDetail.is_progressive_payment ? (
-                    <table className="table align-middle text-gray-700 font-medium text-sm max-w-lg">
-                        <thead>
-                            <tr>
-                                <th>Description</th>
-                                <th className="text-center">%</th>
-                                <th className="text-center">Amount (RM)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Upon Confirmation and before Commencement of Phase 1</td>
-                                <td className="text-center">50</td>
-                                <td className="text-center">
-                                    {((totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2).toLocaleString(undefined, {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
-                                    })}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
-                                <td className="text-center">50</td>
-                                <td className="text-center">
-                                    {((totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2).toLocaleString(undefined, {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
-                                    })}
-                                </td>
-                            </tr>
-                            <tr className="font-bold">
-                                <td>Total:</td>
-                                <td className="text-center">100</td>
-                                <td className="text-center">
-                                    {(totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
-                                    })}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                ) : (
-                    <table className="table align-middle text-gray-700 font-medium text-sm max-w-lg">
-                        <thead>
-                            <tr>
-                                <th>Description</th>
-                                <th className="text-center">%</th>
-                                <th className="text-center">Amount (RM)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Upon Confirmation of Agreement</td>
-                                <td className="text-center">100</td>
-                                <td className="text-center">
-                                    {orderDetail
-                                        ? (totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                        })
-                                        : "0.00"}
-                                </td>
-                            </tr>
-                            <tr className="font-bold">
-                                <td>Total:</td>
-                                <td className="text-center">100</td>
-                                <td className="text-center">
-                                    {orderDetail
-                                        ? (totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                        })
-                                        : "0.00"}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                )}
-                <span>
-                    In the event of a default by the Owner of the payment hereunder when due, the Owner shall be liable to pay
-                    interest at the rate of eight per centum (8%) per annum on the outstanding sum from the date due for payment
-                    until the date of actual payment.
-                </span>
-            </div>
-        </div>
-    ) : (
-        ""
-    )
 
-    const isButtonDisabled = !(agreeTnc && agreeRenoAgreement && agreePartitionRisk)
+    const isButtonDisabled = !(agreeTnc && agreePartitionRisk)
 
     // Sparkle component
     const Sparkle = ({ delay = 0 }: { delay?: number }) => (
@@ -1303,16 +899,6 @@ function OrderOverview() {
                                 T&C
                             </button>
 
-                            {/*  Remove this tab if the orderDetail.is_be_powered is true */}
-                            {!orderDetail.is_be_powered && !orderDetail.is_rnpl && (
-                                <button
-                                    className={`py-2 px-2 text-xs rounded-md transition-all ${activeTab === "tab_1_3" ? "active bg-blue-500 text-white" : "hover:bg-gray-100"
-                                        }`}
-                                    onClick={() => setActiveTab("tab_1_3")}
-                                >
-                                    Reno Agreement
-                                </button>
-                            )}
 
                             {/* Animated ROI Button */}
                             {property?.propertyRoi?.view_enabled ? (
@@ -2789,17 +2375,6 @@ function OrderOverview() {
                                                 onChange: handleAgreeTncChange,
                                                 tab: "tab_1_2",
                                             },
-                                            ...(orderDetail.is_be_powered || orderDetail.is_rnpl
-                                                ? []
-                                                : [
-                                                    {
-                                                        name: "agree_reno_agreement",
-                                                        label: "Reno Agreement",
-                                                        checked: agreeRenoAgreement,
-                                                        onChange: handleAgreeRenoAgreementChange,
-                                                        tab: "tab_1_3",
-                                                    },
-                                                ]),
                                         ].map(({ name, label, checked, onChange, tab }) => (
                                             <label key={name} className="flex items-center gap-2">
                                                 <input
@@ -3128,10 +2703,6 @@ function OrderOverview() {
                             <div className="prose max-w-none p-4 text-xs">{tnc}</div>
                         </div>
 
-                        {/* Reno Agreement Tab */}
-                        <div className={activeTab === "tab_1_3" ? "block" : "hidden"} id="tab_1_3">
-                            <div className="prose max-w-none py-4 px-1 text-xs">{renoAgreement}</div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -3145,279 +2716,134 @@ function OrderOverview() {
                             className={`overflow-hidden transition-all duration-300 ease-in-out ${openAccordions["amount_breakdown"] ? "max-h-[200px] overflow-y-auto scrollable" : "max-h-0 md:max-h-screen"
                                 }`}
                         >
-                            {selectedProgram === "bePowered" ? (
-                                <div className="mt-2 space-y-4">
-                                    {/* <div className="flex flex-col">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm font-semibold text-gray-800">Original Nett Amount: </span>
-                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(
-                                            (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
-                                            (bonus?.value || 0)
-                                        ).toLocaleString(undefined, {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                        })}</span>
-                                    </div>
-                                </div> */}
-                                    <div className="flex flex-col">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm font-semibold text-gray-800">Upfront Payment: </span>
-                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {upfrontAmount.toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0,
-                                            })}</span>
+                            <div className="mt-2 space-y-4">
+                                <div className="flex flex-col space-y-2">
+                                    {packageCategories.map((category, index) => (
+                                        <div key={index} className="flex justify-between">
+                                            <span className="text-xs text-gray-600">Total {category.category}</span>
+                                            <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
+                                                RM{" "}
+                                                {category.total_price.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </span>
                                         </div>
-                                        {/* <div className="flex justify-between items-center mt-1">
-                                        <span className="text-xs text-gray-600">Base Pricing: </span>
-                                        <span className="text-xs text-gray-600 whitespace-nowrap">RM 25,000</span>
-                                    </div>
-                                    {packages.filter(pkg =>
-                                        orderDetail.is_be_powered &&
-                                        pkg.payment_method === 'one-off' &&
-                                        (pkg.is_addon ? pkg.is_addon_included === true : true)
-                                    ).map((pkg, index) => (
-                                        <div key={index} className="flex justify-between items-center mt-1">
-                                            <span className="text-xs text-gray-600">{pkg.name} x{pkg.quantity}</span>
-                                            <span className="text-xs text-gray-600 whitespace-nowrap">RM {(pkg.markup_amount * (pkg.quantity || 1)).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0,
-                                            })}</span>
-                                        </div>
-                                    ))} */}
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm font-semibold text-gray-800">Installment ({orderDetail.tenure} months): </span>
-                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0,
-                                            })}/mth</span>
-                                        </div>
-                                        {/* {orderDetail.installment_method === 'dynamic' && packages.filter(pkg =>
-                                        orderDetail.is_be_powered &&
-                                        pkg.payment_method !== 'one-off' &&
-                                        (pkg.is_addon ? pkg.is_addon_included === true : true)
-                                    ).map((pkg, index) => (
-                                        <div key={index} className="flex justify-between items-center mt-1">
-                                            <span className="text-xs text-gray-600">{pkg.name} x{pkg.quantity}</span>
-                                            <span className="text-xs text-gray-600 whitespace-nowrap">RM {(pkg.monthly_amount * pkg.quantity).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0,
-                                            })}/mth</span>
-                                        </div>
-                                    ))} */}
-                                    </div>
-                                    {bonus && (
-                                        <div className="">
-                                            <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
-                                            <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                                {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
-                                                    <p key={index} className="mb-1 last:mb-0">
-                                                        {item}
-                                                    </p>
-                                                ))}
-                                            </div>
-                                            <div className="mt-2">
-                                                <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                <p className="text-md text-teal-600 font-bold">
-                                                    RM{" "}
-                                                    {bonus.value.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="">
-                                        <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
-                                        <p className="text-sm text-gray-900 font-semibold">
-                                            RM{" "}
-                                            {(upfrontAmount - (bonus ? bonus.value : 0)).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0
-                                            })} + (RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0
-                                            })} / month)
-                                        </p>
-                                    </div>
+                                    ))}
                                 </div>
-                            ) : selectedProgram === "rnpl" ? (
-                                <div className="mt-2 space-y-4">
-                                    <div className="flex flex-col">
-                                        {packageCategories.map((category, index) => (
-                                            <div key={index} className="flex justify-between space-y-2">
-                                                <span className="text-xs text-gray-600">Total {category.category}</span>
-                                                <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                    RM{" "}
-                                                    {category.total_price.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    {bonus && (
-                                        <div className="">
-                                            <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
-                                            <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                                {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
-                                                    <p key={index} className="mb-1 last:mb-0">
-                                                        {item}
-                                                    </p>
-                                                ))}
-                                            </div>
-                                            <div className="mt-2">
-                                                <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                <p className="text-md text-teal-600 font-bold">
-                                                    RM{" "}
-                                                    {bonus.value.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="flex justify-between">
-                                        <h3 className="text-sm text-blue-600 font-bold">Package Subtotal:</h3>
-                                        <p className="text-sm text-gray-900 font-semibold">
-                                            RM{" "}
-                                            {(
-                                                (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
-                                                (bonus?.value || 0)
-                                            ).toLocaleString(undefined, {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                        </p>
-                                    </div>
 
-                                    {(() => {
-                                        // Find all packages with rnpl_method === 'reno-now'
-                                        const packages: Package[] = JSON.parse(JSON.parse(JSON.stringify(orderDetail?.latest_quotation?.metadata)))
-                                        const renoNowPackages: Package[] = packages.filter((pkg: Package) => pkg.rnpl_method === 'reno-now' && (pkg.is_addon === true && pkg.is_addon_included === true));
-
-                                        return (
-                                            <div className="flex flex-col mt-4 pt-4 border-t border-gray-200">
-                                                <div className="flex justify-between items-center text-sm font-bold text-gray-900">
-                                                    <span>Initial Down Payment</span>
-                                                    <span>
-                                                        RM {totalRenoNowPrice.toLocaleString(undefined, {
-                                                            minimumFractionDigits: 0,
-                                                            maximumFractionDigits: 0
-                                                        })}
-                                                    </span>
-                                                </div>
-
-                                                {renoNowPackages &&
-                                                    <div className="flex justify-between items-center text-gray-600 mt-2 text-xs">
-                                                        <div className="flex items-center">
-                                                            <span>Base Price</span>
-                                                        </div>
-                                                        <span>
-                                                            RM {((orderDetail.rnpl_base_price || 0)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                                        </span>
-                                                    </div>
-                                                }
-
-                                                {renoNowPackages.map((pkg: Package, index: number) => (
-                                                    <div
-                                                        key={index}
-                                                        className="flex justify-between items-center text-gray-600 mt-2 text-xs"
-                                                    >
-                                                        <div className="flex items-center">
-                                                            <span>{pkg.name} x{(pkg.quantity || 1)}</span>
-                                                            {/* {pkg.is_addon && (
-                                                                <span className="ml-2 px-2 py-1 text-2xs bg-blue-100 text-blue-700 rounded-full text-nowrap">
-                                                                    Add-On
-                                                                </span>
-                                                            )} */}
-                                                        </div>
-                                                        <span>
-                                                            RM {((pkg.markup_amount || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                                        </span>
-                                                    </div>
-                                                ))}
-
-                                                <div className="flex justify-between items-center text-sm font-bold text-gray-900 mt-4">
-                                                    <span>Deferred Balance</span>
-                                                    <span>
-                                                        RM {((totalExcludedAddonAmount - totalRenoNowPrice) - (bonus?.value || 0)).toLocaleString(undefined, {
-                                                            minimumFractionDigits: 0,
-                                                            maximumFractionDigits: 0
-                                                        })}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })()}
-
-                                </div>
-                            ) : (
-                                <div className="mt-2 space-y-4">
-                                    <div className="flex flex-col">
-                                        {packageCategories.map((category, index) => (
-                                            <div key={index} className="flex justify-between space-y-2">
-                                                <span className="text-xs text-gray-600">Total {category.category}</span>
-                                                <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                    RM{" "}
-                                                    {category.total_price.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    {bonus && (
-                                        <div className="">
-                                            <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
-                                            <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                                {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
-                                                    <p key={index} className="mb-1 last:mb-0">
-                                                        {item}
-                                                    </p>
-                                                ))}
-                                            </div>
-                                            <div className="mt-2">
-                                                <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                <p className="text-md text-teal-600 font-bold">
-                                                    RM{" "}
-                                                    {bonus.value.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
+                                {bonus && (
                                     <div className="">
-                                        <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
-                                        <p className="text-sm text-gray-900 font-semibold">
-                                            RM{" "}
-                                            {(
-                                                (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
-                                                (bonus?.value || 0)
-                                            ).toLocaleString(undefined, {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                        </p>
-                                        {bonus && (
-                                            <p className="text-xs text-gray-900">
-                                                Original Price: RM{" "}
-                                                {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                        <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
+                                        <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
+                                            {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
+                                                <p key={index} className="mb-1 last:mb-0">
+                                                    {item}
+                                                </p>
+                                            ))}
+                                        </div>
+                                        <div className="flex justify-between items-center mt-2">
+                                            <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
+                                            <p className="text-md text-teal-600 font-bold">
+                                                RM{" "}
+                                                {bonus.value.toLocaleString(undefined, {
                                                     minimumFractionDigits: 2,
                                                     maximumFractionDigits: 2,
                                                 })}
                                             </p>
-                                        )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <hr className="my-2" />
+
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm font-semibold text-gray-800">Total Quotation Amount: </span>
+                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 2,
+                                    })}</span>
+                                </div>
+
+                                <div className="flex flex-col space-y-1">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-semibold text-gray-800">Payment Terms: </span>
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">
+                                            {selectedProgram === "bePowered" ?
+                                                "Reno Subscription" : selectedProgram === "rnpl" ?
+                                                    "RenoNow PayLater" : "Full Payment"}
+                                        </span>
+                                    </div>
+                                    <div className="flex">
+                                        <span className="text-2xs text-gray-600 italic">(Terms & Conditions)</span>
+                                        <button className="mx-1" data-modal-toggle="#payment_info_modal">
+                                            <InformationCircleIcon className="w-4 h-4 text-yellow-500" aria-label="Payment Info" />
+                                        </button>
                                     </div>
                                 </div>
-                            )}
+
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm font-semibold text-gray-800">Initial Down Payment: </span>
+                                    {selectedProgram === 'bePowered' && (
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(upfrontAmount - (bonus?.value || 0)).toLocaleString(undefined, {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 2,
+                                        })}
+                                        </span>
+                                    )}
+                                    {selectedProgram === 'rnpl' && (
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalRenoNowPrice.toLocaleString(undefined, {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 2,
+                                        })}
+                                        </span>
+                                    )}
+                                    {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 2,
+                                        })}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="flex flex-col space-y-1">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-semibold text-gray-800">Balance Payment: </span>
+                                        {selectedProgram === 'bePowered' && (
+                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (bonus?.value || 0) - upfrontAmount).toLocaleString(undefined, {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                            </span>
+                                        )}
+                                        {selectedProgram === 'rnpl' && (
+                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (bonus?.value || 0) - totalRenoNowPrice).toLocaleString(undefined, {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                            </span>
+                                        )}
+                                        {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
+                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {selectedProgram === 'bePowered' && (
+                                        <div className="flex justify-end">
+                                            <span className="text-2xs text-gray-600 italic">Pay in 60 mths</span>
+                                        </div>
+                                    )}
+                                    {selectedProgram === 'rnpl' && (
+                                        <div className="flex justify-end">
+                                            <span className="text-2xs text-gray-600 italic">Pay through RPM</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
 
                             <hr className="my-2" />
                         </div>
@@ -3501,9 +2927,10 @@ function OrderOverview() {
                                         </p>
                                         <div className="flex w-full justify-between">
                                             <p className="text-sm text-[#d71e42] font-bold">
+                                                <span className="text-sm text-gray-600">pay </span>
                                                 RM{" "}
                                                 {orderDetail.is_be_powered
-                                                    ? (orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(
+                                                    ? (orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : (totalExcludedAddonAmount - (bonus?.value || 0) - upfrontAmount)).toLocaleString(
                                                         undefined,
                                                         {
                                                             minimumFractionDigits: 0,
@@ -3517,8 +2944,7 @@ function OrderOverview() {
                                                         minimumFractionDigits: 0,
                                                         maximumFractionDigits: 0,
                                                     })}
-                                                <span className="text-sm text-gray-600">/month </span>
-                                                <span className="text-xs text-gray-600">for {selectedPlan === "60" ? "60" : "36"} months</span>
+                                                <span className="text-xs text-gray-600"> for {selectedPlan === "60" ? "60" : "36"} months</span>
                                             </p>
                                             <button
                                                 className="md:hidden italic underline text-blue-600 text-xs"
@@ -3598,278 +3024,134 @@ function OrderOverview() {
                             className={`overflow-hidden transition-all duration-300 ease-in-out ${openAccordions["amount_breakdown"] ? "max-h-[200px] overflow-y-auto scrollable" : "max-h-0 md:max-h-screen"
                                 }`}
                         >
-                            {selectedProgram === "bePowered" ? (
-                                <div className="mt-2 space-y-4">
-                                    {/* <div className="flex flex-col">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm font-semibold text-gray-800">Original Nett Amount: </span>
-                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(
-                                            (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
-                                            (bonus?.value || 0)
-                                        ).toLocaleString(undefined, {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                        })}</span>
-                                    </div>
-                                </div> */}
-                                    <div className="flex flex-col">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm font-semibold text-gray-800">Upfront Payment: </span>
-                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {upfrontAmount.toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0,
-                                            })}</span>
+                            <div className="mt-2 space-y-4">
+                                <div className="flex flex-col space-y-2">
+                                    {packageCategories.map((category, index) => (
+                                        <div key={index} className="flex justify-between">
+                                            <span className="text-xs text-gray-600">Total {category.category}</span>
+                                            <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
+                                                RM{" "}
+                                                {category.total_price.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </span>
                                         </div>
-                                        {/* <div className="flex justify-between items-center mt-1">
-                                        <span className="text-xs text-gray-600">Base Pricing: </span>
-                                        <span className="text-xs text-gray-600 whitespace-nowrap">RM 25,000</span>
-                                    </div>
-                                    {packages.filter(pkg =>
-                                        orderDetail.is_be_powered &&
-                                        pkg.payment_method === 'one-off' &&
-                                        (pkg.is_addon ? pkg.is_addon_included === true : true)
-                                    ).map((pkg, index) => (
-                                        <div key={index} className="flex justify-between items-center mt-1">
-                                            <span className="text-xs text-gray-600">{pkg.name} x{pkg.quantity}</span>
-                                            <span className="text-xs text-gray-600 whitespace-nowrap">RM {(pkg.markup_amount * (pkg.quantity || 1)).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0,
-                                            })}</span>
-                                        </div>
-                                    ))} */}
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm font-semibold text-gray-800">Installment ({orderDetail.tenure} months): </span>
-                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0,
-                                            })}/mth</span>
-                                        </div>
-                                        {/* {orderDetail.installment_method === 'dynamic' && packages.filter(pkg =>
-                                        orderDetail.is_be_powered &&
-                                        pkg.payment_method !== 'one-off' &&
-                                        (pkg.is_addon ? pkg.is_addon_included === true : true)
-                                    ).map((pkg, index) => (
-                                        <div key={index} className="flex justify-between items-center mt-1">
-                                            <span className="text-xs text-gray-600">{pkg.name} x{pkg.quantity}</span>
-                                            <span className="text-xs text-gray-600 whitespace-nowrap">RM {(pkg.monthly_amount * pkg.quantity).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0,
-                                            })}/mth</span>
-                                        </div>
-                                    ))} */}
-                                    </div>
-                                    {bonus && (
-                                        <div className="">
-                                            <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
-                                            <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                                {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
-                                                    <p key={index} className="mb-1 last:mb-0">
-                                                        {item}
-                                                    </p>
-                                                ))}
-                                            </div>
-                                            <div className="mt-2">
-                                                <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                <p className="text-md text-teal-600 font-bold">
-                                                    RM{" "}
-                                                    {bonus.value.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="">
-                                        <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
-                                        <p className="text-sm text-gray-900 font-semibold">
-                                            RM{" "}
-                                            {(upfrontAmount - (bonus ? bonus.value : 0)).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0
-                                            })} + (RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0
-                                            })} / month)
-                                        </p>
-                                    </div>
+                                    ))}
                                 </div>
-                            ) : selectedProgram === "rnpl" ? (
-                                <div className="mt-2 space-y-4">
-                                    <div className="flex flex-col">
-                                        {packageCategories.map((category, index) => (
-                                            <div key={index} className="flex justify-between space-y-2">
-                                                <span className="text-xs text-gray-600">Total {category.category}</span>
-                                                <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                    RM{" "}
-                                                    {category.total_price.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    {bonus && (
-                                        <div className="">
-                                            <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
-                                            <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                                {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
-                                                    <p key={index} className="mb-1 last:mb-0">
-                                                        {item}
-                                                    </p>
-                                                ))}
-                                            </div>
-                                            <div className="mt-2">
-                                                <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                <p className="text-md text-teal-600 font-bold">
-                                                    RM{" "}
-                                                    {bonus.value.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="flex justify-between">
-                                        <h3 className="text-sm text-blue-600 font-bold">Package Subtotal:</h3>
-                                        <p className="text-sm text-gray-900 font-semibold">
-                                            RM{" "}
-                                            {(
-                                                (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
-                                                (bonus?.value || 0)
-                                            ).toLocaleString(undefined, {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                        </p>
-                                    </div>
 
-                                    {(() => {
-                                        // Find all packages with rnpl_method === 'reno-now'
-                                        const packages: Package[] = JSON.parse(JSON.parse(JSON.stringify(orderDetail?.latest_quotation?.metadata)))
-                                        const renoNowPackages: Package[] = packages.filter((pkg: Package) => pkg.rnpl_method === 'reno-now' && (pkg.is_addon === true && pkg.is_addon_included === true));
-
-                                        return (
-                                            <div className="flex flex-col mt-4 pt-4 border-t border-gray-200">
-                                                <div className="flex justify-between items-center text-sm font-bold text-gray-900">
-                                                    <span>Initial Down Payment</span>
-                                                    <span>
-                                                        RM {totalRenoNowPrice.toLocaleString(undefined, {
-                                                            minimumFractionDigits: 0,
-                                                            maximumFractionDigits: 0
-                                                        })}
-                                                    </span>
-                                                </div>
-
-                                                {renoNowPackages &&
-                                                    <div className="flex justify-between items-center text-gray-600 mt-2 text-xs">
-                                                        <div className="flex items-center">
-                                                            <span>Base Price</span>
-                                                        </div>
-                                                        <span>
-                                                            RM {((orderDetail.rnpl_base_price || 0)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                                        </span>
-                                                    </div>
-                                                }
-
-                                                {renoNowPackages.map((pkg: Package, index: number) => (
-                                                    <div
-                                                        key={index}
-                                                        className="flex justify-between items-center text-gray-600 mt-2 text-xs"
-                                                    >
-                                                        <div className="flex items-center">
-                                                            <span>{pkg.name} x{(pkg.quantity || 1)}</span>
-                                                            {/* {pkg.is_addon && (
-                                                                <span className="ml-2 px-2 py-1 text-2xs bg-blue-100 text-blue-700 rounded-full text-nowrap">
-                                                                    Add-On
-                                                                </span>
-                                                            )} */}
-                                                        </div>
-                                                        <span>
-                                                            RM {((pkg.markup_amount || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                                        </span>
-                                                    </div>
-                                                ))}
-
-                                                <div className="flex justify-between items-center text-sm font-bold text-gray-900 mt-4">
-                                                    <span>Deferred Balance</span>
-                                                    <span>
-                                                        RM {((totalExcludedAddonAmount - totalRenoNowPrice) - (bonus?.value || 0)).toLocaleString(undefined, {
-                                                            minimumFractionDigits: 0,
-                                                            maximumFractionDigits: 0
-                                                        })}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })()}
-                                </div>
-                            ) : (
-                                <div className="mt-2 space-y-4">
-                                    <div className="flex flex-col">
-                                        {packageCategories.map((category, index) => (
-                                            <div key={index} className="flex justify-between space-y-2">
-                                                <span className="text-xs text-gray-600">Total {category.category}</span>
-                                                <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                    RM{" "}
-                                                    {category.total_price.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    {bonus && (
-                                        <div className="">
-                                            <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
-                                            <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                                {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
-                                                    <p key={index} className="mb-1 last:mb-0">
-                                                        {item}
-                                                    </p>
-                                                ))}
-                                            </div>
-                                            <div className="mt-2">
-                                                <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                <p className="text-md text-teal-600 font-bold">
-                                                    RM{" "}
-                                                    {bonus.value.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
+                                {bonus && (
                                     <div className="">
-                                        <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
-                                        <p className="text-sm text-gray-900 font-semibold">
-                                            RM{" "}
-                                            {(
-                                                (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
-                                                (bonus?.value || 0)
-                                            ).toLocaleString(undefined, {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                        </p>
-                                        {bonus && (
-                                            <p className="text-xs text-gray-900">
-                                                Original Price: RM{" "}
-                                                {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                        <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
+                                        <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
+                                            {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
+                                                <p key={index} className="mb-1 last:mb-0">
+                                                    {item}
+                                                </p>
+                                            ))}
+                                        </div>
+                                        <div className="flex justify-between items-center mt-2">
+                                            <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
+                                            <p className="text-md text-teal-600 font-bold">
+                                                RM{" "}
+                                                {bonus.value.toLocaleString(undefined, {
                                                     minimumFractionDigits: 2,
                                                     maximumFractionDigits: 2,
                                                 })}
                                             </p>
-                                        )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <hr className="my-2" />
+
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm font-semibold text-gray-800">Total Quotation Amount: </span>
+                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 2,
+                                    })}</span>
+                                </div>
+
+                                <div className="flex flex-col space-y-1">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-semibold text-gray-800">Payment Terms: </span>
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">
+                                            {selectedProgram === "bePowered" ?
+                                                "Reno Subscription" : selectedProgram === "rnpl" ?
+                                                    "RenoNow PayLater" : "Full Payment"}
+                                        </span>
+                                    </div>
+                                    <div className="flex">
+                                        <span className="text-2xs text-gray-600 italic">(Terms & Conditions)</span>
+                                        <button className="mx-1" data-modal-toggle="#payment_info_modal">
+                                            <InformationCircleIcon className="w-4 h-4 text-yellow-500" aria-label="Payment Info" />
+                                        </button>
                                     </div>
                                 </div>
-                            )}
+
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm font-semibold text-gray-800">Initial Down Payment: </span>
+                                    {selectedProgram === 'bePowered' && (
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(upfrontAmount - (bonus?.value || 0)).toLocaleString(undefined, {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 2,
+                                        })}
+                                        </span>
+                                    )}
+                                    {selectedProgram === 'rnpl' && (
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalRenoNowPrice.toLocaleString(undefined, {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 2,
+                                        })}
+                                        </span>
+                                    )}
+                                    {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 2,
+                                        })}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="flex flex-col space-y-1">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-semibold text-gray-800">Balance Payment: </span>
+                                        {selectedProgram === 'bePowered' && (
+                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (bonus?.value || 0) - upfrontAmount).toLocaleString(undefined, {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                            </span>
+                                        )}
+                                        {selectedProgram === 'rnpl' && (
+                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (bonus?.value || 0) - totalRenoNowPrice).toLocaleString(undefined, {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                            </span>
+                                        )}
+                                        {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
+                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {selectedProgram === 'bePowered' && (
+                                        <div className="flex justify-end">
+                                            <span className="text-2xs text-gray-600 italic">Pay in 60 mths</span>
+                                        </div>
+                                    )}
+                                    {selectedProgram === 'rnpl' && (
+                                        <div className="flex justify-end">
+                                            <span className="text-2xs text-gray-600 italic">Pay through RPM</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
 
                             <hr className="my-2" />
                         </div>
@@ -3953,9 +3235,10 @@ function OrderOverview() {
                                         </p>
                                         <div className="flex w-full justify-between">
                                             <p className="text-sm text-[#d71e42] font-bold">
+                                                <span className="text-sm text-gray-600">pay </span>
                                                 RM{" "}
                                                 {orderDetail.is_be_powered
-                                                    ? (orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(
+                                                    ? (orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : (totalExcludedAddonAmount - (bonus?.value || 0) - upfrontAmount)).toLocaleString(
                                                         undefined,
                                                         {
                                                             minimumFractionDigits: 0,
@@ -3969,8 +3252,7 @@ function OrderOverview() {
                                                         minimumFractionDigits: 0,
                                                         maximumFractionDigits: 0,
                                                     })}
-                                                <span className="text-sm text-gray-600">/month </span>
-                                                <span className="text-xs text-gray-600">for {selectedPlan === "60" ? "60" : "36"} months</span>
+                                                <span className="text-xs text-gray-600"> for {selectedPlan === "60" ? "60" : "36"} months</span>
                                             </p>
                                             <button
                                                 className="md:hidden italic underline text-blue-600 text-xs"
