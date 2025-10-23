@@ -473,7 +473,7 @@ export default function InvoiceDetailModal({
                                                         <div>
                                                             <p className="text-sm font-semibold text-gray-900">{payment.transaction_no}</p>
                                                             <p className="text-xs text-gray-600">
-                                                                {payment.created_at ? formatDate(payment.created_at) : "N/A"}
+                                                                {payment.payment_date ? formatDate(payment.payment_date) : "N/A"}
                                                             </p>
                                                         </div>
                                                     </div>

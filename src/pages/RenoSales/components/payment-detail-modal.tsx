@@ -236,7 +236,7 @@ export default function PaymentDetailModal({ paymentId, payment, isOpen, onClose
                                             <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
                                             <div className="flex-1">
                                                 <p className="text-sm font-medium text-gray-900">Payment Completed</p>
-                                                <p className="text-xs text-gray-600">{formatDate(payment.created_at)}</p>
+                                                <p className="text-xs text-gray-600">{formatDate(payment.payment_date)}</p>
                                             </div>
                                             <div className="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs font-medium rounded-full">
                                                 Completed
