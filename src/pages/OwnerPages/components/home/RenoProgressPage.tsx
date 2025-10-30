@@ -63,7 +63,8 @@ function RenoProgressContent({ renoProgresses, abort }: { renoProgresses: RenoPr
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {renoProgresses.map((progress) => {
-                const StatusIcon = statusIcon[getStatus(progress)];
+                const status = getStatus(progress);
+                const StatusIcon = statusIcon[status] || ClockIcon;
 
                 return (
                     <Link
@@ -96,9 +97,9 @@ function RenoProgressContent({ renoProgresses, abort }: { renoProgresses: RenoPr
                                 </div>
                             </div>
                             <div>
-                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full ${statusColors[getStatus(progress)]}`}>
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full ${statusColors[status] || 'bg-gray-100 text-gray-800'}`}>
                                     <StatusIcon className="w-3.5 h-3.5" />
-                                    {getStatus(progress)}
+                                    {status || 'Unknown'}
                                 </span>
                             </div>
                         </div>
