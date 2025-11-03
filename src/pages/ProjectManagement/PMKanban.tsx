@@ -17,6 +17,17 @@ interface Project {
     status?: string;
     snapshot_date?: string;
     snapshot_type?: 'weekly' | 'monthly' | 'yearly';
+    date_management?: {
+        sales_date?: string,
+        defect_permit_date?: string,
+        p1_date?: string,
+        p2a_date?: string,
+        p2b_date?: string,
+        qc_date?: string,
+        cleaning_date?: string,
+        ch_date?: string,
+        oh_date?: string,
+    }
 }
 
 interface Week {
@@ -52,6 +63,7 @@ const PMKanban = () => {
     const [isLoadingCurrentWeek, setIsLoadingCurrentWeek] = useState(false);
     const isDragOperationRef = useRef(false);
     const [currentWeekData, setCurrentWeekData] = useState<Project[][]>([]);
+    const [currentTime, setCurrentTime] = useState(new Date());
 
     const stages = useMemo(() => [
         { label: 'Pre-purchase', value: 'pre-purchase', color: 'bg-amber-50 border-amber-200', textColor: 'text-amber-900' },
@@ -143,6 +155,46 @@ const PMKanban = () => {
         }
     };
 
+    // Calculate countdown based on current status
+    const calculateCountdown = useCallback((project: Project): number | null => {
+        if (!project.date_management || !project.status) {
+            return null;
+        }
+
+        let targetDate: string | undefined;
+        
+        // Map status to the corresponding date field
+        switch (project.status) {
+            case 'under-defect':
+                targetDate = project.date_management.defect_permit_date;
+                break;
+            case 'p1':
+                targetDate = project.date_management.p1_date;
+                break;
+            case 'p2a':
+                targetDate = project.date_management.p2a_date;
+                break;
+            case 'p2b':
+                targetDate = project.date_management.p2b_date;
+                break;
+            case 'scheduled-handover':
+                targetDate = project.date_management.oh_date;
+                break;
+            default:
+                return null;
+        }
+
+        if (!targetDate) {
+            return null;
+        }
+
+        const now = currentTime.getTime();
+        const target = new Date(targetDate).getTime();
+        const diffInDays = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+        
+        return diffInDays;
+    }, [currentTime]);
+
     // Helper function to get week number from date
     const getWeekNumber = (date: Date): number => {
         const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -172,7 +224,8 @@ const PMKanban = () => {
                     property_id: progress.property?.id,
                     status: progress.status,
                     snapshot_date: new Date().toISOString().split('T')[0],
-                    snapshot_type: 'weekly'
+                    snapshot_type: 'weekly',
+                    date_management: progress.date_management
                 };
 
                 kanbanData[stageIndex].push(project);
@@ -389,7 +442,8 @@ const PMKanban = () => {
                     property_id: record.property_id,
                     status: record.status,
                     snapshot_date: record.snapshot_date,
-                    snapshot_type: record.snapshot_type
+                    snapshot_type: record.snapshot_type,
+                    date_management: record.reno_progress?.date_management
                 };
 
                 week.data[stageIndex].push(project);
@@ -532,6 +586,14 @@ const PMKanban = () => {
         loadHistoricalData();
     }, [filterType, convertHistoricalDataToKanban]);
 
+    // Update countdown every second
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, []);
 
     const filteredWeeks = getFilteredWeeks();
 
@@ -686,6 +748,26 @@ const PMKanban = () => {
                                                                             <span className={`inline-block text-xs px-2 py-0.5 rounded-full border font-medium ${getPaymentBadge(project.paymentPercentage)}`}>
                                                                                 {project.paymentPercentage.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}%
                                                                             </span>
+                                                                            {(() => {
+                                                                                const currentDate = new Date();
+                                                                                const currentWeekNumber = getWeekNumber(currentDate);
+                                                                                const isCurrentWeek = selectedWeekForDetail.snapshot_week === currentWeekNumber && selectedWeekForDetail.snapshot_year === currentDate.getFullYear();
+                                                                                if (!isCurrentWeek) return null;
+                                                                                
+                                                                                const countdown = calculateCountdown(project);
+                                                                                if (countdown !== null) {
+                                                                                    return (
+                                                                                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded mt-1 inline-block ${
+                                                                                            countdown < 0 ? 'bg-red-100 text-red-800' : 
+                                                                                            countdown <= 7 ? 'bg-orange-100 text-orange-800' : 
+                                                                                            'bg-blue-100 text-blue-800'
+                                                                                        }`}>
+                                                                                            {countdown > 0 ? `${countdown} days` : 'Overdue'}
+                                                                                        </span>
+                                                                                    );
+                                                                                }
+                                                                                return null;
+                                                                            })()}
                                                                         </div>
                                                                     </div>
                                                                 ))}
@@ -965,10 +1047,25 @@ const PMKanban = () => {
                                                                     </div>
                                                                     <div className="text-xs text-slate-600 mb-1.5">{getPropertyShortCode(project.property || '')}</div>
                                                                 </div>
-                                                                <div className="flex flex-col">
+                                                                <div className="flex flex-col items-end gap-1">
                                                                     <span className={`inline-block text-xs px-2 py-0.5 rounded-full border font-medium ${getPaymentBadge(project.paymentPercentage)}`}>
                                                                         {project.paymentPercentage.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}%
                                                                     </span>
+                                                                    {(() => {
+                                                                        const countdown = calculateCountdown(project);
+                                                                        if (countdown !== null) {
+                                                                            return (
+                                                                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                                                                                    countdown < 0 ? 'bg-red-100 text-red-800' : 
+                                                                                    countdown <= 7 ? 'bg-orange-100 text-orange-800' : 
+                                                                                    'bg-blue-100 text-blue-800'
+                                                                                }`}>
+                                                                                    {countdown > 0 ? `${countdown} days` : 'Overdue'}
+                                                                                </span>
+                                                                            );
+                                                                        }
+                                                                        return null;
+                                                                    })()}
                                                                 </div>
                                                             </div>
                                                         ))}
