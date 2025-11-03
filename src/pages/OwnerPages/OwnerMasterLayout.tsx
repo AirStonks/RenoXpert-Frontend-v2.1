@@ -22,7 +22,7 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
 
         // Chatwoot integration
         const loadChatwoot = () => {
-            const BASE_URL = import.meta.env.VITE_CHATWOOT_BASE_URL || "https://staging.belive.chat";
+            const BASE_URL = import.meta.env.VITE_CHATWOOT_BASE_URL || "https://chat.belive.asia";
 
             // Check if script is already loaded
             if (document.querySelector('script[src*="sdk.js"]')) {
