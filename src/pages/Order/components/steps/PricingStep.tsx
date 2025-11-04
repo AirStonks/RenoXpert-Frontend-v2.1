@@ -358,10 +358,20 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                     maximumFractionDigits: 0
                                 })}/mth</span> */}
                                 <span className="font-medium text-gray-900">Balance Amount</span>
-                                <span className="font-medium">RM {formData.installment_method === 'fixed' ? `${formData.installment_amount}/mth` : (netAmount - (formData.be_powered_base_price || 25000)).toLocaleString(undefined, {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0
-                                })}</span>
+                                <span className="font-medium">RM {formData.installment_method === 'fixed' ? `${formData.installment_amount}/mth` : (() => {
+                                    const reductionAmount = selectedPackages.reduce((sum, pkg) => {
+                                        if (formData.isBePowered && 
+                                            pkg.payment_method === 'one-off' && 
+                                            (pkg.is_addon ? pkg.is_addon_included === true : true)) {
+                                            return sum + ((pkg.markup_amount || 0) * (pkg.quantity || 1));
+                                        }
+                                        return sum;
+                                    }, 0);
+                                    return (netAmount - (formData.be_powered_base_price || 25000) - reductionAmount).toLocaleString(undefined, {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    });
+                                })()}</span>
                             </div>
 
                             {/* {formData.installment_method === 'fixed'
@@ -405,35 +415,6 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                 </div>
                             </div>
                         }
-
-                        <div className="flex flex-col mt-4 pt-4 border-t border-gray-200">
-                            <div className="flex justify-between items-center text-xl font-bold text-gray-900">
-                                <span>Total</span>
-                                <span>RM {(upfrontAmount - (formData.bonusValue || 0)).toLocaleString(undefined, {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0
-                                })} + (RM {formData.installment_method === 'fixed' ? formData.installment_amount : monthlySum.toLocaleString(undefined, {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0
-                                })} / month)</span>
-                            </div>
-
-                            <div className="flex justify-between items-center text-green-600 mt-2">
-                                <span>EPP (36 months)</span>
-                                <span>RM {((upfrontAmount * 1.105) / 36).toLocaleString(undefined, {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0
-                                })}/mth</span>
-                            </div>
-
-                            <div className="flex justify-between items-center text-green-600 mt-2">
-                                <span>EPP (60 months)</span>
-                                <span>RM {((upfrontAmount * 1.14) / 60).toLocaleString(undefined, {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0
-                                })}/mth</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
             }
