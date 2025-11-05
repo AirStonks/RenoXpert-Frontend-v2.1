@@ -1431,7 +1431,7 @@ const OrderPreviewModal = ({
 
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-semibold text-gray-800">Total Quotation Amount: </span>
-                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, {
                                             minimumFractionDigits: 0,
                                             maximumFractionDigits: 2,
                                         })}</span>
@@ -1749,7 +1749,7 @@ const OrderPreviewModal = ({
 
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-semibold text-gray-800">Total Quotation Amount: </span>
-                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, {
                                             minimumFractionDigits: 0,
                                             maximumFractionDigits: 2,
                                         })}</span>
