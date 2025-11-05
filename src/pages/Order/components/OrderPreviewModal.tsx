@@ -1447,51 +1447,18 @@ const OrderPreviewModal = ({
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm font-semibold text-gray-800">Initial Down Payment: </span>
-                                        {selectedProgram === 'bePowered' && (
-                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(upfrontAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                            </span>
-                                        )}
-                                        {selectedProgram === 'rnpl' && (
-                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalRenoNowPrice.toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                            </span>
-                                        )}
-                                        {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
-                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <div className="flex flex-col space-y-1">
+                                    {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl && (
                                         <div className="flex justify-between items-center">
-                                            <span className="text-sm font-semibold text-gray-800">Balance Payment: </span>
+                                            <span className="text-sm font-semibold text-gray-800">Initial Down Payment: </span>
                                             {selectedProgram === 'bePowered' && (
-                                                orderDetail.installment_method === 'fixed' ? (
-                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {orderDetail.installment_amount.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 0,
-                                                        maximumFractionDigits: 2,
-                                                    })}/mth
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0) - upfrontAmount).toLocaleString(undefined, {
-                                                        minimumFractionDigits: 0,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                    </span>
-                                                )
+                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(upfrontAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                                </span>
                                             )}
                                             {selectedProgram === 'rnpl' && (
-                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0) - totalRenoNowPrice).toLocaleString(undefined, {
+                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalRenoNowPrice.toLocaleString(undefined, {
                                                     minimumFractionDigits: 0,
                                                     maximumFractionDigits: 2,
                                                 })}
@@ -1505,17 +1472,55 @@ const OrderPreviewModal = ({
                                                 </span>
                                             )}
                                         </div>
-                                        {selectedProgram === 'bePowered' && (
-                                            <div className="flex justify-end">
-                                                <span className="text-2xs text-gray-600 italic">Pay in 60 mths</span>
+                                    )}
+
+
+                                    {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl && (
+                                        <div className="flex flex-col space-y-1">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm font-semibold text-gray-800">Balance Payment: </span>
+                                                {selectedProgram === 'bePowered' && (
+                                                    orderDetail.installment_method === 'fixed' ? (
+                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {orderDetail.installment_amount.toLocaleString(undefined, {
+                                                            minimumFractionDigits: 0,
+                                                            maximumFractionDigits: 2,
+                                                        })}/mth
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0) - upfrontAmount).toLocaleString(undefined, {
+                                                            minimumFractionDigits: 0,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                        </span>
+                                                    )
+                                                )}
+                                                {selectedProgram === 'rnpl' && (
+                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0) - totalRenoNowPrice).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 0,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                    </span>
+                                                )}
+                                                {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
+                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 0,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                    </span>
+                                                )}
                                             </div>
-                                        )}
-                                        {selectedProgram === 'rnpl' && (
-                                            <div className="flex justify-end">
-                                                <span className="text-2xs text-gray-600 italic">Pay through RPM</span>
-                                            </div>
-                                        )}
-                                    </div>
+                                            {selectedProgram === 'bePowered' && (
+                                                <div className="flex justify-end">
+                                                    <span className="text-2xs text-gray-600 italic">Pay in 60 mths</span>
+                                                </div>
+                                            )}
+                                            {selectedProgram === 'rnpl' && (
+                                                <div className="flex justify-end">
+                                                    <span className="text-2xs text-gray-600 italic">Pay through RPM</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <hr className="my-2" />
@@ -1765,51 +1770,18 @@ const OrderPreviewModal = ({
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm font-semibold text-gray-800">Initial Down Payment: </span>
-                                        {selectedProgram === 'bePowered' && (
-                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(upfrontAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                            </span>
-                                        )}
-                                        {selectedProgram === 'rnpl' && (
-                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalRenoNowPrice.toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                            </span>
-                                        )}
-                                        {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
-                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <div className="flex flex-col space-y-1">
+                                    {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl && (
                                         <div className="flex justify-between items-center">
-                                            <span className="text-sm font-semibold text-gray-800">Balance Payment: </span>
+                                            <span className="text-sm font-semibold text-gray-800">Initial Down Payment: </span>
                                             {selectedProgram === 'bePowered' && (
-                                                orderDetail.installment_method === 'fixed' ? (
-                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {orderDetail.installment_amount.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 0,
-                                                        maximumFractionDigits: 2,
-                                                    })}/mth
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0) - upfrontAmount).toLocaleString(undefined, {
-                                                        minimumFractionDigits: 0,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                    </span>
-                                                )
+                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(upfrontAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                                </span>
                                             )}
                                             {selectedProgram === 'rnpl' && (
-                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0) - totalRenoNowPrice).toLocaleString(undefined, {
+                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalRenoNowPrice.toLocaleString(undefined, {
                                                     minimumFractionDigits: 0,
                                                     maximumFractionDigits: 2,
                                                 })}
@@ -1823,17 +1795,54 @@ const OrderPreviewModal = ({
                                                 </span>
                                             )}
                                         </div>
-                                        {selectedProgram === 'bePowered' && (
-                                            <div className="flex justify-end">
-                                                <span className="text-2xs text-gray-600 italic">Pay in 60 mths</span>
+                                    )}
+
+                                    {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl && (
+                                        <div className="flex flex-col space-y-1">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm font-semibold text-gray-800">Balance Payment: </span>
+                                                {selectedProgram === 'bePowered' && (
+                                                    orderDetail.installment_method === 'fixed' ? (
+                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {orderDetail.installment_amount.toLocaleString(undefined, {
+                                                            minimumFractionDigits: 0,
+                                                            maximumFractionDigits: 2,
+                                                        })}/mth
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0) - upfrontAmount).toLocaleString(undefined, {
+                                                            minimumFractionDigits: 0,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                        </span>
+                                                    )
+                                                )}
+                                                {selectedProgram === 'rnpl' && (
+                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0) - totalRenoNowPrice).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 0,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                    </span>
+                                                )}
+                                                {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
+                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 0,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                    </span>
+                                                )}
                                             </div>
-                                        )}
-                                        {selectedProgram === 'rnpl' && (
-                                            <div className="flex justify-end">
-                                                <span className="text-2xs text-gray-600 italic">Pay through RPM</span>
-                                            </div>
-                                        )}
-                                    </div>
+                                            {selectedProgram === 'bePowered' && (
+                                                <div className="flex justify-end">
+                                                    <span className="text-2xs text-gray-600 italic">Pay in 60 mths</span>
+                                                </div>
+                                            )}
+                                            {selectedProgram === 'rnpl' && (
+                                                <div className="flex justify-end">
+                                                    <span className="text-2xs text-gray-600 italic">Pay through RPM</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <hr className="my-2" />
