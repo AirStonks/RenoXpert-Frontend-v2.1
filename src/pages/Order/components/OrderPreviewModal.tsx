@@ -567,7 +567,7 @@ const OrderPreviewModal = ({
                         ) : (
                             ''
                         )}
-                        {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl && (
+                        {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl ? <></> : (
                             <button
                                 className={`tab ${activeTab === 'tab_1_2' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('tab_1_2')}
@@ -1045,7 +1045,7 @@ const OrderPreviewModal = ({
                         {/* Checkboxes */}
                         {orderDetail.status !== "confirmed" && (
                             <div className="flex flex-col gap-4 my-6">
-                                {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl && (
+                                {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl ? <></> : (
                                     <label className="flex items-center gap-2">
                                         <input
                                             type="checkbox"
@@ -1447,7 +1447,7 @@ const OrderPreviewModal = ({
                                         </div>
                                     </div>
 
-                                    {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl && (
+                                    {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl ? <></> : (
                                         <div className="flex justify-between items-center">
                                             <span className="text-sm font-semibold text-gray-800">Initial Down Payment: </span>
                                             {selectedProgram === 'bePowered' && (
@@ -1475,7 +1475,7 @@ const OrderPreviewModal = ({
                                     )}
 
 
-                                    {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl && (
+                                    {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl ? <></> : (
                                         <div className="flex flex-col space-y-1">
                                             <div className="flex justify-between items-center">
                                                 <span className="text-sm font-semibold text-gray-800">Balance Payment: </span>
@@ -1770,7 +1770,7 @@ const OrderPreviewModal = ({
                                         </div>
                                     </div>
 
-                                    {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl && (
+                                    {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl ? <></> : (
                                         <div className="flex justify-between items-center">
                                             <span className="text-sm font-semibold text-gray-800">Initial Down Payment: </span>
                                             {selectedProgram === 'bePowered' && (
@@ -1797,7 +1797,7 @@ const OrderPreviewModal = ({
                                         </div>
                                     )}
 
-                                    {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl && (
+                                    {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl ? <></> : (
                                         <div className="flex flex-col space-y-1">
                                             <div className="flex justify-between items-center">
                                                 <span className="text-sm font-semibold text-gray-800">Balance Payment: </span>
