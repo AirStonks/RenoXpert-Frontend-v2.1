@@ -567,13 +567,14 @@ const OrderPreviewModal = ({
                         ) : (
                             ''
                         )}
-                        <button
-                            className={`tab ${activeTab === 'tab_1_2' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('tab_1_2')}
-                        >
-                            T&C
-                        </button>
-
+                        {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl && (
+                            <button
+                                className={`tab ${activeTab === 'tab_1_2' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('tab_1_2')}
+                            >
+                                T&C
+                            </button>
+                        )}
                     </div>
                     <div className={activeTab === 'tab_1_1' ? 'block' : 'hidden'} id="tab_1_1">
                         {/* Progress Bar */}
@@ -1044,22 +1045,14 @@ const OrderPreviewModal = ({
                         {/* Checkboxes */}
                         {orderDetail.status !== "confirmed" && (
                             <div className="flex flex-col gap-4 my-6">
-                                {[
-                                    {
-                                        name: "agree_tnc",
-                                        label: "Terms and Conditions",
-                                        checked: agreeTnc,
-                                        onChange: handleAgreeTncChange,
-                                        tab: "tab_1_2",
-                                    },
-                                ].map(({ name, label, checked, onChange, tab }) => (
-                                    <label key={name} className="flex items-center gap-2">
+                                {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl && (
+                                    <label className="flex items-center gap-2">
                                         <input
                                             type="checkbox"
                                             className="checkbox"
-                                            name={name}
-                                            checked={checked || orderDetail.status === "confirmed"}
-                                            onChange={onChange}
+                                            name="agree_tnc"
+                                            checked={agreeTnc || orderDetail.status === "confirmed"}
+                                            onChange={handleAgreeTncChange}
                                             disabled={orderDetail.status === "confirmed"}
                                         />
                                         <span className="text-xs">
@@ -1067,13 +1060,13 @@ const OrderPreviewModal = ({
                                             <a
                                                 href="#"
                                                 className="text-blue-500 hover:underline"
-                                                onClick={() => setActiveTab(tab)}
+                                                onClick={() => setActiveTab("tab_1_2")}
                                             >
-                                                {label}
+                                                Terms and Conditions
                                             </a>
                                         </span>
                                     </label>
-                                ))}
+                                )}
                                 <label className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
@@ -1431,7 +1424,7 @@ const OrderPreviewModal = ({
 
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-semibold text-gray-800">Total Quotation Amount: </span>
-                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, {
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalExcludedAddonAmount.toLocaleString(undefined, {
                                             minimumFractionDigits: 0,
                                             maximumFractionDigits: 2,
                                         })}</span>
@@ -1749,7 +1742,7 @@ const OrderPreviewModal = ({
 
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-semibold text-gray-800">Total Quotation Amount: </span>
-                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, {
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalExcludedAddonAmount.toLocaleString(undefined, {
                                             minimumFractionDigits: 0,
                                             maximumFractionDigits: 2,
                                         })}</span>
