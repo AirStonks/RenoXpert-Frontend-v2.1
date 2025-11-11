@@ -39,6 +39,7 @@ const API_URL =
 // Country code options
 const countryOptions = [
     { code: '60', name: 'Malaysia', flag: MEDIA_URL + 'flags/malaysia.svg' },
+    { code: '61', name: 'Australia', flag: MEDIA_URL + 'flags/australia.svg' },
     { code: '65', name: 'Singapore', flag: MEDIA_URL + 'flags/singapore.svg' },
 ];
 
