@@ -29,7 +29,7 @@ const MEDIA_URL =
 const OTPVerifyPage: React.FC<{
     mobile: string,
     countryCode: string,
-    handleSubmit: (mobile?: string, otp?: string[]) => Promise<void>,
+    handleSubmit: (countryCode?: string, mobile?: string, otp?: string[]) => Promise<void>,
     otp: string[],
     setOtp: React.Dispatch<React.SetStateAction<string[]>>
     setShowOtpForm: React.Dispatch<React.SetStateAction<boolean>>
@@ -141,7 +141,7 @@ const OTPVerifyPage: React.FC<{
             try {
                 setLoading(true); // Set loading state for submission
                 setError(null); // Clear any previous errors
-                await handleSubmit(mobile, otp); // Call the passed handleSubmit function
+                await handleSubmit(countryCode, mobile, otp); // Call the passed handleSubmit function
             } catch (error) {
                 setError("Invalid OTP. Please try again."); // Set error message
                 notify("error", "Invalid OTP. Please try again.");
