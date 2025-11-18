@@ -50,7 +50,7 @@ const OTPConfirmOrder: React.FC = () => {
 
     useEffect(() => {
         const handleRequestOTP = async () => {
-            await axios.post(`${API_URL}sms-otp/request/60/${state.mobile}`);
+            await axios.post(`${API_URL}sms-otp/request/${state.conutry_code || '60'}/${state.mobile}`);
         }
 
         const handleLocalOTP = () => {
