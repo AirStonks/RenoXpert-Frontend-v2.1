@@ -359,13 +359,14 @@ export const styles = StyleSheet.create({
     tncContainer: {
         flexDirection: "column",
         padding: "20px 20px", // Reduced from 30px 30px
+        width: "100%",
     },
     tncTitle: {
         fontSize: 12, // Reduced from 14
         fontWeight: "bold",
         marginBottom: 10, // Reduced from 15
-        textAlign: "center",
-        color: "#2563eb",
+        // textAlign: "center",
+        // color: "#2563eb",
     },
     tncList: {
         flexDirection: "column",
@@ -383,9 +384,9 @@ export const styles = StyleSheet.create({
     },
     tncText: {
         fontSize: 8, // Reduced from 10
-        lineHeight: 1.2, // Reduced from 1.5
+        lineHeight: 1.4, // Increased from 1.2 for better readability
         textAlign: "justify",
-        flex: 1,
+        width: "100%",
     },
     agreementTitle: {
         fontSize: 12, // Reduced from 14
