@@ -73,7 +73,7 @@ const BookingsListView = ({
                             <p className="text-sm text-gray-600">Manage and track all bookings</p>
                         </div>
                     </div>
-                    <div className="grid grid-cols-7 gap-4 text-xs font-semibold text-green-700 uppercase tracking-wider">
+                    <div className="grid grid-cols-[60px_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 text-xs font-semibold text-green-700 uppercase tracking-wider">
                         <div>#</div>
                         <div>Booking Details</div>
                         <div>User Detail</div>
@@ -88,7 +88,7 @@ const BookingsListView = ({
                 <div className="divide-y divide-green-100/50">
                     {bookings.map((booking, idx) => (
                         <div key={booking.id} className="px-6 py-4 hover:bg-white/70 transition-all duration-200 group">
-                            <div className="grid grid-cols-7 gap-4 items-center">
+                            <div className="grid grid-cols-[60px_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 items-center">
                                 {/* Numbering */}
                                 <div className="text-sm font-semibold text-gray-500">{idx + 1}</div>
                                 <div className="flex items-center gap-3">
