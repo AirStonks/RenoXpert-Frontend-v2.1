@@ -33,6 +33,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ owner }) => {
         setIsLoggingOut(true);
         setError(null);
         try {
+            window.$chatwoot.reset();
             await logoutOwner();
             navigate(LOCAL_PATH_PREFIX + 'login')
         } catch (error) {

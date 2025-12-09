@@ -1142,7 +1142,7 @@ function App() {
                                             <td className="px-4 py-3">
                                                 <span className="flex flex-col gap-1 items-center">
                                                     <span className='whitespace-nowrap'>{formatDate(progress.date_management.ch_date)}</span>
-                                                    {progress.status === 'handed-over' ?
+                                                    {progress.status === 'handed-over' || progress.status === 'successful-handover' || progress.status === 'onboarded' ?
                                                         <span className={`inline-flex space-x-2 text-sm font-bold rounded-full items-center text-center
                                                             ${calculateDateRange(progress.date_management.ch_date, progress.completed_at).type === 'Delayed'
                                                                 ? 'text-red-500'

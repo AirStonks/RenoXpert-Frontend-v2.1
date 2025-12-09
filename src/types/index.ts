@@ -20,6 +20,7 @@ declare global {
             }) => void;
             toggle: () => void;
             setCustomAttributes: (attributes: Record<string, string | number | boolean>) => void;
+            reset: () => void;
         };
         chatwootSettings: {
             hideMessageBubble: boolean;
