@@ -122,8 +122,12 @@ const BookingsListView = ({
                                             <Calendar className="h-3 w-3 text-green-600" />
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-xs font-medium text-gray-600">{formatTime(booking.booked_at)}</span>
-                                            <span className="font-medium">{format(booking.booked_at)}</span>
+                                            <span className="text-xs font-medium text-gray-600">
+                                                {formatTime(booking.status === "paid" ? booking.booked_at : booking.created_at)}
+                                            </span>
+                                            <span className="font-medium">
+                                                {format(booking.status === "paid" ? booking.booked_at : booking.created_at)}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
