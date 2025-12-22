@@ -123,7 +123,7 @@ const OTPConfirmOrder: React.FC = () => {
 
         try {
             const requestBody = {
-                country_code: state.countryCode,
+                country_code: state.conutry_code,
                 mobile: state.mobile,
                 otp_code: code
             };
