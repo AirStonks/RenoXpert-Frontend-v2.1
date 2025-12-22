@@ -44,6 +44,7 @@ const BookingsListView = ({
 }) => {
     const currency = (v: number) => new Intl.NumberFormat("en-MY", { style: "currency", currency: "MYR", minimumFractionDigits: 2 }).format(v || 0)
     const format = (d?: string) => (d ? new Date(d).toLocaleDateString("en-MY", { year: "numeric", month: "short", day: "numeric" }) : "-")
+    const formatTime = (d?: string) => (d ? new Date(d).toLocaleTimeString("en-MY", { hour: "2-digit", minute: "2-digit", hour12: true }) : "-")
     const statusClass = (status?: string) => {
         switch (status) {
             case "pending":
@@ -116,11 +117,18 @@ const BookingsListView = ({
                                     </div>
                                 </div>
                                 <div>
-                                    <div className="flex items-center gap-2 text-sm text-gray-900">
-                                        <div className="p-1 bg-green-100 rounded-lg">
+                                    <div className="flex items-start gap-2 text-sm text-gray-900">
+                                        <div className="p-1 bg-green-100 rounded-lg mt-0.5">
                                             <Calendar className="h-3 w-3 text-green-600" />
                                         </div>
-                                        <span className="font-medium">{format(booking.booked_at)}</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-medium text-gray-600">
+                                                {formatTime(booking.status === "paid" ? booking.booked_at : booking.created_at)}
+                                            </span>
+                                            <span className="font-medium">
+                                                {format(booking.status === "paid" ? booking.booked_at : booking.created_at)}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div>
