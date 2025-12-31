@@ -2114,28 +2114,26 @@ function OrderOverview() {
                                 {/* Checkboxes */}
                                 {orderDetail.status !== "confirmed" && (
                                     <div className="flex flex-col gap-4 mt-6">
-                                        {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl ? <></> : (
-                                            <label className="flex items-center gap-2">
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox"
-                                                    name="agree_tnc"
-                                                    checked={agreeTnc || orderDetail.status === "confirmed"}
-                                                    onChange={handleAgreeTncChange}
-                                                    disabled={orderDetail.status === "confirmed"}
-                                                />
-                                                <span className="text-xs">
-                                                    I have read and accept the{" "}
-                                                    <a
-                                                        href="#"
-                                                        className="text-blue-500 hover:underline"
-                                                        onClick={() => setActiveTab("tab_1_2")}
-                                                    >
-                                                        Terms and Conditions
-                                                    </a>
-                                                </span>
-                                            </label>
-                                        )}
+                                        <label className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                name="agree_tnc"
+                                                checked={agreeTnc || orderDetail.status === "confirmed"}
+                                                onChange={handleAgreeTncChange}
+                                                disabled={orderDetail.status === "confirmed"}
+                                            />
+                                            <span className="text-xs">
+                                                I have read and accept the{" "}
+                                                <a
+                                                    href="#"
+                                                    className="text-blue-500 hover:underline"
+                                                    onClick={() => setActiveTab("tab_1_2")}
+                                                >
+                                                    Terms and Conditions
+                                                </a>
+                                            </span>
+                                        </label>
                                         <label className="flex items-center gap-2">
                                             <input
                                                 type="checkbox"
@@ -2438,7 +2436,7 @@ function OrderOverview() {
                         </div>
 
                         {/* T&C Tab */}
-                        {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl ? <></> : 
+                        {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl ? <></> :
                             <div className={activeTab === "tab_1_2" ? "block" : "hidden"} id="tab_1_2">
                                 <div className="prose max-w-none p-4 text-xs">{tnc}</div>
                             </div>
@@ -2549,7 +2547,7 @@ function OrderOverview() {
                                     </div>
                                 }
 
-                                {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl ? <></> : 
+                                {!orderDetail.is_progressive_payment && !orderDetail.is_be_powered && !orderDetail.is_rnpl ? <></> :
                                     <div className="flex flex-col space-y-1">
                                         <div className="flex justify-between items-center">
                                             <span className="text-sm font-semibold text-gray-800">Balance Payment: </span>
