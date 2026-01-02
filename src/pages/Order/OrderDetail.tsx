@@ -157,7 +157,28 @@ function OrderDetail() {
                 { total_price: 0, cogs: 0 }
             ) || { total_price: pkg.total_price || 0, cogs: 0 };
 
-            const categoryTotalPrice = (orderDetail.is_be_powered || orderDetail.is_rnpl) ? (pkg.markup_amount * (pkg.quantity || 1)) : (categoryData.total_price * (pkg.quantity || 1));
+            const calculatedTotal =
+                pkg.products?.reduce((total, product) => {
+                    let supplyPrice = 0
+                    if (product.pivot.includeSupply) {
+                        supplyPrice = product.provisioning.supply.retail_price * product.pivot.quantity || 0
+                    } else {
+                        supplyPrice = product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price || 0
+                    }
+
+                    let installPrice = 0
+                    if (product.pivot.includeInstall) {
+                        installPrice = product.provisioning.install.retail_price * product.pivot.quantity || 0
+                    } else {
+                        installPrice =
+                            product.provisioning.install.retail_price - product.provisioning.install.excluded_price || 0
+                    }
+
+                    return total + supplyPrice + installPrice
+                }, 0) * (pkg.quantity || 1)
+
+            // const categoryTotalPrice = (orderDetail.is_be_powered || orderDetail.is_rnpl) ? (pkg.markup_amount * (pkg.quantity || 1)) : (categoryData.total_price * (pkg.quantity || 1));
+            const categoryTotalPrice = (orderDetail.is_rnpl) ? (pkg.markup_amount * (pkg.quantity || 1)) : calculatedTotal
             const categoryCogs = categoryData.cogs * (pkg.quantity || 1);
 
             if (!acc[category]) {

@@ -1415,16 +1415,18 @@ const OrderPreviewModal = ({
                                                     </p>
                                                 ))}
                                             </div>
-                                            <div className="flex justify-between items-center mt-2">
-                                                <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                <p className="text-md text-teal-600 font-bold">
-                                                    RM{" "}
-                                                    {Number(selectedQuotation.bonus?.value).toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </p>
-                                            </div>
+                                            {Number(selectedQuotation.bonus?.value) !== 0 && (
+                                                <div className="flex justify-between items-center mt-2">
+                                                    <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
+                                                    <p className="text-md text-teal-600 font-bold">
+                                                        RM{" "}
+                                                        {Number(selectedQuotation.bonus?.value).toLocaleString(undefined, {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 
@@ -1738,16 +1740,18 @@ const OrderPreviewModal = ({
                                                     </p>
                                                 ))}
                                             </div>
-                                            <div className="flex justify-between items-center mt-2">
-                                                <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                <p className="text-md text-teal-600 font-bold">
-                                                    RM{" "}
-                                                    {(Number(orderDetail?.latest_quotation?.bonus?.value) || 0).toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </p>
-                                            </div>
+                                            {Number(selectedQuotation.bonus?.value) !== 0 && (
+                                                <div className="flex justify-between items-center mt-2">
+                                                    <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
+                                                    <p className="text-md text-teal-600 font-bold">
+                                                        RM{" "}
+                                                        {(Number(orderDetail?.latest_quotation?.bonus?.value) || 0).toLocaleString(undefined, {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 
