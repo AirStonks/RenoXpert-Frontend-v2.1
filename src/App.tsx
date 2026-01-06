@@ -72,6 +72,10 @@ import PreviousOrderDetail from './pages/Order/PreviousOrderDetail';
 import POMain from './pages/PO/POMain';
 import AddUser from './pages/User/AddUser';
 import InventoryMain from './pages/Inventory/InventoryMain';
+import InventoryDetail from './pages/Inventory/InventoryDetail';
+import CreateInventory from './pages/Inventory/CreateInventory';
+import EditInventory from './pages/Inventory/EditInventory';
+import VariantDetail from './pages/Inventory/VariantDetail';
 import PODetail from './pages/PO/PODetail';
 // import POFulfillment from './pages/PO/POFulfillment';
 import RenoProgressDetail from './pages/OwnerPages/RenoProgressDetail';
@@ -227,6 +231,10 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/users/add', element: <AddUser />, layout: ProtectedLayout },
         { path: '/users/add/owner', element: <AddOwner />, layout: ProtectedLayout },
         { path: '/inventory', element: <InventoryMain />, layout: ProtectedLayout },
+        { path: '/inventory/create', element: <CreateInventory />, layout: ProtectedLayout },
+        { path: '/inventory/:id', element: <InventoryDetail />, layout: ProtectedLayout },
+        { path: '/inventory/:inventoryId/variant/:variantId', element: <VariantDetail />, layout: ProtectedLayout },
+        { path: '/inventory/edit/:id', element: <EditInventory />, layout: ProtectedLayout },
         { path: '/finance/sales-order-po', element: <SalesOrderPO />, layout: ProtectedLayout },
         { path: '/otp-requests', element: <OTPRequestList />, layout: ProtectedLayout },
         { path: '/developer-tools', element: <DeveloperTool />, layout: ProtectedLayout },
@@ -373,6 +381,10 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff/users/add', element: <AddUser />, layout: ProtectedLayout },
         { path: '/staff/users/add/owner', element: <AddOwner />, layout: ProtectedLayout },
         { path: '/staff/inventory', element: <InventoryMain />, layout: ProtectedLayout },
+        { path: '/staff/inventory/create', element: <CreateInventory />, layout: ProtectedLayout },
+        { path: '/staff/inventory/:id', element: <InventoryDetail />, layout: ProtectedLayout },
+        { path: '/staff/inventory/:inventoryId/variant/:variantId', element: <VariantDetail />, layout: ProtectedLayout },
+        { path: '/staff/inventory/edit/:id', element: <EditInventory />, layout: ProtectedLayout },
         { path: '/staff/finance/sales-order-po', element: <SalesOrderPO />, layout: ProtectedLayout },
         { path: '/staff/otp-requests', element: <OTPRequestList />, layout: ProtectedLayout },
         { path: '/staff/developer-tools', element: <DeveloperTool />, layout: ProtectedLayout },

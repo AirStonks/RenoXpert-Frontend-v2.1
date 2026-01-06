@@ -44,8 +44,20 @@ const Login: React.FC = () => {
             if (userData) {
                 navigate(LOCAL_PATH_PREFIX + 'dashboard');
             }
-        } catch (err) {
-            setError('Invalid login credentials. Please try again.');
+        } catch (err: any) {
+            console.error('Login error details:', err);
+            // Show more specific error messages
+            if (err.response?.status === 401) {
+                setError('Invalid login credentials. Please check your email and password.');
+            } else if (err.response?.status === 422) {
+                const errors = err.response.data?.data || {};
+                const errorMessages = Object.values(errors).flat();
+                setError(errorMessages.length > 0 ? errorMessages[0] as string : 'Validation error. Please check your input.');
+            } else if (err.response?.data?.message) {
+                setError(err.response.data.message);
+            } else {
+                setError('Login failed. Please try again.');
+            }
         } finally {
             setLoading(false);
         }

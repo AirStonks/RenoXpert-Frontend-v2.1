@@ -4,32 +4,29 @@ import { AxiosError } from 'axios';
 
 export const handle401Error = (error: AxiosError): void => {
     if (error.response && error.response.status === 401) {
-        // Redirect to login page if error status is 401
-        window.location.href = window.location.hostname === 'localhost' ? '/staff/' : '/' + 'login';
+        window.location.href = window.location.hostname === 'localhost' ? '/staff/login' : '/login';
     } else {
         console.error('Error:', error);
-        throw error; // Rethrow the error for further handling
+        throw error;
     }
 };
 
 export const handleOwner401Error = (error: AxiosError): void => {
     if (error.response && error.response.status === 401) {
-        // Redirect to login page if error status is 401
         window.location.href = (window.location.hostname === 'localhost' ? '/owner/' : '/') + 'login';
     } else if (error.code === 'ERR_CANCELED') {
-        // Do nothing
+        return;
     } else {
         console.error('Error:', error);
-        throw error; // Rethrow the error for further handling
+        throw error;
     }
 };
 
 export const handleOperation401Error = (error: AxiosError): void => {
     if (error.response && error.response.status === 401) {
-        // Redirect to login page if error status is 401
-        window.location.href = window.location.hostname === 'localhost' ? '/op/' : '/' + 'login';
+        window.location.href = window.location.hostname === 'localhost' ? '/op/login' : '/login';
     } else {
         console.error('Error:', error);
-        throw error; // Rethrow the error for further handling
+        throw error;
     }
 };
