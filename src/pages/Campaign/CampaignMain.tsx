@@ -299,7 +299,6 @@ export default function CampaignMain() {
                                         <td className="px-6 py-4">
                                             <div>
                                                 <p className="font-medium text-gray-900">{campaign.title || 'Untitled Campaign'}</p>
-                                                <p className="text-sm text-gray-600">{campaign.description || 'No description'}</p>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">

@@ -248,7 +248,7 @@ export const submitRegistrationForm = async (formData: any) => {
     try {
         const response = await axios.post(API_URL + `owner/quotation-request-form/overview/submit`, formData, {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('o_token')}`,
+                'Authorization': `Bearer ${localStorage.getItem('p_token')}`,
                 'Content-Type': 'multipart/form-data',
             }
         });
@@ -430,7 +430,7 @@ export const uploadRPMInternalAttachment = async (rpmTaskId: number, files: File
             formData,
             {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${localStorage.getItem('p_token')}`,
                     'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
                 }
             }
@@ -460,7 +460,7 @@ export const uploadRPMExternalAttachment = async (rpmTaskId: number, files: File
             formData,
             {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${localStorage.getItem('p_token')}`,
                     'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
                 }
             }
@@ -539,7 +539,7 @@ export const uploadRPMTaskQcAttachment = async (rpmTaskQcId: number, files: File
             formData,
             {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${localStorage.getItem('p_token')}`,
                     'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
                 }
             }

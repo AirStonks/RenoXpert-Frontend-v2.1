@@ -61,25 +61,21 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
                                 email: "test@test.com"
                             };
 
-                            const identifierHash = await generateHmac(userData.uuid, import.meta.env.VITE_WEBWIDGET_HMAC_TOKEN);
+                            const phoneNumber = `+${userData.country_code}${userData.phone_no}`;
+                            const identifierHash = await generateHmac(phoneNumber, import.meta.env.VITE_WEBWIDGET_HMAC_TOKEN);
 
                             // Set chatwoot user
                             window.$chatwoot.setUser(userData.uuid || "testing-user-uuid", {
                                 name: userData.name || "Test User",
                                 email: userData.email || "test@test.com",
-                                uuid: userData.uuid || "",
-                                phone_number: "+" + userData.country_code + userData.phone_no || "",
+                                phone_number: phoneNumber || "",
                                 avatar_url: "",
                                 identifier_hash: identifierHash
                             });
 
                             // Set custom attributes for better user identification
                             window.$chatwoot.setCustomAttributes({
-                                user_id: userData.id,
-                                user_uuid: userData.uuid || "",
-                                user_type: userData.type || "owner",
-                                country_code: userData.country_code || "",
-                                created_at: userData.created_at || "",
+                                reno_uuid: userData.uuid || "",
                             });
 
                             // Additional safety measure: hide any existing chat bubbles

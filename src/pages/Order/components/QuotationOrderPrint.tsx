@@ -911,14 +911,21 @@ const QuotationOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                         
                         <View style={{ marginBottom: 6 }}>
                             <Text style={styles.tncText}>
-                                <Text style={{ fontWeight: 'bold' }}>3.B8 Retention of Title</Text>{'\n'}
+                                <Text style={{ fontWeight: 'bold' }}>3.B8 Payment Methods and Administrative Fee</Text>{'\n'}
+                                Payments may be made via bank transfer, FPX, or credit/debit card. A two percent (2%) administrative fee applies for credit/debit card transactions for one-off payments, and all bank, gateway, or financing charges (including Easy Payment Plan or similar schemes) shall be borne solely by the Owner. The Company shall not be liable for any delays, failures, or additional charges arising from third-party payment platforms or financial institutions. The Company reserves the right to suspend or withhold further works, services, or deliveries in the event of delayed, failed, or reversed payments until such issues are fully resolved to the Company's satisfaction.
+                            </Text>
+                        </View>
+                        
+                        <View style={{ marginBottom: 6 }}>
+                            <Text style={styles.tncText}>
+                                <Text style={{ fontWeight: 'bold' }}>3.B9 Retention of Title</Text>{'\n'}
                                 All furniture, fixtures, and installations supplied under this arrangement shall remain the sole and exclusive property of Company until the full Deferred Balance is received and settled. In the event of default or non-payment, Company reserves the right, without prior notice and without incurring any liability, to remove such items from the premises or to pursue recovery of their equivalent monetary value through legal means. The Owner expressly agrees to grant Company or its authorised representatives access to the premises, if necessary, to exercise its rights under this clause.
                             </Text>
                         </View>
                         
                         <View style={{ marginBottom: 12 }}>
                             <Text style={styles.tncText}>
-                                <Text style={{ fontWeight: 'bold' }}>3.B9 Performance Disclaimer</Text>{'\n'}
+                                <Text style={{ fontWeight: 'bold' }}>3.B10 Performance Disclaimer</Text>{'\n'}
                                 Company shall exercise its best commercial efforts to secure tenancy and optimize rental returns for the Property; however, the Owner acknowledges and accepts that occupancy rates and rental yields are subject to market forces, seasonal demand, and other external factors beyond Company's control. Accordingly, Company shall not be held liable for any periods of vacancy, rental fluctuations, or shortfalls in expected returns.
                             </Text>
                         </View>
@@ -1017,7 +1024,14 @@ const QuotationOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                         
                         <View style={{ marginBottom: 6 }}>
                             <Text style={styles.tncText}>
-                                <Text style={{ fontWeight: 'bold' }}>3.C12 Non-Refundability and Termination</Text>{'\n'}
+                                <Text style={{ fontWeight: 'bold' }}>3.C12 Payment Methods and Administrative Fee</Text>{'\n'}
+                                Payments may be made via bank transfer, FPX, or credit/debit card. A two percent (2%) administrative fee applies for credit/debit card transactions for one-off payments, and all bank, gateway, or financing charges (including Easy Payment Plan or similar schemes) shall be borne solely by the Owner. The Company shall not be liable for any delays, failures, or additional charges arising from third-party payment platforms or financial institutions. The Company reserves the right to suspend or withhold further works, services, or deliveries in the event of delayed, failed, or reversed payments until such issues are fully resolved to the Company's satisfaction.
+                            </Text>
+                        </View>
+                        
+                        <View style={{ marginBottom: 6 }}>
+                            <Text style={styles.tncText}>
+                                <Text style={{ fontWeight: 'bold' }}>3.C13 Non-Refundability and Termination</Text>{'\n'}
                                 (a) All payments made under this quotation are strictly non-refundable and deemed earned for services rendered or work completed.{'\n'}
                                 (b) Should the Owner terminate the collaboration or transfer management before the expiry of the 60-month Subscription tenure, all remaining unpaid Subscription Payments shall become immediately due in full.{'\n'}
                                 (c) Company shall have no obligation to refund or offset any prior payments made.
@@ -1026,7 +1040,7 @@ const QuotationOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                         
                         <View style={{ marginBottom: 12 }}>
                             <Text style={styles.tncText}>
-                                <Text style={{ fontWeight: 'bold' }}>3.C13 Performance Disclaimer</Text>{'\n'}
+                                <Text style={{ fontWeight: 'bold' }}>3.C14 Performance Disclaimer</Text>{'\n'}
                                 Company shall exercise its best commercial efforts to optimise rental performance and maintain occupancy of the Property; however, the Owner acknowledges that Subscription Payments are independent of rental income or tenant occupancy, and shall remain payable in full regardless of any vacancy, rental fluctuations, or tenant defaults.
                             </Text>
                         </View>

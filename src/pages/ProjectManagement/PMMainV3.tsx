@@ -37,6 +37,16 @@ const statusColors = {
     'On Track': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
     'Completed': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
     'Handed Over': 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
+    'Pre-Purchase': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+    'Pending VP': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+    'Under Defect': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+    'P1': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+    'P2A': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    'P2B': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+    'Scheduled Handover': 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
+    'Successful Handover': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    'Onboarding': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+    'Onboarded': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
 };
 
 const permitStatusColors = {
@@ -370,6 +380,16 @@ function App() {
         // if (progress.status === 'delayed') return 'Delayed';
         if (progress.status === 'completed') return 'Completed';
         if (progress.status === 'handed-over') return 'Handed Over';
+        if (progress.status === 'pre-purchase') return 'Pre-Purchase';
+        if (progress.status === 'pending-vp') return 'Pending VP';
+        if (progress.status === 'under-defect') return 'Under Defect';
+        if (progress.status === 'p1') return 'P1';
+        if (progress.status === 'p2a') return 'P2A';
+        if (progress.status === 'p2b') return 'P2B';
+        if (progress.status === 'scheduled-handover') return 'Scheduled Handover';
+        if (progress.status === 'successful-handover') return 'Successful Handover';
+        if (progress.status === 'onboarding') return 'Onboarding';
+        if (progress.status === 'onboarded') return 'Onboarded';
     };
 
     const formatDate = (date: string | null) =>
@@ -493,7 +513,7 @@ function App() {
                     <div className="flex gap-4">
                         <h1 className="text-2xl font-bold text-gray-800">Project Dashboard</h1>
                         <div className="flex items-center gap-2">
-                            <Link 
+                            <Link
                                 to={`${LOCAL_PATH_PREFIX}reno-progress/kanban`}
                                 className="btn btn-sm btn-primary"
                             >
@@ -1142,7 +1162,7 @@ function App() {
                                             <td className="px-4 py-3">
                                                 <span className="flex flex-col gap-1 items-center">
                                                     <span className='whitespace-nowrap'>{formatDate(progress.date_management.ch_date)}</span>
-                                                    {progress.status === 'handed-over' ?
+                                                    {(progress.status === 'handed-over' || progress.status === 'successful-handover' || progress.status === 'onboarded') && progress.completed_at !== null ?
                                                         <span className={`inline-flex space-x-2 text-sm font-bold rounded-full items-center text-center
                                                             ${calculateDateRange(progress.date_management.ch_date, progress.completed_at).type === 'Delayed'
                                                                 ? 'text-red-500'
@@ -1162,7 +1182,7 @@ function App() {
                                             <td className="px-4 py-3">
                                                 <span className="flex flex-col gap-1 items-center">
                                                     <span className='whitespace-nowrap'>{formatDate(progress.date_management.oh_date)}</span>
-                                                    {progress.status === 'handed-over' ?
+                                                    {(progress.status === 'handed-over' || progress.status === 'successful-handover' || progress.status === 'onboarded') && progress.completed_at !== null ?
                                                         <span className={`inline-flex space-x-2 text-sm font-bold rounded-full items-center text-center
                                                             ${calculateDateRange(progress.date_management.oh_date, progress.completed_at).type === 'Delayed'
                                                                 ? 'text-red-500'
