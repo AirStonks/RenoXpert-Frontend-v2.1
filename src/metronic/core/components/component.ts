@@ -37,6 +37,9 @@ export default class KTComponent {
   }
 
   protected _fireEvent(eventType: string, payload: object = null): void {
+    if (!this._events) {
+      this._events = new Map();
+    }
     this._events.get(eventType)?.forEach((callable) => {
       callable(payload);
     });

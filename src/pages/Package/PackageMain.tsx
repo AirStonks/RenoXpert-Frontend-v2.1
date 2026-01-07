@@ -138,10 +138,23 @@ function PackageMain() {
             let data = response?.data || [];
             setPackages(data);
             setTotalItems(response?.totalCount || 0);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching packages:', error);
-            setError('Failed to load packages');
-            notify('error', 'Failed to load packages');
+            // Show more specific error messages
+            if (error.response?.status === 401) {
+                setError('Authentication required. Please login again.');
+                notify('error', 'Session expired. Please login again.');
+            } else if (error.response?.status === 500) {
+                setError('Server error. Please check backend logs or contact support.');
+                notify('error', 'Server error occurred. Please try again later.');
+                console.error('Backend 500 error details:', error.response?.data);
+            } else if (error.response?.status) {
+                setError(`Error ${error.response.status}: ${error.response.data?.message || 'Failed to load packages'}`);
+                notify('error', error.response.data?.message || 'Failed to load packages');
+            } else {
+                setError('Failed to load packages. Please check your connection.');
+                notify('error', 'Failed to load packages');
+            }
         } finally {
             setIsLoading(false);
         }

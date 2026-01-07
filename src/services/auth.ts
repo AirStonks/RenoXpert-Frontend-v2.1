@@ -18,8 +18,15 @@ export const userLogin = async (email: string, password: string) => {
       localStorage.setItem('token', response.data.data.token); // Store the token
       return response.data.data;
     }
-  } catch (error) {
+    // If success is false, throw error
+    throw new Error(response.data.message || 'Login failed');
+  } catch (error: any) {
     console.error('Login error', error);
+    // Log more details for debugging
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', error.response.data);
+    }
     throw error;
   }
 };

@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
-import { ApiKey, ApiKeyCreateRequest, ApiKeyUpdateRequest, DiscountFee, Invoice, KeyManagement, Order, QuotationRequestForm, Package, Payment, PMCategory, Product, Property, PurchaseOrder, QCForm, Quotation, Sale, User } from '../types';
+import { ApiKey, ApiKeyCreateRequest, ApiKeyUpdateRequest, DiscountFee, Invoice, Inventory, InventoryVariant, KeyManagement, Order, QuotationRequestForm, Package, Payment, PMCategory, Product, Property, PurchaseOrder, QCForm, Quotation, Sale, User } from '../types';
 
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -2675,16 +2675,66 @@ export const createPOInvoice = async (poData: PurchaseOrder) => {
     }
 }
 
-export const inventoryIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+export const inventoryIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, filters: FilterParams = {}) => {
     try {
+        const params: any = {
+            size: size,
+            page: page,
+            search: searchTerm,
+            sortOrder: order,
+            sortField: field
+        };
+
+        if (Object.keys(filters).length > 0) {
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== undefined && value !== '') {
+                    params[`filter[${key}]`] = value;
+                }
+            });
+        }
+
+        // Debug logging
+        console.log('Inventory API Request:', {
+            url: API_URL + 'inventory',
+            params: params,
+            filters: filters
+        });
+
         const response = await axios.get(API_URL + 'inventory', {
             headers: getAuthHeaders(),
-            params: {
-                size: size,
-                page: page,
-                search: searchTerm,
-                sortOrder: order,
-                sortField: field
+            params: params
+        });
+        
+        // Debug logging
+        console.log('Inventory API Response:', {
+            totalCount: response.data?.totalCount,
+            dataCount: response.data?.data?.length,
+            sampleStatuses: response.data?.data?.slice(0, 5).map((item: any) => item.status)
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const fetchInventory = async (inventoryId: number) => {
+    try {
+        const response = await axios.get(API_URL + `inventory/${inventoryId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return inventory data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const createInventory = async (inventoryData: Inventory) => {
+    try {
+        const response = await axios.post(API_URL + 'inventory', inventoryData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
             }
         });
         return response.data;
@@ -2692,6 +2742,118 @@ export const inventoryIndex = async (size: number = 5, page: number = 1, searchT
         handle401Error(error as AxiosError);
     }
 };
+
+export const updateInventory = async (inventoryData: Inventory) => {
+    try {
+        const response = await axios.put(API_URL + `inventory/${inventoryData.id}`, inventoryData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const removeInventory = async (inventoryId: number) => {
+    try {
+        const response = await axios.delete(API_URL + `inventory/${inventoryId}`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const inventoryVariantIndex = async (size: number = 5, page: number = 1, searchTerm?: string, inventoryItemId?: number, signal?: AbortSignal) => {
+    try {
+        const params: any = {
+            size: size,
+            page: page,
+            search: searchTerm,
+        };
+
+        if (inventoryItemId !== undefined) {
+            params.inventory_item_id = inventoryItemId;
+        }
+
+        const response = await axios.get(API_URL + 'inventory-variants', {
+            headers: getAuthHeaders(),
+            signal,
+            params: params
+        });
+        return response.data;
+    } catch (error) {
+        if (error.code === 'ERR_CANCELED') {
+            console.log('Request canceled:', error.message);
+            return;
+        }
+
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const fetchInventoryVariant = async (variantId: number) => {
+    try {
+        const response = await axios.get(API_URL + `inventory-variants/${variantId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return variant data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const createInventoryVariant = async (variantData: InventoryVariant) => {
+    try {
+        const response = await axios.post(API_URL + 'inventory-variants', variantData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const updateInventoryVariant = async (variantData: InventoryVariant) => {
+    try {
+        const response = await axios.put(API_URL + `inventory-variants/${variantData.id}`, variantData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const removeInventoryVariant = async (variantId: number) => {
+    try {
+        const response = await axios.delete(API_URL + `inventory-variants/${variantId}`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
 
 export const otpRequestsIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
     try {
