@@ -1455,6 +1455,7 @@ export interface InventoryVariant {
     product_sku?: string,
     variant_name?: string,
     sku?: string,
+    type?: string,
     description?: string,
     in_stock?: number,
     projected_stock?: number,
