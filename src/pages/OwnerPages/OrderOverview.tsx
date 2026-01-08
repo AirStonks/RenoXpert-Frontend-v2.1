@@ -293,15 +293,6 @@ function OrderOverview() {
         }
     }, [orderDetail])
 
-    const getCurrentDate = () => {
-        const date = new Date()
-        return date.toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-        })
-    }
-
     const formatDate = (dateStr: string) => {
         const [day, month, year] = dateStr.split("/")
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -404,30 +395,6 @@ function OrderOverview() {
             },
         })
     }
-
-    // Check if quotation has BePowered packages
-    const hasBePoweredPackages = () => {
-        if (!orderDetail?.latest_quotation?.metadata) return false
-        const packages: Package[] = JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata)))
-        return packages.some((pkg) => pkg.is_be_powered === true)
-    }
-
-    // Get BePowered packages
-    const getBePoweredPackages = () => {
-        if (!orderDetail?.latest_quotation?.metadata) return []
-        const packages: Package[] = JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata)))
-        return packages.filter((pkg) => pkg.is_be_powered === true)
-    }
-
-    const getTotalMarkupAmount = () => {
-        return packages.reduce((sum, pkg) => {
-            if (pkg.is_addon === true && pkg.is_addon_included === false) {
-                return sum;
-            }
-            return sum + ((pkg.markup_amount || 0) * (pkg.quantity || 1));
-        }, 0)
-    }
-
 
     if (loading) return <Loading />
     if (error)
@@ -795,26 +762,6 @@ function OrderOverview() {
         </div>
     )
 
-    const address = orderDetail.user
-        ? [
-            orderDetail.user.address.address_1,
-            orderDetail.user.address.street,
-            orderDetail.user.address.postcode,
-            orderDetail.user.address.city,
-            orderDetail.user.address.state,
-        ]
-            .filter(Boolean)
-            .join(", ")
-        : null
-
-    const propertyAddress = [
-        orderDetail.property.address,
-        orderDetail.property.street,
-        orderDetail.property.postcode,
-        orderDetail.property.city,
-        orderDetail.property.state,
-    ].filter((part) => part !== null && part !== "")
-
     const bonus = JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.bonus)))
     const packages: Package[] = JSON.parse(
         JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata)),
@@ -828,15 +775,11 @@ function OrderOverview() {
             : 0)
         , orderDetail.be_powered_base_price);
 
-    const monthlySum = packages.reduce((acc, pkg) => acc + (
-        orderDetail.is_be_powered &&
-            pkg.payment_method !== 'one-off' &&
-            (pkg.is_addon ? pkg.is_addon_included === true : true)
-            ? pkg.monthly_amount * (pkg.quantity || 1)
-            : 0)
-        , 0);
-
     const bonusValue = Number(bonus?.value) || 0
+    const shouldHidePackageCategories =
+        selectedProgram === "bePowered" &&
+        Boolean(orderDetail.is_be_powered) &&
+        orderDetail.installment_method === "fixed"
     const overrideTotalQuotationAmount = getRenoSubscriptionFixedOverrideNettAmount({
         isRenoSubscription: selectedProgram === "bePowered" && Boolean(orderDetail.is_be_powered),
         installmentMethod: orderDetail.installment_method,
@@ -1297,20 +1240,22 @@ function OrderOverview() {
                                                             }`}
                                                     >
                                                         <div className="mt-2 space-y-4">
-                                                            <div className="flex flex-col space-y-2">
-                                                                {packageCategories.map((category, index) => (
-                                                                    <div key={index} className="flex justify-between">
-                                                                        <span className="text-xs text-gray-600">Total {category.category}</span>
-                                                                        <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                                            RM{" "}
-                                                                            {category.total_price.toLocaleString(undefined, {
-                                                                                minimumFractionDigits: 2,
-                                                                                maximumFractionDigits: 2,
-                                                                            })}
-                                                                        </span>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
+                                                            {!shouldHidePackageCategories && (
+                                                                <div className="flex flex-col space-y-2">
+                                                                    {packageCategories.map((category, index) => (
+                                                                        <div key={index} className="flex justify-between">
+                                                                            <span className="text-xs text-gray-600">Total {category.category}</span>
+                                                                            <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
+                                                                                RM{" "}
+                                                                                {category.total_price.toLocaleString(undefined, {
+                                                                                    minimumFractionDigits: 2,
+                                                                                    maximumFractionDigits: 2,
+                                                                                })}
+                                                                            </span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            )}
 
                                                             {bonus && (
                                                                 <div className="">
@@ -1623,20 +1568,22 @@ function OrderOverview() {
                                                             }`}
                                                     >
                                                         <div className="mt-2 space-y-4">
-                                                            <div className="flex flex-col space-y-2">
-                                                                {packageCategories.map((category, index) => (
-                                                                    <div key={index} className="flex justify-between">
-                                                                        <span className="text-xs text-gray-600">Total {category.category}</span>
-                                                                        <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                                            RM{" "}
-                                                                            {category.total_price.toLocaleString(undefined, {
-                                                                                minimumFractionDigits: 2,
-                                                                                maximumFractionDigits: 2,
-                                                                            })}
-                                                                        </span>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
+                                                            {!shouldHidePackageCategories && (
+                                                                <div className="flex flex-col space-y-2">
+                                                                    {packageCategories.map((category, index) => (
+                                                                        <div key={index} className="flex justify-between">
+                                                                            <span className="text-xs text-gray-600">Total {category.category}</span>
+                                                                            <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
+                                                                                RM{" "}
+                                                                                {category.total_price.toLocaleString(undefined, {
+                                                                                    minimumFractionDigits: 2,
+                                                                                    maximumFractionDigits: 2,
+                                                                                })}
+                                                                            </span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            )}
 
                                                             {bonus && (
                                                                 <div className="">
@@ -2471,20 +2418,22 @@ function OrderOverview() {
                                 }`}
                         >
                             <div className="mt-2 space-y-4">
-                                <div className="flex flex-col space-y-2">
-                                    {packageCategories.map((category, index) => (
-                                        <div key={index} className="flex justify-between">
-                                            <span className="text-xs text-gray-600">Total {category.category}</span>
-                                            <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                RM{" "}
-                                                {category.total_price.toLocaleString(undefined, {
-                                                    minimumFractionDigits: 2,
-                                                    maximumFractionDigits: 2,
-                                                })}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
+                                {!shouldHidePackageCategories && (
+                                    <div className="flex flex-col space-y-2">
+                                        {packageCategories.map((category, index) => (
+                                            <div key={index} className="flex justify-between">
+                                                <span className="text-xs text-gray-600">Total {category.category}</span>
+                                                <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
+                                                    RM{" "}
+                                                    {category.total_price.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
 
                                 {bonus && (
                                     <div className="">
@@ -2793,20 +2742,22 @@ function OrderOverview() {
                                 }`}
                         >
                             <div className="mt-2 space-y-4">
-                                <div className="flex flex-col space-y-2">
-                                    {packageCategories.map((category, index) => (
-                                        <div key={index} className="flex justify-between">
-                                            <span className="text-xs text-gray-600">Total {category.category}</span>
-                                            <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                RM{" "}
-                                                {category.total_price.toLocaleString(undefined, {
-                                                    minimumFractionDigits: 2,
-                                                    maximumFractionDigits: 2,
-                                                })}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
+                                {!shouldHidePackageCategories && (
+                                    <div className="flex flex-col space-y-2">
+                                        {packageCategories.map((category, index) => (
+                                            <div key={index} className="flex justify-between">
+                                                <span className="text-xs text-gray-600">Total {category.category}</span>
+                                                <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
+                                                    RM{" "}
+                                                    {category.total_price.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
 
                                 {bonus && (
                                     <div className="">
