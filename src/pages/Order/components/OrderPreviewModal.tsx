@@ -4,6 +4,7 @@ import { Order, OrderQuotation, Package, Product } from '../../../types';
 import { AwardIcon, CreditCardIcon } from 'lucide-react';
 import { CalendarDateRangeIcon, InformationCircleIcon } from '@heroicons/react/24/solid';
 import KTComponent from '../../../metronic/core';
+import { getRenoSubscriptionFixedOverrideNettAmount } from '../../../utils/renoSubscription';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -19,12 +20,6 @@ interface OrderPreviewModalProps {
     formatDate: (dateStr: string) => string;
     totalExcludedAddonAmount: number;
 }
-
-const getCurrentDate = () => {
-    const date = new Date();
-    const options = { day: '2-digit', month: 'short', year: 'numeric' };
-    return date.toLocaleDateString('en-GB', options as Intl.DateTimeFormatOptions);
-};
 
 const convertToWords = (num: number) => {
     const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
@@ -46,7 +41,6 @@ const OrderPreviewModal = ({
     orderDetail,
     selectedQuotation,
     packageCategories,
-    formatDate,
     totalExcludedAddonAmount,
 }: OrderPreviewModalProps) => {
     const [activeTab, setActiveTab] = useState('tab_1_1');
@@ -117,11 +111,6 @@ const OrderPreviewModal = ({
         }));
     };
 
-    const handlePlanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedPlan = e.target.value
-        setSelectedPlan(selectedPlan)
-    }
-
     const handleAgreeTncChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setAgreeTnc(event.target.checked);
     };
@@ -135,26 +124,6 @@ const OrderPreviewModal = ({
             setSelectedPlan("60")
         }
     }
-
-    const address = orderDetail.user ? [
-        orderDetail.user.address.address_1,
-        orderDetail.user.address.street,
-        orderDetail.user.address.postcode,
-        orderDetail.user.address.city,
-        orderDetail.user.address.state,
-    ]
-        .filter(Boolean)
-        .join(', ')
-        :
-        null;
-
-    const propertyAddress = orderDetail.property ? [
-        orderDetail.property.address,
-        orderDetail.property.street,
-        orderDetail.property.postcode,
-        orderDetail.property.city,
-        orderDetail.property.state
-    ].filter(part => part !== null && part !== '') : null
 
     const tnc = (
         <div className="text-sm space-y-6">
@@ -518,13 +487,16 @@ const OrderPreviewModal = ({
             : 0)
         , orderDetail.be_powered_base_price);
 
-    const monthlySum = packages.reduce((acc, pkg) => acc + (
-        orderDetail.is_be_powered &&
-            pkg.payment_method !== 'one-off' &&
-            (pkg.is_addon ? pkg.is_addon_included === true : true)
-            ? pkg.monthly_amount * (pkg.quantity || 1)
-            : 0)
-        , 0);
+    const bonusValue = Number(selectedQuotation.bonus?.value) || 0;
+    const overrideTotalQuotationAmount = getRenoSubscriptionFixedOverrideNettAmount({
+        isRenoSubscription: selectedProgram === 'bePowered' && Boolean(orderDetail.is_be_powered),
+        installmentMethod: orderDetail.installment_method,
+        upfrontAmount,
+        installmentAmount: orderDetail.installment_amount,
+        tenure: orderDetail.tenure,
+        bonusValue,
+    });
+    const totalQuotationAmountForDisplay = overrideTotalQuotationAmount ?? (totalExcludedAddonAmount - bonusValue);
 
     const totalRenoNowPrice = packages.reduce((total, pkg) => {
         if (pkg.rnpl_method === 'reno-now' && (pkg.is_addon === true && pkg.is_addon_included === true)) {
@@ -1434,7 +1406,7 @@ const OrderPreviewModal = ({
 
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-semibold text-gray-800">Total Quotation Amount: </span>
-                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, {
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalQuotationAmountForDisplay.toLocaleString(undefined, {
                                             minimumFractionDigits: 0,
                                             maximumFractionDigits: 2,
                                         })}</span>
@@ -1759,7 +1731,7 @@ const OrderPreviewModal = ({
 
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-semibold text-gray-800">Total Quotation Amount: </span>
-                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, {
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalQuotationAmountForDisplay.toLocaleString(undefined, {
                                             minimumFractionDigits: 0,
                                             maximumFractionDigits: 2,
                                         })}</span>

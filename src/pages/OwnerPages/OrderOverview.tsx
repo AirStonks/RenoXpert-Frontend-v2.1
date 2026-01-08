@@ -19,6 +19,7 @@ import { ROIProgramModal } from "./components/Modals/ROIProjectModal"
 import { AnimatePresence, motion } from "framer-motion"
 import { getWithExpiry, setWithExpiry } from "../../utils/storage"
 import { AwardIcon } from "lucide-react"
+import { getRenoSubscriptionFixedOverrideNettAmount } from "../../utils/renoSubscription"
 
 const LOCAL_PATH_PREFIX = import.meta.env.VITE_APP_ENV === "local" ? "/owner/" : "/"
 
@@ -835,6 +836,17 @@ function OrderOverview() {
             : 0)
         , 0);
 
+    const bonusValue = Number(bonus?.value) || 0
+    const overrideTotalQuotationAmount = getRenoSubscriptionFixedOverrideNettAmount({
+        isRenoSubscription: selectedProgram === "bePowered" && Boolean(orderDetail.is_be_powered),
+        installmentMethod: orderDetail.installment_method,
+        upfrontAmount,
+        installmentAmount: orderDetail.installment_amount,
+        tenure: orderDetail.tenure,
+        bonusValue,
+    })
+    const totalQuotationAmountForDisplay = overrideTotalQuotationAmount ?? (totalExcludedAddonAmount - bonusValue)
+
 
     const isButtonDisabled = !(agreeTnc && agreePartitionRisk)
 
@@ -1329,7 +1341,7 @@ function OrderOverview() {
 
                                                             <div className="flex justify-between items-center">
                                                                 <span className="text-sm font-semibold text-gray-800">Total Quotation Amount: </span>
-                                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(bonus?.value) || 0)).toLocaleString(undefined, {
+                                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalQuotationAmountForDisplay.toLocaleString(undefined, {
                                                                     minimumFractionDigits: 0,
                                                                     maximumFractionDigits: 2,
                                                                 })}</span>
@@ -1655,7 +1667,7 @@ function OrderOverview() {
 
                                                             <div className="flex justify-between items-center">
                                                                 <span className="text-sm font-semibold text-gray-800">Total Quotation Amount: </span>
-                                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(bonus?.value) || 0)).toLocaleString(undefined, {
+                                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalQuotationAmountForDisplay.toLocaleString(undefined, {
                                                                     minimumFractionDigits: 0,
                                                                     maximumFractionDigits: 2,
                                                                 })}</span>
@@ -2503,7 +2515,7 @@ function OrderOverview() {
 
                                 <div className="flex justify-between items-center">
                                     <span className="text-sm font-semibold text-gray-800">Total Quotation Amount: </span>
-                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(bonus?.value) || 0)).toLocaleString(undefined, {
+                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalQuotationAmountForDisplay.toLocaleString(undefined, {
                                         minimumFractionDigits: 0,
                                         maximumFractionDigits: 2,
                                     })}</span>
@@ -2825,7 +2837,7 @@ function OrderOverview() {
 
                                 <div className="flex justify-between items-center">
                                     <span className="text-sm font-semibold text-gray-800">Total Quotation Amount: </span>
-                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (Number(bonus?.value) || 0)).toLocaleString(undefined, {
+                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalQuotationAmountForDisplay.toLocaleString(undefined, {
                                         minimumFractionDigits: 0,
                                         maximumFractionDigits: 2,
                                     })}</span>

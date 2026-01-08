@@ -1,4 +1,5 @@
 import { Package } from "../../../../types";
+import { getRenoSubscriptionFixedOverrideNettAmount } from "../../../../utils/renoSubscription";
 
 interface FormData {
     unitType: string;
@@ -104,6 +105,16 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                 ? pkg.monthly_amount * (pkg.quantity || 1)
                 : 0)
             , 0);
+
+    const overrideOriginalNettAmount = getRenoSubscriptionFixedOverrideNettAmount({
+        isRenoSubscription: formData.isBePowered,
+        installmentMethod: formData.installment_method,
+        upfrontAmount,
+        installmentAmount: formData.installment_amount,
+        tenure: formData.tenure,
+        bonusValue: formData.bonusValue,
+    });
+    const originalNettAmountForDisplay = overrideOriginalNettAmount ?? netAmount;
 
     const handleQuoBePoweredChange = () => {
         onToggleQuoBePowered(!formData.isBePowered);
@@ -304,7 +315,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                             <div>
                                 <span className="font-medium text-gray-900">Original Nett Amount</span>
                             </div>
-                            <span className="font-medium">RM {netAmount.toLocaleString(undefined, {
+                            <span className="font-medium">RM {originalNettAmountForDisplay.toLocaleString(undefined, {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2
                             })}
