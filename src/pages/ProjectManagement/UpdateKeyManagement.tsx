@@ -132,7 +132,7 @@ function UpdateKeyManagement() {
 
     const submitSaveInfo = async () => {
         try {
-            const response = await updateKeyManagementInfo(Number(keyManagementDetail.id), formData);
+            const response = await updateKeyManagementInfo(Number(keyManagementDetail.reno_progress_id), formData);
 
             if (response?.success) {
                 notify('success', 'Info Updated!');
