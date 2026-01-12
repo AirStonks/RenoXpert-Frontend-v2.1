@@ -2368,9 +2368,9 @@ export const generateDIForm = async (diFormId: number) => {
     }
 }
 
-export const addKeyManagementItem = async (keyManagementId: number, category: string) => {
+export const addKeyManagementItem = async (renoProgressId: number, category: string) => {
     try {
-        const response = await axios.get(API_URL + `key-management/${keyManagementId}/${category}/add`, {
+        const response = await axios.get(API_URL + `key-management/${renoProgressId}/${category}/add`, {
             headers: getAuthHeaders()
         });
         return response.data; // Return product data
@@ -2380,9 +2380,9 @@ export const addKeyManagementItem = async (keyManagementId: number, category: st
     }
 }
 
-export const changeKeyManagementItemName = async (keyManagementId: number, category: string, itemIndex: number, name: string) => {
+export const changeKeyManagementItemName = async (renoProgressId: number, category: string, itemIndex: number, name: string) => {
     try {
-        const response = await axios.post(API_URL + `key-management/${keyManagementId}/${category}/change/${itemIndex}/name`, { name }, {
+        const response = await axios.post(API_URL + `key-management/${renoProgressId}/${category}/change/${itemIndex}/name`, { name }, {
             headers: getAuthHeaders()
         });
         return response.data; // Return product data
@@ -2392,9 +2392,9 @@ export const changeKeyManagementItemName = async (keyManagementId: number, categ
     }
 }
 
-export const changeKeyManagementItemRemark = async (keyManagementId: number, category: string, itemIndex: number, remark: string) => {
+export const changeKeyManagementItemRemark = async (renoProgressId: number, category: string, itemIndex: number, remark: string) => {
     try {
-        const response = await axios.post(API_URL + `key-management/${keyManagementId}/${category}/change/${itemIndex}/remark`, { remark }, {
+        const response = await axios.post(API_URL + `key-management/${renoProgressId}/${category}/change/${itemIndex}/remark`, { remark }, {
             headers: getAuthHeaders()
         });
         return response.data; // Return product data
@@ -2404,14 +2404,14 @@ export const changeKeyManagementItemRemark = async (keyManagementId: number, cat
     }
 }
 
-export const uploadKeyManagementItemPhoto = async (keyManagementId: number, category: string, itemIndex: number, file: File) => {
+export const uploadKeyManagementItemPhoto = async (renoProgressId: number, category: string, itemIndex: number, file: File) => {
     try {
         const formData = new FormData();
 
         formData.append('attachment', file);
 
         const response = await axios.post(
-            `${API_URL}key-management/${keyManagementId}/${category}/upload/${itemIndex}/photo`, formData,
+            `${API_URL}key-management/${renoProgressId}/${category}/upload/${itemIndex}/photo`, formData,
             {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -2429,14 +2429,14 @@ export const uploadKeyManagementItemPhoto = async (keyManagementId: number, cate
     }
 }
 
-export const changeKeyManagementItemPhoto = async (keyManagementId: number, category: string, itemIndex: number, file: File) => {
+export const changeKeyManagementItemPhoto = async (renoProgressId: number, category: string, itemIndex: number, file: File) => {
     try {
         const formData = new FormData();
 
         formData.append('attachment', file);
 
         const response = await axios.post(
-            `${API_URL}key-management/${keyManagementId}/${category}/change/${itemIndex}/photo`, formData,
+            `${API_URL}key-management/${renoProgressId}/${category}/change/${itemIndex}/photo`, formData,
             {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -2454,9 +2454,9 @@ export const changeKeyManagementItemPhoto = async (keyManagementId: number, cate
     }
 }
 
-export const removeKeyManagementItem = async (keyManagementId: number, category: string, itemIndex: number) => {
+export const removeKeyManagementItem = async (renoProgressId: number, category: string, itemIndex: number) => {
     try {
-        const response = await axios.get(API_URL + `key-management/${keyManagementId}/${category}/remove/${itemIndex}`, {
+        const response = await axios.get(API_URL + `key-management/${renoProgressId}/${category}/remove/${itemIndex}`, {
             headers: getAuthHeaders()
         });
         return response.data; // Return product data
@@ -2466,9 +2466,9 @@ export const removeKeyManagementItem = async (keyManagementId: number, category:
     }
 }
 
-export const updateKeyManagementInfo = async (keyManagementId: number, keyManagement: KeyManagement) => {
+export const updateKeyManagementInfo = async (renoProgressId: number, keyManagement: KeyManagement) => {
     try {
-        const response = await axios.post(API_URL + `key-management/${keyManagementId}/info/update`, keyManagement, {
+        const response = await axios.post(API_URL + `key-management/${renoProgressId}/info/update`, keyManagement, {
             headers: getAuthHeaders()
         });
         return response.data; // Return product data
