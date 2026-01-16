@@ -1922,8 +1922,8 @@ function OrderDetail() {
                                                                                     <>
                                                                                         <td className="whitespace-nowrap text-gray-600">
                                                                                             <span className="text-sm">
-                                                                                                {calculatePackageTotal(prodPackage) >= 0 &&
-                                                                                                    `RM ${calculatePackageTotal(prodPackage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                                {totals.supplyRRP >= 0 &&
+                                                                                                    `RM ${totals.supplyRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                                             </span>
                                                                                         </td>
                                                                                         <td className="whitespace-nowrap text-gray-600">
