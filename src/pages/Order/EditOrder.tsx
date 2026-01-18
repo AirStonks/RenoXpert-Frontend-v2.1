@@ -41,6 +41,7 @@ interface FormData {
     bonusDescription: string;
     bonusValue: number;
     internalRemark: string;
+    orderMode: 'normal' | 'draft' | 'template';
     installment_method?: 'fixed' | 'dynamic' | string;
     installment_amount?: number;
     be_powered_base_price?: number;
@@ -61,7 +62,8 @@ export default function EditOrder() {
     const { orderDetail, loading, error } = useFetchOrder(orderId);
 
     const [currentStep, setCurrentStep] = useState(0)
-    const [isDraftMode, setIsDraftMode] = useState(false)
+    const [orderMode, setOrderMode] = useState<'normal' | 'draft' | 'template'>('normal')
+    const isDraftMode = orderMode !== 'normal'
     const [isAmendingOrder, setIsCreatingOrder] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null)
@@ -93,6 +95,7 @@ export default function EditOrder() {
         bonusDescription: "",
         bonusValue: 0,
         internalRemark: "",
+        orderMode: 'normal',
         installment_method: 'dynamic',
         installment_amount: 0
     } as FormData)
@@ -115,13 +118,19 @@ export default function EditOrder() {
 
         if (orderDetail) {
             const runAsyncTasks = async () => {
+                const inferredMode: 'normal' | 'draft' | 'template' =
+                    orderDetail.status === 'template'
+                        ? 'template'
+                        : orderDetail.status === 'draft' || !orderDetail.user_id
+                            ? 'draft'
+                            : 'normal'
                 setFormData({
                     finalAmount: orderDetail.final_amount || 0,
                     unitType: orderDetail.unit_type || "",
                     block: orderDetail.block || "",
                     floor: orderDetail.floor || "",
                     unitNo: orderDetail.unit_no || "",
-                    isDraftMode: !orderDetail.user_id,
+                    isDraftMode: inferredMode !== 'normal',
                     singleBedrooms: orderDetail.single_bedroom_count,
                     queenBedrooms: orderDetail.queen_bedroom_count,
                     studios: orderDetail.studio_count,
@@ -139,12 +148,13 @@ export default function EditOrder() {
                     be_powered_base_price: orderDetail.be_powered_base_price || 0,
                     bonusDescription: orderDetail.latest_quotation.bonus?.description || "",
                     bonusValue: Number(orderDetail.latest_quotation.bonus?.value) || 0,
+                    orderMode: inferredMode,
                 });
 
                 if (orderDetail.user_id) await handleSelectUserById(Number(orderDetail.user_id));
                 if (orderDetail.property_id) await handleSelectPropertytById(Number(orderDetail.property_id));
 
-                setIsDraftMode(!orderDetail.user_id);
+                setOrderMode(inferredMode);
                 setSelectedPackages(orderDetail.latest_quotation.packages ? orderDetail.latest_quotation.packages : []);
             };
             runAsyncTasks();
@@ -155,7 +165,8 @@ export default function EditOrder() {
     const handleSelectUserById = async (id: number) => {
         try {
             const data = await fetchUser(id);
-            setFormData((prev) => ({ ...prev, isDraftMode: false }));
+            setOrderMode('normal');
+            setFormData((prev) => ({ ...prev, isDraftMode: false, orderMode: 'normal' }));
             setSelectedCustomer(data.data);
         } catch (error) {
             console.error("Error fetching user:", error);
@@ -425,10 +436,12 @@ export default function EditOrder() {
         }
     }
 
-    const handleToggleDraftMode = (isDraft: boolean) => {
-        setIsDraftMode(isDraft)
-        setFormData(prev => ({ ...prev, isDraftMode: isDraft }))
-        setSelectedCustomer(null)
+    const handleOrderModeChange = (mode: 'normal' | 'draft' | 'template') => {
+        setOrderMode(mode)
+        setFormData(prev => ({ ...prev, isDraftMode: mode !== 'normal', orderMode: mode }))
+        if (mode !== 'normal') {
+            setSelectedCustomer(null)
+        }
     }
 
     const handlePackageDragEnd = (event: DragEndEvent) => {
@@ -498,7 +511,7 @@ export default function EditOrder() {
         const errors: { [key: string]: string } = {};
 
         // Validation for non-draft mode
-        if (!formData.isDraftMode) {
+        if (orderMode === 'normal') {
             if (!selectedCustomer) {
                 errors.customer = "Please select a customer.";
             }
@@ -556,6 +569,7 @@ export default function EditOrder() {
             user_id: selectedCustomer?.id || null,
             property_id: selectedProperty?.id || null,
             quotation_id: '0',
+            status: orderMode === 'template' ? 'template' : orderMode === 'draft' ? 'draft' : 'unreleased',
             total_amount: netAmount,
             final_amount: null,
             unit_type: formData.unitType,
@@ -628,17 +642,17 @@ export default function EditOrder() {
                         </div>
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-3">
-                                <span className="text-sm text-gray-600 font-medium">Draft Mode</span>
-                                <button
-                                    onClick={() => handleToggleDraftMode(!isDraftMode)}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isDraftMode ? "bg-blue-500" : "bg-gray-200"
-                                        }`}
+                                <span className="text-sm text-gray-600 font-medium">Order Mode</span>
+                                <select
+                                    value={orderMode}
+                                    onChange={(e) => handleOrderModeChange(e.target.value as 'normal' | 'draft' | 'template')}
+                                    className="border border-gray-200 rounded-xl px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    disabled={!!orderDetail?.status && !['unreleased', 'draft', 'template'].includes(orderDetail.status)}
                                 >
-                                    <span
-                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${isDraftMode ? "translate-x-6" : "translate-x-1"
-                                            }`}
-                                    />
-                                </button>
+                                    <option value="normal">Normal</option>
+                                    <option value="draft">Draft</option>
+                                    <option value="template">Template</option>
+                                </select>
                             </div>
                         </div>
                     </div>

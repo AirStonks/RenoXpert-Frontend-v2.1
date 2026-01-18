@@ -1632,6 +1632,8 @@ export interface Campaign {
     packages?: CampaignPackage[];
     base_amount?: number;
     booking_amount?: number;
+    order_id?: string;
+    order?: Order;
     start_date?: string;
     end_date?: string;
     published_at?: string;

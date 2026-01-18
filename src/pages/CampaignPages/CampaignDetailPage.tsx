@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
     User,
     Phone,
@@ -309,6 +309,15 @@ const CampaignDetailPage = () => {
                                             ))
                                         }
                                     </p>
+                                    <div className="mt-6 flex justify-center">
+                                        <Link
+                                            to="detail"
+                                            className="px-6 py-3 bg-white border border-gray-200 text-gray-900 rounded-2xl hover:bg-gray-50 transition-all duration-200 flex items-center gap-2 font-semibold shadow-sm"
+                                        >
+                                            View Detail
+                                            <ArrowRight className="h-4 w-4" />
+                                        </Link>
+                                    </div>
                                 </div>
                             )}
 
@@ -340,6 +349,15 @@ const CampaignDetailPage = () => {
                                             }
                                         </p>
                                     )}
+                                    <div className="pt-4 flex justify-center">
+                                        <Link
+                                            to="detail"
+                                            className="px-6 py-3 bg-white border border-gray-200 text-gray-900 rounded-2xl hover:bg-gray-50 transition-all duration-200 flex items-center gap-2 font-semibold shadow-sm"
+                                        >
+                                            View Detail
+                                            <ArrowRight className="h-4 w-4" />
+                                        </Link>
+                                    </div>
                                 </div>
 
                                 {/* Key Benefits */}

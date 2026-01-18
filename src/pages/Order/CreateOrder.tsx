@@ -33,6 +33,7 @@ interface FormData {
     isRnpl: boolean;
     rnpl_base_price: number;
     isDraftMode: boolean;
+    orderMode: 'normal' | 'draft' | 'template';
     isBePowered: boolean;
     finalAmount: number;
     tenure: number;
@@ -57,7 +58,8 @@ export default function CreateOrder() {
     const queryParams = new URLSearchParams(location.search);
     const duplicateOrderId = queryParams.get("dp");
     const [currentStep, setCurrentStep] = useState(0)
-    const [isDraftMode, setIsDraftMode] = useState(false)
+    const [orderMode, setOrderMode] = useState<'normal' | 'draft' | 'template'>('normal')
+    const isDraftMode = orderMode !== 'normal'
     const [isCreatingOrder, setIsCreatingOrder] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null)
@@ -81,6 +83,7 @@ export default function CreateOrder() {
         completionDays: 30,
         isProgressivePayment: true,
         isDraftMode: false,
+        orderMode: 'normal',
         isBePowered: false,
         tenure: 60,
         finalAmount: 0,
@@ -110,11 +113,18 @@ export default function CreateOrder() {
             try {
                 const response = await fetchOrder(Number(orderId));
                 if (response?.success) {
+                    const inferredMode: 'normal' | 'draft' | 'template' =
+                        response.data.status === 'template'
+                            ? 'template'
+                            : response.data.status === 'draft'
+                                ? 'draft'
+                                : 'normal'
                     setFormData((prev) => ({
                         ...prev,
                         unitType: response.data.unit_type || "",
                         finalAmount: response.data.final_amount || 0,
-                        isDraftMode: response.data.user ? false : true,
+                        isDraftMode: inferredMode !== 'normal',
+                        orderMode: inferredMode,
                         completionDays: response.data.completion_day || 1,
                         includePartition: response.data.include_partition ? true : false,
                         isProgressivePayment: response.data.is_progressive_payment ? true : false,
@@ -135,7 +145,7 @@ export default function CreateOrder() {
                     }));
                     if (response.data.property_id) setSelectedProperty(response.data.property);
                     setSelectedPackages(response.data.latest_quotation.packages);
-                    setIsDraftMode(!response.data.user_id);
+                    setOrderMode(inferredMode);
                     notify("success", "Order duplicated successfully!");
                 }
             } catch (error) {
@@ -398,10 +408,12 @@ export default function CreateOrder() {
         }
     }
 
-    const handleToggleDraftMode = (isDraft: boolean) => {
-        setIsDraftMode(isDraft)
-        setFormData(prev => ({ ...prev, isDraftMode: isDraft }))
-        setSelectedCustomer(null)
+    const handleOrderModeChange = (mode: 'normal' | 'draft' | 'template') => {
+        setOrderMode(mode)
+        setFormData((prev) => ({ ...prev, isDraftMode: mode !== 'normal', orderMode: mode }))
+        if (mode !== 'normal') {
+            setSelectedCustomer(null)
+        }
     }
 
     const handlePackageDragEnd = (event: DragEndEvent) => {
@@ -470,7 +482,7 @@ export default function CreateOrder() {
         setIsCreatingOrder(true);
         const errors: { [key: string]: string } = {};
 
-        if (!formData.isDraftMode) {
+        if (orderMode === 'normal') {
             if (!selectedCustomer) {
                 errors.customer = "Please select a customer.";
             }
@@ -522,6 +534,7 @@ export default function CreateOrder() {
             user_id: selectedCustomer?.id || null,
             property_id: selectedProperty?.id || null,
             quotation_id: '0',
+            status: orderMode === 'template' ? 'template' : orderMode === 'draft' ? 'draft' : 'unreleased',
             total_amount: netAmount,
             final_amount: null,
             unit_type: formData.unitType,
@@ -591,15 +604,16 @@ export default function CreateOrder() {
                         </div>
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-3">
-                                <span className="text-sm text-gray-600 font-medium">Draft Mode</span>
-                                <button
-                                    onClick={() => handleToggleDraftMode(!isDraftMode)}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isDraftMode ? "bg-blue-500" : "bg-gray-200"}`}
+                                <span className="text-sm text-gray-600 font-medium">Order Mode</span>
+                                <select
+                                    value={orderMode}
+                                    onChange={(e) => handleOrderModeChange(e.target.value as 'normal' | 'draft' | 'template')}
+                                    className="border border-gray-200 rounded-xl px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                    <span
-                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${isDraftMode ? "translate-x-6" : "translate-x-1"}`}
-                                    />
-                                </button>
+                                    <option value="normal">Normal</option>
+                                    <option value="draft">Draft</option>
+                                    <option value="template">Template</option>
+                                </select>
                             </div>
                         </div>
                     </div>

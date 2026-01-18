@@ -17,9 +17,9 @@ import {
     Link,
     Edit3
 } from 'lucide-react';
-import { updateCampaign } from '../../services/api';
+import { fetchOrder, orderIndex, updateCampaign } from '../../services/api';
 import useFetchCampaign from '../../hook/useFetchCampaign';
-import { CampaignPackage } from '../../types';
+import { CampaignPackage, Order } from '../../types';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -33,6 +33,7 @@ export default function EditCampaign() {
         slug: '',
         description: '',
         internal_description: '',
+        order_id: '',
         start_date: '',
         end_date: '',
         slot_total: 0,
@@ -52,6 +53,10 @@ export default function EditCampaign() {
         booking_amount: 'fixed' | 'custom';
     }>>({});
     const [collapsedPackages, setCollapsedPackages] = useState<Record<number, boolean>>({});
+    const [orderSearch, setOrderSearch] = useState<string>('');
+    const [orderOptions, setOrderOptions] = useState<Order[]>([]);
+    const [orderLoading, setOrderLoading] = useState<boolean>(false);
+    const [selectedOrderTemplate, setSelectedOrderTemplate] = useState<Order | null>(null);
 
     const campaignId = id ? parseInt(id, 10) : null;
     const { campaign, loading, error: fetchError } = useFetchCampaign(campaignId);
@@ -77,6 +82,7 @@ export default function EditCampaign() {
                 slug: campaign.slug || '',
                 description: campaign.description || '',
                 internal_description: campaign.internal_description || '',
+                order_id: campaign.order_id || '',
                 start_date: campaign.start_date ? campaign.start_date.split('T')[0] : '',
                 end_date: campaign.end_date ? campaign.end_date.split('T')[0] : '',
                 slot_total: campaign.slot_total || 0,
@@ -103,6 +109,68 @@ export default function EditCampaign() {
             }
         }
     }, [campaign]);
+
+    // Load selected template order display if campaign has order_id
+    useEffect(() => {
+        let cancelled = false;
+        const run = async () => {
+            const oid = campaign?.order_id;
+            if (!oid) return;
+            const asNum = Number(oid);
+            if (!Number.isFinite(asNum)) {
+                setSelectedOrderTemplate(null);
+                setOrderSearch(String(oid));
+                return;
+            }
+            try {
+                const res = await fetchOrder(asNum);
+                const o = (res?.data || null) as Order | null;
+                if (!cancelled && o) {
+                    setSelectedOrderTemplate(o);
+                    setOrderSearch(o.order_no || String(o.id || oid));
+                }
+            } catch (e) {
+                console.error(e);
+                if (!cancelled) setOrderSearch(String(oid));
+            }
+        };
+        run();
+        return () => {
+            cancelled = true;
+        };
+    }, [campaign?.order_id]);
+
+    // Template order search (simple debounce)
+    useEffect(() => {
+        let cancelled = false;
+        const t = setTimeout(async () => {
+            const q = orderSearch.trim();
+            if (!q) {
+                setOrderOptions([]);
+                return;
+            }
+            // If user hasn't changed from selected quotation, don't refetch
+            if (selectedOrderTemplate && (q === selectedOrderTemplate.order_no || q === String(selectedOrderTemplate.id))) {
+                setOrderOptions([]);
+                return;
+            }
+            try {
+                setOrderLoading(true);
+                const res = await orderIndex(8, 1, q, undefined, undefined, [{ field: 'status', value: 'template' }]);
+                const data = (res?.data || []) as Order[];
+                if (!cancelled) setOrderOptions(data);
+            } catch (e) {
+                console.error(e);
+                if (!cancelled) setOrderOptions([]);
+            } finally {
+                if (!cancelled) setOrderLoading(false);
+            }
+        }, 350);
+        return () => {
+            cancelled = true;
+            clearTimeout(t);
+        };
+    }, [orderSearch, selectedOrderTemplate]);
 
     const generateSlug = (title: string) => {
         return title
@@ -136,6 +204,20 @@ export default function EditCampaign() {
                 [name]: ''
             }));
         }
+    };
+
+    const handleSelectTemplateOrder = (o: Order) => {
+        setSelectedOrderTemplate(o);
+        setOrderSearch(o.order_no || String(o.id || ''));
+        setOrderOptions([]);
+        setFormData(prev => ({ ...prev, order_id: String(o.id || '') }));
+    };
+
+    const handleClearTemplateOrder = () => {
+        setSelectedOrderTemplate(null);
+        setOrderSearch('');
+        setOrderOptions([]);
+        setFormData(prev => ({ ...prev, order_id: '' }));
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -506,6 +588,61 @@ export default function EditCampaign() {
                             )}
 
                             <div className="space-y-6">
+                                {/* Linked Template Order */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Linked Template Order (Optional)
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            value={orderSearch}
+                                            onChange={(e) => setOrderSearch(e.target.value)}
+                                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all duration-200"
+                                            placeholder="Search template orders by order no..."
+                                        />
+                                        {selectedOrderTemplate && (
+                                            <button
+                                                type="button"
+                                                onClick={handleClearTemplateOrder}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-red-600 hover:text-red-800"
+                                            >
+                                                Clear
+                                            </button>
+                                        )}
+                                    </div>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        {selectedOrderTemplate
+                                            ? `Selected: ${selectedOrderTemplate.order_no || selectedOrderTemplate.id}`
+                                            : (formData.order_id ? `Selected order id: ${formData.order_id}` : 'Type to search and select an existing template order.')}
+                                    </p>
+                                    {orderLoading && (
+                                        <div className="mt-2 text-sm text-gray-500">Searching…</div>
+                                    )}
+                                    {!orderLoading && orderOptions.length > 0 && (
+                                        <div className="mt-2 border border-gray-200 rounded-xl bg-white shadow-lg overflow-hidden">
+                                            {orderOptions.map((o) => (
+                                                <button
+                                                    key={String(o.id)}
+                                                    type="button"
+                                                    onClick={() => handleSelectTemplateOrder(o)}
+                                                    className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center justify-between"
+                                                >
+                                                    <div>
+                                                        <div className="font-medium text-gray-900">{o.order_no || `Order #${o.id}`}</div>
+                                                        <div className="text-xs text-gray-500">ID: {o.id}</div>
+                                                    </div>
+                                                    {typeof o.total_amount === 'number' && (
+                                                        <div className="text-sm font-semibold text-gray-900">
+                                                            RM {o.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </div>
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* Campaign Title */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -17,7 +17,8 @@ import {
     ChevronDown,
     ChevronUp
 } from 'lucide-react';
-import { createCampaign } from '../../services/api';
+import { createCampaign, orderIndex } from '../../services/api';
+import { Order } from '../../types';
 import { CampaignPackage } from '../../types';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
@@ -31,6 +32,7 @@ export default function AddCampaign() {
         slug: '',
         description: '',
         internal_description: '',
+        order_id: '',
         start_date: '',
         end_date: '',
         slot_total: 0,
@@ -38,6 +40,11 @@ export default function AddCampaign() {
         booking_amount: 0,
         thumbnail: null as File | null
     });
+
+    const [orderSearch, setOrderSearch] = useState<string>('');
+    const [orderOptions, setOrderOptions] = useState<Order[]>([]);
+    const [orderLoading, setOrderLoading] = useState<boolean>(false);
+    const [selectedOrderTemplate, setSelectedOrderTemplate] = useState<Order | null>(null);
 
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [packages, setPackages] = useState<CampaignPackage[]>([]);
@@ -64,6 +71,33 @@ export default function AddCampaign() {
             setThumbnailPreview(null);
         }
     }, [formData.thumbnail]);
+
+    // Template Order search (simple debounce)
+    useEffect(() => {
+        let cancelled = false;
+        const t = setTimeout(async () => {
+            const q = orderSearch.trim();
+            if (!q) {
+                setOrderOptions([]);
+                return;
+            }
+            try {
+                setOrderLoading(true);
+                const res = await orderIndex(8, 1, q, undefined, undefined, [{ field: 'status', value: 'template' }]);
+                const data = (res?.data || []) as Order[];
+                if (!cancelled) setOrderOptions(data);
+            } catch (e) {
+                console.error(e);
+                if (!cancelled) setOrderOptions([]);
+            } finally {
+                if (!cancelled) setOrderLoading(false);
+            }
+        }, 350);
+        return () => {
+            cancelled = true;
+            clearTimeout(t);
+        };
+    }, [orderSearch]);
 
     const generateSlug = (title: string) => {
         return title
@@ -97,6 +131,20 @@ export default function AddCampaign() {
                 [name]: ''
             }));
         }
+    };
+
+    const handleSelectTemplateOrder = (o: Order) => {
+        setSelectedOrderTemplate(o);
+        setOrderSearch(o.order_no || String(o.id || ''));
+        setOrderOptions([]);
+        setFormData(prev => ({ ...prev, order_id: String(o.id || '') }));
+    };
+
+    const handleClearTemplateOrder = () => {
+        setSelectedOrderTemplate(null);
+        setOrderSearch('');
+        setOrderOptions([]);
+        setFormData(prev => ({ ...prev, order_id: '' }));
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -227,6 +275,8 @@ export default function AddCampaign() {
         if (!formData.slug.trim()) {
             newErrors.slug = 'Slug is required';
         }
+
+        // order_id is optional; no validation required.
 
         // If either date is filled, both are required
         if (formData.start_date || formData.end_date) {
@@ -456,6 +506,61 @@ export default function AddCampaign() {
                             )}
 
                             <div className="space-y-6">
+                                {/* Linked Template Order */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Linked Template Order (Optional)
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            value={orderSearch}
+                                            onChange={(e) => setOrderSearch(e.target.value)}
+                                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all duration-200"
+                                            placeholder="Search template orders by order no..."
+                                        />
+                                        {selectedOrderTemplate && (
+                                            <button
+                                                type="button"
+                                                onClick={handleClearTemplateOrder}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-red-600 hover:text-red-800"
+                                            >
+                                                Clear
+                                            </button>
+                                        )}
+                                    </div>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        {selectedOrderTemplate
+                                            ? `Selected: ${selectedOrderTemplate.order_no || selectedOrderTemplate.id}`
+                                            : 'Type to search and select an existing template order.'}
+                                    </p>
+                                    {orderLoading && (
+                                        <div className="mt-2 text-sm text-gray-500">Searching…</div>
+                                    )}
+                                    {!orderLoading && orderOptions.length > 0 && (
+                                        <div className="mt-2 border border-gray-200 rounded-xl bg-white shadow-lg overflow-hidden">
+                                            {orderOptions.map((o) => (
+                                                <button
+                                                    key={String(o.id)}
+                                                    type="button"
+                                                    onClick={() => handleSelectTemplateOrder(o)}
+                                                    className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center justify-between"
+                                                >
+                                                    <div>
+                                                        <div className="font-medium text-gray-900">{o.order_no || `Order #${o.id}`}</div>
+                                                        <div className="text-xs text-gray-500">ID: {o.id}</div>
+                                                    </div>
+                                                    {typeof o.total_amount === 'number' && (
+                                                        <div className="text-sm font-semibold text-gray-900">
+                                                            RM {o.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </div>
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* Campaign Title */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">

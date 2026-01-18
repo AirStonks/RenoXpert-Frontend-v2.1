@@ -35,7 +35,7 @@ const CLIENT_URL =
 type SortOrder = 'asc' | 'desc' | null;
 
 type FilterTerms = {
-    status: 'all' | 'confirmed' | 'released' | 'unreleased' | 'draft' | 'voided';
+    status: 'all' | 'confirmed' | 'released' | 'unreleased' | 'draft' | 'voided' | 'template';
     property_id: string;
 };
 
@@ -51,6 +51,8 @@ const getStatusLabel = (status: string) => {
             return 'Draft';
         case 'voided':
             return 'Voided';
+        case 'template':
+            return 'Template';
         default:
             return status.charAt(0).toUpperCase() + status.slice(1);
     }
@@ -307,6 +309,8 @@ function OrderMain() {
                 return `bg-blue-100 text-blue-800`;
             case 'confirmed':
                 return `bg-green-100 text-green-800`;
+            case 'template':
+                return `bg-purple-100 text-purple-800`;
             case 'revoked':
             case 'voided':
                 return `bg-red-100 text-red-800`;
@@ -374,6 +378,7 @@ function OrderMain() {
                                     { key: 'released', label: 'Released', color: 'bg-blue-100 text-blue-800 hover:bg-blue-200' },
                                     { key: 'unreleased', label: 'Unreleased', color: 'bg-purple-100 text-purple-800 hover:bg-purple-200' },
                                     { key: 'draft', label: 'Draft', color: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' },
+                                    { key: 'template', label: 'Templates', color: 'bg-purple-100 text-purple-800 hover:bg-purple-200' },
                                     { key: 'voided', label: 'Voided', color: 'bg-red-100 text-red-800 hover:bg-red-200' },
                                 ].map(filter => (
                                     <button
