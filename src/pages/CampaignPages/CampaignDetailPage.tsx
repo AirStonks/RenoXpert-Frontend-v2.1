@@ -296,8 +296,8 @@ const CampaignDetailPage = () => {
                             </div>
 
                             {/* Mobile Description - Only visible on mobile, below thumbnail */}
-                            {campaign.description && (
-                                <div className="lg:hidden order-3">
+                            <div className="lg:hidden order-3">
+                                {campaign.description && (
                                     <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
                                         {campaign.description
                                             .split('\n')
@@ -309,17 +309,17 @@ const CampaignDetailPage = () => {
                                             ))
                                         }
                                     </p>
-                                    <div className="mt-6 flex justify-center">
-                                        <Link
-                                            to="detail"
-                                            className="px-6 py-3 bg-white border border-gray-200 text-gray-900 rounded-2xl hover:bg-gray-50 transition-all duration-200 flex items-center gap-2 font-semibold shadow-sm"
-                                        >
-                                            View Detail
-                                            <ArrowRight className="h-4 w-4" />
-                                        </Link>
-                                    </div>
+                                )}
+                                <div className={`flex justify-center ${campaign.description ? 'mt-6' : 'mt-4'}`}>
+                                    <Link
+                                        to="detail"
+                                        className="px-6 py-3 bg-white border border-gray-200 text-gray-900 rounded-2xl hover:bg-gray-50 transition-all duration-200 flex items-center gap-2 font-semibold shadow-sm"
+                                    >
+                                        View Detail
+                                        <ArrowRight className="h-4 w-4" />
+                                    </Link>
                                 </div>
-                            )}
+                            </div>
 
                             {/* Desktop Content - Only visible on large screens */}
                             <div className="space-y-6 sm:space-y-8 order-3 lg:order-1 hidden lg:block">
