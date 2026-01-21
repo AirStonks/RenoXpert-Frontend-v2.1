@@ -1,38 +1,17 @@
 import { useEffect, useRef, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { fetchUsers } from "../../../../services/api";
 import { Search, UserIcon } from "lucide-react";
 import { motion } from 'framer-motion';
 import { User } from "../../../../types";
-
-interface FormData {
-    unitType: string;
-    block: string;
-    floor: string;
-    unitNo: string;
-    queenBedrooms: number;
-    singleBedrooms: number;
-    studios: number;
-    bathrooms: number;
-    includePartition: boolean;
-    completionDays: number;
-    isProgressivePayment: boolean;
-    isDraftMode: boolean;
-    isBePowered: boolean;
-    isRnpl: boolean;
-    rnpl_base_price: number;
-    tenure: number;
-    finalAmount: number;
-    bonusDescription: string;
-    bonusValue: number;
-    internalRemark: string;
-}
+import type { OrderFormData } from "../../orderForm.types";
 
 interface CustomerStepProps {
     isDraftMode: boolean
     selectedCustomer: User | null
     setSelectedCustomer: (customer: User | null) => void
-    formData: FormData
-    setFormData: (data: FormData) => void
+    formData: OrderFormData
+    setFormData: Dispatch<SetStateAction<OrderFormData>>
     stepErrors?: { [key: string]: string }
 }
 

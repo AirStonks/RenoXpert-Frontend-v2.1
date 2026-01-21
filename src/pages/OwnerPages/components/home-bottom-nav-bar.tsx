@@ -16,11 +16,6 @@ const navItems: NavItem[] = [
         category: "home",
     },
     {
-        icon: <MessageCircle className="h-4 w-4 md:h-6 md:w-6" />,
-        label: "Chat",
-        category: "chat",
-    },
-    {
         icon: <ScrollTextIcon className="h-4 w-4 md:h-6 md:w-6" />,
         label: "Quotations",
         category: "quotations",

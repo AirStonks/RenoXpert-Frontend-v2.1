@@ -310,15 +310,6 @@ const CampaignDetailPage = () => {
                                         }
                                     </p>
                                 )}
-                                <div className={`flex justify-center ${campaign.description ? 'mt-6' : 'mt-4'}`}>
-                                    <Link
-                                        to="detail"
-                                        className="px-6 py-3 bg-white border border-gray-200 text-gray-900 rounded-2xl hover:bg-gray-50 transition-all duration-200 flex items-center gap-2 font-semibold shadow-sm"
-                                    >
-                                        View Detail
-                                        <ArrowRight className="h-4 w-4" />
-                                    </Link>
-                                </div>
                             </div>
 
                             {/* Desktop Content - Only visible on large screens */}
@@ -349,15 +340,6 @@ const CampaignDetailPage = () => {
                                             }
                                         </p>
                                     )}
-                                    <div className="pt-4 flex justify-center">
-                                        <Link
-                                            to="detail"
-                                            className="px-6 py-3 bg-white border border-gray-200 text-gray-900 rounded-2xl hover:bg-gray-50 transition-all duration-200 flex items-center gap-2 font-semibold shadow-sm"
-                                        >
-                                            View Detail
-                                            <ArrowRight className="h-4 w-4" />
-                                        </Link>
-                                    </div>
                                 </div>
 
                                 {/* Key Benefits */}
@@ -595,6 +577,20 @@ const CampaignDetailPage = () => {
                                                                     </div>
                                                                 )}
                                                             </div>
+                                                            
+                                                            {/* View quotation (per package) */}
+                                                            {pkg.id && (
+                                                                <div className="flex justify-center pt-2 sm:pt-3">
+                                                                    <Link
+                                                                        to={`packages/${pkg.id}`}
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                        className="px-5 py-2 bg-white border border-gray-200 text-gray-900 rounded-2xl hover:bg-gray-50 transition-all duration-200 flex items-center gap-2 font-semibold shadow-sm"
+                                                                    >
+                                                                        View Quotation
+                                                                        <ArrowRight className="h-4 w-4" />
+                                                                    </Link>
+                                                                </div>
+                                                            )}
 
                                                             {/* Selection Indicator */}
                                                             <div className="flex justify-center">

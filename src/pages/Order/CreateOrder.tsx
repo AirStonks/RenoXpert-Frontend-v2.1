@@ -412,7 +412,7 @@ export default function CreateOrder() {
         setOrderMode(mode)
         setFormData((prev) => ({ ...prev, isDraftMode: mode !== 'normal', orderMode: mode }))
         if (mode !== 'normal') {
-            setSelectedCustomer(null)
+        setSelectedCustomer(null)
         }
     }
 

@@ -1,37 +1,16 @@
 import { motion } from 'framer-motion';
 import { Property } from '../../../../types';
 import { useEffect, useRef, useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { fetchProperties } from '../../../../services/api';
 import { Building, ChevronDown, Search } from 'lucide-react';
-
-interface FormData {
-    unitType: string;
-    block: string;
-    floor: string;
-    unitNo: string;
-    queenBedrooms: number;
-    singleBedrooms: number;
-    studios: number;
-    bathrooms: number;
-    includePartition: boolean;
-    completionDays: number;
-    isProgressivePayment: boolean;
-    isDraftMode: boolean;
-    isBePowered: boolean;
-    isRnpl: boolean;
-    rnpl_base_price: number;
-    tenure: number;
-    finalAmount: number;
-    bonusDescription: string;
-    bonusValue: number;
-    internalRemark: string;
-}
+import type { OrderFormData } from '../../orderForm.types';
 
 interface PropertyStepProps {
     selectedProperty: Property | null;
     setSelectedProperty: (property: Property | null) => void;
-    formData: FormData;
-    setFormData: (data: FormData) => void;
+    formData: OrderFormData;
+    setFormData: Dispatch<SetStateAction<OrderFormData>>;
 }
 
 export default function PropertyStep({ selectedProperty, setSelectedProperty, formData, setFormData }: PropertyStepProps) {

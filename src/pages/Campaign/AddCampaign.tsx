@@ -18,8 +18,7 @@ import {
     ChevronUp
 } from 'lucide-react';
 import { createCampaign, orderIndex } from '../../services/api';
-import { Order } from '../../types';
-import { CampaignPackage } from '../../types';
+import { Order, CampaignPackage } from '../../types';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -44,7 +43,8 @@ export default function AddCampaign() {
     const [orderSearch, setOrderSearch] = useState<string>('');
     const [orderOptions, setOrderOptions] = useState<Order[]>([]);
     const [orderLoading, setOrderLoading] = useState<boolean>(false);
-    const [selectedOrderTemplate, setSelectedOrderTemplate] = useState<Order | null>(null);
+    const [activePackageOrderIndex, setActivePackageOrderIndex] = useState<number | null>(null);
+    const [selectedPackageOrderTemplates, setSelectedPackageOrderTemplates] = useState<Record<string, Order | null>>({});
 
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [packages, setPackages] = useState<CampaignPackage[]>([]);
@@ -134,17 +134,34 @@ export default function AddCampaign() {
     };
 
     const handleSelectTemplateOrder = (o: Order) => {
-        setSelectedOrderTemplate(o);
-        setOrderSearch(o.order_no || String(o.id || ''));
+        // Campaign-level linkage is deprecated; attach to a package instead.
+        if (activePackageOrderIndex == null) return;
+        updatePackage(activePackageOrderIndex, 'order_id', String(o.id || ''));
+        setSelectedPackageOrderTemplates((prev) => ({
+            ...prev,
+            [String(activePackageOrderIndex)]: o,
+        }));
+        setOrderSearch('');
         setOrderOptions([]);
-        setFormData(prev => ({ ...prev, order_id: String(o.id || '') }));
     };
 
     const handleClearTemplateOrder = () => {
-        setSelectedOrderTemplate(null);
+        // no-op (campaign-level selector removed)
         setOrderSearch('');
         setOrderOptions([]);
-        setFormData(prev => ({ ...prev, order_id: '' }));
+    };
+
+    const handleClearPackageTemplateOrder = (packageIndex: number) => {
+        updatePackage(packageIndex, 'order_id', '');
+        setSelectedPackageOrderTemplates((prev) => {
+            const next = { ...prev };
+            delete next[String(packageIndex)];
+            return next;
+        });
+        if (activePackageOrderIndex === packageIndex) {
+            setOrderSearch('');
+            setOrderOptions([]);
+        }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -384,19 +401,30 @@ export default function AddCampaign() {
             setError(null);
 
             // Process packages with proper values based on source
-            const processedPackages = campaignMode === 'packages' ? packages.map((pkg, index) => {
-                const valueSource = packageValueSources[index.toString()];
-                return {
-                    ...pkg,
-                    slot_total: valueSource?.slot_total === 'fixed' ? formData.slot_total : pkg.slot_total,
-                    base_amount: valueSource?.base_amount === 'fixed' ? formData.base_amount : pkg.base_amount,
-                    booking_amount: valueSource?.booking_amount === 'fixed' ? formData.booking_amount : pkg.booking_amount
-                };
-            }) : undefined;
+            const processedPackages = campaignMode === 'packages'
+                ? packages.map((pkg, index) => {
+                    const valueSource = packageValueSources[index.toString()];
+                    const processed: CampaignPackage = {
+                        ...pkg,
+                        slot_total: valueSource?.slot_total === 'fixed' ? formData.slot_total : pkg.slot_total,
+                        base_amount: valueSource?.base_amount === 'fixed' ? formData.base_amount : pkg.base_amount,
+                        booking_amount: valueSource?.booking_amount === 'fixed' ? formData.booking_amount : pkg.booking_amount,
+                    };
+
+                    // Normalise order_id: backend accepts null/omitted, but not the string "null"
+                    if (processed.order_id === 'null' || processed.order_id === '' || processed.order_id == null) {
+                        delete (processed as any).order_id;
+                    }
+
+                    return processed;
+                })
+                : undefined;
 
             const campaignData = {
                 ...formData,
                 packages: campaignMode === 'packages' ? processedPackages : undefined,
+                // Package-level template linkage only
+                order_id: undefined,
                 status: 'draft' // Default status for new campaigns
             };
 
@@ -506,61 +534,6 @@ export default function AddCampaign() {
                             )}
 
                             <div className="space-y-6">
-                                {/* Linked Template Order */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Linked Template Order (Optional)
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            value={orderSearch}
-                                            onChange={(e) => setOrderSearch(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all duration-200"
-                                            placeholder="Search template orders by order no..."
-                                        />
-                                        {selectedOrderTemplate && (
-                                            <button
-                                                type="button"
-                                                onClick={handleClearTemplateOrder}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-red-600 hover:text-red-800"
-                                            >
-                                                Clear
-                                            </button>
-                                        )}
-                                    </div>
-                                    <p className="mt-1 text-sm text-gray-500">
-                                        {selectedOrderTemplate
-                                            ? `Selected: ${selectedOrderTemplate.order_no || selectedOrderTemplate.id}`
-                                            : 'Type to search and select an existing template order.'}
-                                    </p>
-                                    {orderLoading && (
-                                        <div className="mt-2 text-sm text-gray-500">Searching…</div>
-                                    )}
-                                    {!orderLoading && orderOptions.length > 0 && (
-                                        <div className="mt-2 border border-gray-200 rounded-xl bg-white shadow-lg overflow-hidden">
-                                            {orderOptions.map((o) => (
-                                                <button
-                                                    key={String(o.id)}
-                                                    type="button"
-                                                    onClick={() => handleSelectTemplateOrder(o)}
-                                                    className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center justify-between"
-                                                >
-                                                    <div>
-                                                        <div className="font-medium text-gray-900">{o.order_no || `Order #${o.id}`}</div>
-                                                        <div className="text-xs text-gray-500">ID: {o.id}</div>
-                                                    </div>
-                                                    {typeof o.total_amount === 'number' && (
-                                                        <div className="text-sm font-semibold text-gray-900">
-                                                            RM {o.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                        </div>
-                                                    )}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-
                                 {/* Campaign Title */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -846,6 +819,75 @@ export default function AddCampaign() {
                                                 <div className="p-4">
 
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {/* Linked Template Order (per package) */}
+                                                        <div className="md:col-span-2">
+                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                Linked Template Order (Optional)
+                                                            </label>
+                                                            <div className="relative">
+                                                                <input
+                                                                    type="text"
+                                                                    value={
+                                                                        activePackageOrderIndex === index
+                                                                            ? orderSearch
+                                                                            : (selectedPackageOrderTemplates[String(index)]?.order_no || '')
+                                                                    }
+                                                                    onFocus={() => {
+                                                                        setActivePackageOrderIndex(index);
+                                                                        setOrderSearch('');
+                                                                        setOrderOptions([]);
+                                                                    }}
+                                                                    onChange={(e) => {
+                                                                        setActivePackageOrderIndex(index);
+                                                                        setOrderSearch(e.target.value);
+                                                                    }}
+                                                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all duration-200"
+                                                                    placeholder="Search template orders by order no..."
+                                                                    disabled={campaignMode !== 'packages'}
+                                                                />
+                                                                {(pkg.order_id || selectedPackageOrderTemplates[String(index)]) && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleClearPackageTemplateOrder(index)}
+                                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-red-600 hover:text-red-800"
+                                                                        disabled={campaignMode !== 'packages'}
+                                                                    >
+                                                                        Clear
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                            <p className="mt-1 text-sm text-gray-500">
+                                                                {selectedPackageOrderTemplates[String(index)]
+                                                                    ? `Selected: ${selectedPackageOrderTemplates[String(index)]?.order_no || selectedPackageOrderTemplates[String(index)]?.id}`
+                                                                    : (pkg.order_id ? `Selected order id: ${pkg.order_id}` : 'Type to search and select an existing template order.')}
+                                                            </p>
+                                                            {activePackageOrderIndex === index && orderLoading && (
+                                                                <div className="mt-2 text-sm text-gray-500">Searching…</div>
+                                                            )}
+                                                            {activePackageOrderIndex === index && !orderLoading && orderOptions.length > 0 && (
+                                                                <div className="mt-2 border border-gray-200 rounded-xl bg-white shadow-lg overflow-hidden">
+                                                                    {orderOptions.map((o) => (
+                                                                        <button
+                                                                            key={String(o.id)}
+                                                                            type="button"
+                                                                            onClick={() => handleSelectTemplateOrder(o)}
+                                                                            className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center justify-between"
+                                                                        >
+                                                                            <div>
+                                                                                <div className="font-medium text-gray-900">{o.order_no || `Order #${o.id}`}</div>
+                                                                                <div className="text-xs text-gray-500">ID: {o.id}</div>
+                                                                            </div>
+                                                                            {typeof o.total_amount === 'number' && (
+                                                                                <div className="text-sm font-semibold text-gray-900">
+                                                                                    RM {o.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                                </div>
+                                                                            )}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+
                                                         {/* Package Name */}
                                                         <div className="md:col-span-2">
                                                             <label className="block text-sm font-medium text-gray-700 mb-2">

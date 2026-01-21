@@ -1656,6 +1656,12 @@ export interface CampaignPackage {
     internal_description?: string;
     base_amount?: number;
     booking_amount?: number;
+    /**
+     * Template order linkage for campaign quotation display.
+     * Backend: Order status="template".
+     */
+    order_id?: string;
+    order?: Order;
     start_date?: string;
     end_date?: string;
     published_at?: string;

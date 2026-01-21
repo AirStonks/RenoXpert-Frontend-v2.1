@@ -169,7 +169,7 @@ function OrderMain() {
         notify('success', 'Orders refreshed');
     };
 
-    const handleFilterTable = async (selectedFilter: "all" | "confirmed" | "released" | "unreleased" | "draft" | "voided") => {
+    const handleFilterTable = async (selectedFilter: FilterTerms['status']) => {
         const newFilter: FilterTerms = {
             status: selectedFilter === filterStatus.status ? 'all' : selectedFilter,
             property_id: propertyFilter,
