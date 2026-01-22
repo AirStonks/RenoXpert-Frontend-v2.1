@@ -579,12 +579,12 @@ const CampaignDetailPage = () => {
                                                             </div>
                                                             
                                                             {/* View quotation (per package) */}
-                                                            {pkg.id && (
+                                                            {pkg.id && pkg.order_id && (
                                                                 <div className="flex justify-center pt-2 sm:pt-3">
                                                                     <Link
                                                                         to={`packages/${pkg.id}`}
                                                                         onClick={(e) => e.stopPropagation()}
-                                                                        className="px-5 py-2 bg-white border border-gray-200 text-gray-900 rounded-2xl hover:bg-gray-50 transition-all duration-200 flex items-center gap-2 font-semibold shadow-sm"
+                                                                        className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center gap-2 font-semibold shadow-lg hover:shadow-xl hover:scale-105"
                                                                     >
                                                                         View Quotation
                                                                         <ArrowRight className="h-4 w-4" />
