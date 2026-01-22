@@ -424,7 +424,7 @@ export default function AddCampaign() {
                 ...formData,
                 packages: campaignMode === 'packages' ? processedPackages : undefined,
                 // Package-level template linkage only
-                order_id: undefined,
+                order_id: undefined as string | undefined,
                 status: 'draft' // Default status for new campaigns
             };
 
