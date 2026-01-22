@@ -16,7 +16,8 @@ import {
     Hammer,
     Store,
     DollarSign,
-    ArrowDown
+    ArrowDown,
+    HelpCircle
 } from 'lucide-react';
 import { Attachment, Campaign, CampaignPackage } from '../../types';
 import { bookingPaymentIntent, getCampaign } from '../../services/publicApi';
@@ -364,6 +365,17 @@ const CampaignDetailPage = () => {
                                     </div>
                                 </div>
 
+                                {/* FAQ Button */}
+                                <div className="flex justify-center">
+                                    <Link
+                                        to="faq"
+                                        className="px-5 py-2.5 bg-white border border-gray-200 text-gray-900 rounded-2xl hover:bg-gray-50 transition-all duration-200 flex items-center gap-2 font-semibold shadow-sm hover:shadow-md"
+                                    >
+                                        <HelpCircle className="h-4 w-4" />
+                                        FAQ
+                                    </Link>
+                                </div>
+
                                 {/* Book Now Button or Fully Booked Message */}
                                 <div className="flex justify-center">
                                     {isFullyBooked ? (
@@ -414,6 +426,17 @@ const CampaignDetailPage = () => {
                                         </div>
                                         <span className="text-xs sm:text-sm font-medium text-gray-700 text-center">Enjoy Passive Income</span>
                                     </div>
+                                </div>
+
+                                {/* FAQ Button */}
+                                <div className="flex justify-center">
+                                    <Link
+                                        to="faq"
+                                        className="px-5 py-2.5 bg-white border border-gray-200 text-gray-900 rounded-2xl hover:bg-gray-50 transition-all duration-200 flex items-center gap-2 font-semibold shadow-sm hover:shadow-md"
+                                    >
+                                        <HelpCircle className="h-4 w-4" />
+                                        FAQ
+                                    </Link>
                                 </div>
 
                                 {/* Book Now Button or Fully Booked Message */}
@@ -577,7 +600,7 @@ const CampaignDetailPage = () => {
                                                                     </div>
                                                                 )}
                                                             </div>
-                                                            
+
                                                             {/* View quotation (per package) */}
                                                             {pkg.id && pkg.order_id && (
                                                                 <div className="flex justify-center pt-2 sm:pt-3">
