@@ -1453,7 +1453,7 @@ const OrderPreviewModal = ({
                                                 </span>
                                             )}
                                             {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
-                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
+                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {((totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)) / 2).toLocaleString(undefined, {
                                                     minimumFractionDigits: 0,
                                                     maximumFractionDigits: 2,
                                                 })}
@@ -1490,7 +1490,7 @@ const OrderPreviewModal = ({
                                                     </span>
                                                 )}
                                                 {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
-                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
+                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {((totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)) / 2).toLocaleString(undefined, {
                                                         minimumFractionDigits: 0,
                                                         maximumFractionDigits: 2,
                                                     })}
@@ -1780,7 +1780,7 @@ const OrderPreviewModal = ({
                                                 </span>
                                             )}
                                             {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
-                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
+                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {((totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)) / 2).toLocaleString(undefined, {
                                                     minimumFractionDigits: 0,
                                                     maximumFractionDigits: 2,
                                                 })}
@@ -1816,7 +1816,7 @@ const OrderPreviewModal = ({
                                                     </span>
                                                 )}
                                                 {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
-                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
+                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {((totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)) / 2).toLocaleString(undefined, {
                                                         minimumFractionDigits: 0,
                                                         maximumFractionDigits: 2,
                                                     })}
