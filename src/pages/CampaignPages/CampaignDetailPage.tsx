@@ -13,9 +13,8 @@ import {
     CheckCircle,
     ArrowRight,
     XCircle,
-    Hammer,
-    Store,
-    DollarSign,
+    Percent,
+    Calendar,
     ArrowDown,
     HelpCircle
 } from 'lucide-react';
@@ -345,23 +344,26 @@ const CampaignDetailPage = () => {
 
                                 {/* Key Benefits */}
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                                    <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white/70 rounded-lg sm:rounded-xl backdrop-blur-sm">
-                                        <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg ">
-                                            <Hammer className="h-4 w-4 sm:h-4 sm:w-4 text-red-600" />
+                                    {/* 0% Management Fee */}
+                                    <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white/80 rounded-lg sm:rounded-xl backdrop-blur-sm border border-emerald-50 hover:border-emerald-200 hover:shadow-md transition-all duration-200">
+                                        <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-br from-emerald-100 to-green-100">
+                                            <Percent className="h-4 w-4 sm:h-4 sm:w-4 text-emerald-600" />
                                         </div>
-                                        <span className="text-xs sm:text-sm font-medium text-gray-700">Renovate Smart</span>
+                                        <span className="text-xs sm:text-sm font-semibold text-gray-800">0% Management Fee</span>
                                     </div>
-                                    <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white/70 rounded-lg sm:rounded-xl backdrop-blur-sm">
-                                        <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
-                                            <Store className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
+                                    {/* 60 Months Instalment */}
+                                    <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white/80 rounded-lg sm:rounded-xl backdrop-blur-sm border border-blue-50 hover:border-blue-200 hover:shadow-md transition-all duration-200">
+                                        <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-br from-blue-100 to-sky-100">
+                                            <Calendar className="h-4 w-4 sm:h-4 sm:w-4 text-blue-600" />
                                         </div>
-                                        <span className="text-xs sm:text-sm font-medium text-gray-700">Rent Out Fast</span>
+                                        <span className="text-xs sm:text-sm font-semibold text-gray-800">60 Months Instalment</span>
                                     </div>
-                                    <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white/70 rounded-lg sm:rounded-xl backdrop-blur-sm">
-                                        <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
-                                            <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
+                                    {/* 0 Hassle & Headache */}
+                                    <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white/80 rounded-lg sm:rounded-xl backdrop-blur-sm border border-indigo-50 hover:border-indigo-200 hover:shadow-md transition-all duration-200">
+                                        <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100">
+                                            <CheckCircle className="h-4 w-4 sm:h-4 sm:w-4 text-indigo-600" />
                                         </div>
-                                        <span className="text-xs sm:text-sm font-medium text-gray-700">Enjoy Passive Income</span>
+                                        <span className="text-xs sm:text-sm font-semibold text-gray-800">0 Hassle &amp; Headache</span>
                                     </div>
                                 </div>
 
@@ -408,23 +410,32 @@ const CampaignDetailPage = () => {
                             <div className="space-y-6 sm:space-y-8 order-4 lg:hidden">
                                 {/* Key Benefits */}
                                 <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                                    <div className="flex flex-col items-center space-y-2 p-2 sm:p-3 rounded-lg sm:rounded-xl backdrop-blur-sm">
-                                        <div className="p-2 bg-red-200 rounded-lg">
-                                            <Hammer className="h-6 w-6 sm:h-8 sm:w-8 text-red-600" />
+                                    {/* 0% Management Fee */}
+                                    <div className="flex flex-col items-center space-y-2 p-2 sm:p-3 rounded-lg sm:rounded-xl backdrop-blur-sm bg-white/80 border border-emerald-50">
+                                        <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-100 to-green-100">
+                                            <Percent className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600" />
                                         </div>
-                                        <span className="text-xs sm:text-sm font-medium text-gray-700 text-center">Renovate Smart</span>
+                                        <span className="text-[10px] sm:text-xs font-semibold text-gray-800 text-center leading-snug">
+                                            0% Management Fee
+                                        </span>
                                     </div>
-                                    <div className="flex flex-col items-center space-y-2 p-2 sm:p-3 rounded-lg sm:rounded-xl backdrop-blur-sm">
-                                        <div className="p-2 bg-red-200 rounded-lg">
-                                            <Store className="h-6 w-6 sm:h-8 sm:w-8 text-red-600" />
+                                    {/* 60 Months Instalment */}
+                                    <div className="flex flex-col items-center space-y-2 p-2 sm:p-3 rounded-lg sm:rounded-xl backdrop-blur-sm bg-white/80 border border-blue-50">
+                                        <div className="p-2 rounded-lg bg-gradient-to-br from-blue-100 to-sky-100">
+                                            <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
                                         </div>
-                                        <span className="text-xs sm:text-sm font-medium text-gray-700 text-center">Rent Out Fast</span>
+                                        <span className="text-[10px] sm:text-xs font-semibold text-gray-800 text-center leading-snug">
+                                            60 Months Instalment
+                                        </span>
                                     </div>
-                                    <div className="flex flex-col items-center space-y-2 p-2 sm:p-3 rounded-lg sm:rounded-xl backdrop-blur-sm">
-                                        <div className="p-2 bg-red-200 rounded-lg">
-                                            <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-red-600" />
+                                    {/* 0 Hassle & Headache */}
+                                    <div className="flex flex-col items-center space-y-2 p-2 sm:p-3 rounded-lg sm:rounded-xl backdrop-blur-sm bg-white/80 border border-indigo-50">
+                                        <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100">
+                                            <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600" />
                                         </div>
-                                        <span className="text-xs sm:text-sm font-medium text-gray-700 text-center">Enjoy Passive Income</span>
+                                        <span className="text-[10px] sm:text-xs font-semibold text-gray-800 text-center leading-snug">
+                                            0 Hassle &amp; Headache
+                                        </span>
                                     </div>
                                 </div>
 
@@ -655,23 +666,26 @@ const CampaignDetailPage = () => {
 
                                                 {/* Campaign Features */}
                                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                                    <div className="flex items-center space-x-3 p-3 bg-red-50 rounded-xl">
-                                                        <div className="p-2 bg-red-100 rounded-lg">
-                                                            <Hammer className="h-5 w-5 text-red-600" />
+                                                    {/* 0% Management Fee */}
+                                                    <div className="flex items-center space-x-3 p-3 bg-white/80 rounded-xl border border-emerald-50">
+                                                        <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-100 to-green-100">
+                                                            <Percent className="h-5 w-5 text-emerald-600" />
                                                         </div>
-                                                        <span className="text-sm font-medium text-gray-700">Renovate Smart</span>
+                                                        <span className="text-sm font-semibold text-gray-800">0% Management Fee</span>
                                                     </div>
-                                                    <div className="flex items-center space-x-3 p-3 bg-red-50 rounded-xl">
-                                                        <div className="p-2 bg-red-100 rounded-lg">
-                                                            <Store className="h-5 w-5 text-red-600" />
+                                                    {/* 60 Months Instalment */}
+                                                    <div className="flex items-center space-x-3 p-3 bg-white/80 rounded-xl border border-blue-50">
+                                                        <div className="p-2 rounded-lg bg-gradient-to-br from-blue-100 to-sky-100">
+                                                            <Calendar className="h-5 w-5 text-blue-600" />
                                                         </div>
-                                                        <span className="text-sm font-medium text-gray-700">Rent Out Fast</span>
+                                                        <span className="text-sm font-semibold text-gray-800">60 Months Instalment</span>
                                                     </div>
-                                                    <div className="flex items-center space-x-3 p-3 bg-red-50 rounded-xl">
-                                                        <div className="p-2 bg-red-100 rounded-lg">
-                                                            <DollarSign className="h-5 w-5 text-red-600" />
+                                                    {/* 0 Hassle & Headache */}
+                                                    <div className="flex items-center space-x-3 p-3 bg-white/80 rounded-xl border border-indigo-50">
+                                                        <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100">
+                                                            <CheckCircle className="h-5 w-5 text-indigo-600" />
                                                         </div>
-                                                        <span className="text-sm font-medium text-gray-700">Enjoy Passive Income</span>
+                                                        <span className="text-sm font-semibold text-gray-800">0 Hassle &amp; Headache</span>
                                                     </div>
                                                 </div>
 
