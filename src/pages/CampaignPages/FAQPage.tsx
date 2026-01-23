@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { KTAccordion } from '../../metronic/core';
 
 interface FAQItem {
     id: string;
@@ -445,6 +446,10 @@ The Owner authorizes the Company to pursue recovery of any outstanding rent or m
 
 const FAQPage = () => {
     const { campaignSlug } = useParams<{ campaignSlug: string }>();
+
+    useEffect(() => {
+        KTAccordion.init();
+    }, []);
 
     const formatAnswer = (answer: string) => {
         return answer.split('\n\n').map((paragraph, index) => {
