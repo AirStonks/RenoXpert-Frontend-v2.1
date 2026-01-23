@@ -901,7 +901,7 @@ export default function CampaignPackageDetailPage() {
                                             const renderPackage = (pkg: Package, isAddon: boolean) => {
                                                 const pkgId = String(pkg.id ?? pkg.name ?? 'pkg');
                                                 const expanded = !!expandedPackageIds[pkgId];
-                                                const products = (pkg.products || []) as Product[];
+                                                const products = ((pkg.products || []) as Product[]).filter((p) => p.pivot?.visibility == true);
 
                                                 return (
                                                     <div
