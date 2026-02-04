@@ -133,7 +133,7 @@ const CampaignDetailPage = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.name || !formData.phone) {
+        if (!formData.name || !formData.phone || !formData.email) {
             notify('error', 'Please fill in all required fields');
             return;
         }
@@ -790,7 +790,7 @@ const CampaignDetailPage = () => {
                                             {/* Email Field */}
                                             <div>
                                                 <label className="block text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
-                                                    Email Address (Optional)
+                                                    Email Address *
                                                 </label>
                                                 <div className="relative">
                                                     <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
@@ -801,6 +801,7 @@ const CampaignDetailPage = () => {
                                                         name="email"
                                                         value={formData.email}
                                                         onChange={handleInputChange}
+                                                        required
                                                         className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-gray-50 border border-gray-200 rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 placeholder-gray-500 text-sm sm:text-base"
                                                         placeholder="Enter your email address"
                                                     />
