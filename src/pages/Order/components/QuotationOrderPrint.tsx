@@ -277,6 +277,8 @@ const QuotationOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
             : 0)
         , 0);
 
+    const totalQuotationAmountForDisplay = (totalExcludedAddonAmount - Number(orderDetail?.latest_quotation?.bonus?.value || 0));
+
     const totalRenoNowPrice = selectedPackages.reduce((total, pkg) => {
         if (pkg.rnpl_method === 'reno-now' && (pkg.is_addon === true && pkg.is_addon_included === true)) {
             return total + (pkg.markup_amount * (pkg.quantity || 1))
@@ -482,7 +484,7 @@ const QuotationOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                         </View>
                         <View style={{ flex: 2 }}>
                             <Text style={[additionalStyles.summaryCell, { textAlign: "right", fontWeight: "bold", fontSize: 8 }]}>
-                                RM {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                RM {totalQuotationAmountForDisplay.toLocaleString(undefined, {
                                     minimumFractionDigits: 0,
                                     maximumFractionDigits: 2
                                 })}
