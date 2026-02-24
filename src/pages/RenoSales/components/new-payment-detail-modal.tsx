@@ -77,6 +77,7 @@ const bankOptions = [
     { value: "Ryt Bank (YTL Digital Bank Berhad)", label: "Ryt Bank (YTL Digital Bank Berhad)" },
     { value: "Standard Chartered Bank Malaysia Berhad", label: "Standard Chartered Bank Malaysia Berhad" },
     { value: "United Overseas Bank (Malaysia) Berhad", label: "United Overseas Bank (Malaysia) Berhad" },
+    { value: "Touch 'n Go (TNG) eWallet", label: "Touch 'n Go (TNG) eWallet" },
 ]
 
 const receivingAccOptions = [
