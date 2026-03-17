@@ -71,7 +71,7 @@ function ViewQuotation() {
                 <div className="card-header flex justify-between">
                     <div className="flex gap-4 justify-center">
                         <Link
-                            to={LOCAL_PATH_PREFIX + 'order/overview/id/' + invoiceDetail.sale.order_id}
+                            to={LOCAL_PATH_PREFIX + 'order/overview/id/' + (invoiceDetail.sale?.order_id ?? '')}
                             className="ki-solid ki-arrow-left items-center">
                         </Link>
                         <span className="text-lg font-semibold">Payment Invoice</span>
@@ -102,7 +102,7 @@ function ViewQuotation() {
                                         Order No:
                                     </td>
                                     <td className="text-sm text-gray-900 font-medium pb-3">
-                                        {invoiceDetail.sale.order.order_no}
+                                        {invoiceDetail.sale?.order?.order_no ?? '-'}
                                     </td>
                                 </tr>
                                 <tr>
@@ -110,7 +110,7 @@ function ViewQuotation() {
                                         Issued Date:
                                     </td>
                                     <td className="text-sm text-gray-900 font-medium pb-3">
-                                        {invoiceDetail.sale.order.created_at}
+                                        {invoiceDetail.sale?.order?.created_at ?? '-'}
                                     </td>
                                 </tr>
                                 <tr>
