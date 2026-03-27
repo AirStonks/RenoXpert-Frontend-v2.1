@@ -188,8 +188,8 @@ export default function PropertyStep({ selectedProperty, setSelectedProperty, fo
 
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                             {([
-                                { key: "queenBedrooms", label: "Queen Bedrooms", max: 5 },
-                                { key: "singleBedrooms", label: "Single Bedrooms", max: 5 },
+                                { key: "queenBedrooms", label: "Queen Bedrooms", max: 6 },
+                                { key: "singleBedrooms", label: "Single Bedrooms", max: 6 },
                                 { key: "studios", label: "Studios", max: 3 },
                                 { key: "bathrooms", label: "Bathrooms", max: 5 },
                             ] as const).map(({ key, label, max }) => (
