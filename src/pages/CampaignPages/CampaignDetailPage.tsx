@@ -620,7 +620,7 @@ const CampaignDetailPage = () => {
                     <div>
                         <p className="text-[11px] text-slate-400 leading-none">From</p>
                         <p className="text-base font-extrabold text-slate-900">
-                            RM {(selectedPackage?.booking_amount ?? campaign.booking_amount ?? 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                            RM {(selectedPackage?.booking_amount || campaign.booking_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         </p>
                     </div>
                     <Button onClick={() => {

@@ -667,7 +667,7 @@ export default function CampaignPackageDetailPage() {
 
                                             {selectedProgram !== 'rnpl' && (
                                                 <select
-                                                    className="rounded-lg border-slate-200 text-sm bg-white py-1.5 px-3 appearance-none"
+                                                    className="rounded-lg border-slate-200 text-sm bg-white py-1.5 px-3"
                                                     id="payment_plan"
                                                     value={selectedPlan}
                                                     onChange={(e) => setSelectedPlan(e.target.value)}
