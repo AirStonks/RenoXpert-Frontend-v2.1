@@ -329,6 +329,14 @@ export default {
 					500: '#14b8a6',
 					700: '#0d9488',
 				},
+				campaign: {
+					DEFAULT: '#D71E42',
+					50: '#FDF2F4',
+					100: '#FBE3E8',
+					200: '#F6C2CC',
+					600: '#BE1A3B',
+					700: '#9F1631',
+				},
 			},
 			boxShadow: {
 				card: 'var(--tw-card-box-shadow)',
