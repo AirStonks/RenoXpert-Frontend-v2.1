@@ -17,9 +17,9 @@ import {
     Link,
     Edit3
 } from 'lucide-react';
-import { orderIndex, updateCampaign } from '../../services/api';
+import { orderIndex, updateCampaign, uploadCampaignThumbnailVideo, deleteCampaignThumbnailVideo } from '../../services/api';
 import useFetchCampaign from '../../hook/useFetchCampaign';
-import { CampaignPackage, Order } from '../../types';
+import { Attachment, CampaignPackage, Order } from '../../types';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -44,6 +44,9 @@ export default function EditCampaign() {
 
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+    const [existingVideoUrl, setExistingVideoUrl] = useState<string | null>(null);
+    const [videoUploading, setVideoUploading] = useState<boolean>(false);
+    const [videoError, setVideoError] = useState<string | null>(null);
     const [packages, setPackages] = useState<CampaignPackage[]>([]);
     const [packageErrors, setPackageErrors] = useState<Record<string, Record<string, string>>>({});
     const [campaignMode, setCampaignMode] = useState<'single' | 'packages'>('single');
@@ -91,6 +94,8 @@ export default function EditCampaign() {
                 booking_amount: campaign.booking_amount || 0,
                 thumbnail: null
             });
+
+            setExistingVideoUrl((campaign.thumbnail_video as Attachment)?.file_url ?? null);
 
             // Set packages if they exist
             if (campaign.packages && campaign.packages.length > 0) {
@@ -216,6 +221,40 @@ export default function EditCampaign() {
                 ...prev,
                 thumbnail: file
             }));
+        }
+    };
+
+    const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setVideoError(null);
+        if (file.size > 50 * 1024 * 1024) {
+            setVideoError('Video must be 50MB or smaller.');
+            return;
+        }
+        setVideoUploading(true);
+        try {
+            const res = await uploadCampaignThumbnailVideo(campaignId!, file);
+            setExistingVideoUrl(res?.data?.thumbnail_video?.file_url ?? null);
+        } catch (err) {
+            console.error('Thumbnail video upload failed:', err);
+            setVideoError('Upload failed. Please try again.');
+        } finally {
+            setVideoUploading(false);
+        }
+    };
+
+    const handleVideoRemove = async () => {
+        setVideoError(null);
+        setVideoUploading(true);
+        try {
+            await deleteCampaignThumbnailVideo(campaignId!);
+            setExistingVideoUrl(null);
+        } catch (err) {
+            console.error('Thumbnail video removal failed:', err);
+            setVideoError('Removal failed. Please try again.');
+        } finally {
+            setVideoUploading(false);
         }
     };
 
@@ -729,6 +768,47 @@ export default function EditCampaign() {
                                             </div>
                                         </div>
                                     )}
+                                </div>
+
+                                {/* Campaign Thumbnail Video */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Campaign Thumbnail Video (Optional)
+                                    </label>
+                                    {existingVideoUrl ? (
+                                        <div className="mt-1">
+                                            <video src={existingVideoUrl} controls className="w-full h-48 object-cover rounded-lg border border-gray-200 bg-black" />
+                                            <button
+                                                type="button"
+                                                onClick={handleVideoRemove}
+                                                disabled={videoUploading}
+                                                className="mt-2 text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50"
+                                            >
+                                                {videoUploading ? 'Removing…' : 'Remove video'}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-gray-400 transition-colors duration-200">
+                                            <div className="space-y-1 text-center">
+                                                <div className="flex text-sm text-gray-600 justify-center">
+                                                    <label htmlFor="thumbnail-video-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                                                        <span>{videoUploading ? 'Uploading…' : 'Upload a video'}</span>
+                                                        <input
+                                                            id="thumbnail-video-upload"
+                                                            name="thumbnail_video"
+                                                            type="file"
+                                                            accept="video/mp4,video/webm,video/quicktime"
+                                                            onChange={handleVideoChange}
+                                                            disabled={videoUploading}
+                                                            className="sr-only"
+                                                        />
+                                                    </label>
+                                                </div>
+                                                <p className="text-xs text-gray-500">MP4, WebM, MOV up to 50MB</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {videoError && <p className="mt-2 text-sm text-red-600">{videoError}</p>}
                                 </div>
 
                                 {/* Date Range */}
