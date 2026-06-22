@@ -199,6 +199,12 @@ export default function CampaignPackageDetailPage() {
                 In the event of any inconsistency, ambiguity, or conflict between these T&C and the provisions of the OCA, <strong>the terms contained in the OCA shall prevail</strong>. However, where both documents impose obligations on the Owner or Company, <strong>the stricter or more specific obligation shall take precedence</strong> to ensure consistency with the intent, purpose, and performance standards of the collaboration.
             </p>
 
+            <div className="rounded-xl bg-campaign-50 border border-campaign-100 p-4">
+                <p className="text-sm text-slate-700 leading-relaxed">
+                    <strong>Payment constitutes acknowledgement.</strong> By making any payment toward this quotation, the Owner acknowledges having read, understood, and agreed to this quotation and these Terms &amp; Conditions.
+                </p>
+            </div>
+
             <h2 id="tnc-sec-1" className="text-lg font-bold mt-6 mb-3 scroll-mt-24">1. Engagement and Quotation Validity</h2>
             <p className="text-justify leading-relaxed mb-3">
                 1.1 This quotation shall remain valid for seven (7) calendar days from the issuance date. Any confirmation received after this period shall be subjected to revision at the Company's sole discretion. Upon confirmation or payment of any portion of the quoted amount within the validity period, this quotation shall be deemed fully accepted, and the Owner shall have no right to withdraw, cancel, or modify the engagement except as expressly permitted herein.
@@ -265,6 +271,9 @@ export default function CampaignPackageDetailPage() {
             </p>
 
             <h2 id="tnc-sec-3" className="text-lg font-bold mt-6 mb-3 scroll-mt-24">3. Payment Terms</h2>
+            <p className="text-justify leading-relaxed mb-3">
+                <strong>3.0 Acknowledgement by Payment.</strong> The Owner's payment of the booking fee or any sum stated in this quotation shall be deemed conclusive acknowledgement and acceptance of this quotation and these Terms &amp; Conditions, irrespective of whether this quotation has been separately signed.
+            </p>
 
             {selectedProgram === "normal" && (
                 <>
