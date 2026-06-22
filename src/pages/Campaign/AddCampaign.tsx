@@ -232,26 +232,36 @@ export default function AddCampaign() {
         }));
     };
 
+    // Helper: drop the removed key and shift all higher keys down by 1
+    const shiftIndexMap = <T,>(map: Record<string, T>, removed: number): Record<string, T> => {
+        const next: Record<string, T> = {};
+        Object.entries(map).forEach(([k, v]) => {
+            const i = Number(k);
+            if (i === removed) return;
+            next[String(i > removed ? i - 1 : i)] = v;
+        });
+        return next;
+    };
+
+    // Same as shiftIndexMap but for maps keyed by number (Record<number, ...>)
+    const shiftNumericIndexMap = <T,>(map: Record<number, T>, removed: number): Record<number, T> => {
+        const next: Record<number, T> = {};
+        Object.entries(map).forEach(([k, v]) => {
+            const i = Number(k);
+            if (i === removed) return;
+            next[i > removed ? i - 1 : i] = v;
+        });
+        return next;
+    };
+
     const removePackage = (index: number) => {
         setPackages(prev => prev.filter((_, i) => i !== index));
-        // Clear errors for removed package
-        setPackageErrors(prev => {
-            const newErrors = { ...prev };
-            delete newErrors[index.toString()];
-            return newErrors;
-        });
-        // Clear value sources for removed package
-        setPackageValueSources(prev => {
-            const newSources = { ...prev };
-            delete newSources[index.toString()];
-            return newSources;
-        });
-        // Clear collapsed state for removed package
-        setCollapsedPackages(prev => {
-            const newCollapsed = { ...prev };
-            delete newCollapsed[index];
-            return newCollapsed;
-        });
+        // Reindex all per-package maps: drop the removed key, shift higher keys down
+        setPackageErrors(prev => shiftIndexMap(prev, index));
+        setPackageValueSources(prev => shiftIndexMap(prev, index));
+        setCollapsedPackages(prev => shiftNumericIndexMap(prev, index));
+        setSelectedPackageOrderTemplates(prev => shiftIndexMap(prev, index));
+        setPackageLayoutIndex(prev => shiftNumericIndexMap(prev, index));
     };
 
     const updatePackage = (index: number, field: keyof CampaignPackage, value: string | number) => {
@@ -477,30 +487,36 @@ export default function AddCampaign() {
 
             // Process packages with proper values based on source
             const processedPackages = campaignMode === 'packages'
-                ? packages.map((pkg, index) => {
-                    const valueSource = packageValueSources[index.toString()];
-                    const processed: CampaignPackage = {
-                        ...pkg,
-                        slot_total: valueSource?.slot_total === 'fixed' ? formData.slot_total : pkg.slot_total,
-                        base_amount: valueSource?.base_amount === 'fixed' ? formData.base_amount : pkg.base_amount,
-                        booking_amount: valueSource?.booking_amount === 'fixed' ? formData.booking_amount : pkg.booking_amount,
-                    };
+                ? packages
+                    // In layout mode, exclude packages that have no layout assignment
+                    // (e.g. flat packages added before the toggle was turned on)
+                    .filter((_, index) => !useLayoutTypes || packageLayoutIndex[index] !== undefined)
+                    .map((pkg) => {
+                        // Look up the original index so per-package maps (keyed by original position) are correct.
+                        const index = packages.indexOf(pkg);
+                        const valueSource = packageValueSources[index.toString()];
+                        const processed: CampaignPackage = {
+                            ...pkg,
+                            slot_total: valueSource?.slot_total === 'fixed' ? formData.slot_total : pkg.slot_total,
+                            base_amount: valueSource?.base_amount === 'fixed' ? formData.base_amount : pkg.base_amount,
+                            booking_amount: valueSource?.booking_amount === 'fixed' ? formData.booking_amount : pkg.booking_amount,
+                        };
 
-                    // Normalise order_id: backend accepts null/omitted, but not the string "null"
-                    if (processed.order_id === 'null' || processed.order_id === '' || processed.order_id == null) {
-                        delete (processed as any).order_id;
-                    }
-
-                    // Thread the layout assignment (0-based index into submitted layout_types)
-                    if (useLayoutTypes) {
-                        const layoutIdx = packageLayoutIndex[index];
-                        if (layoutIdx !== undefined) {
-                            processed.layout_type_index = layoutIdx;
+                        // Normalise order_id: backend accepts null/omitted, but not the string "null"
+                        if (processed.order_id === 'null' || processed.order_id === '' || processed.order_id == null) {
+                            delete processed.order_id;
                         }
-                    }
 
-                    return processed;
-                })
+                        // Thread the layout assignment (0-based index into submitted layout_types)
+                        if (useLayoutTypes) {
+                            const layoutIdx = packageLayoutIndex[index];
+                            if (layoutIdx !== undefined) {
+                                processed.layout_type_index = layoutIdx;
+                            }
+                        }
+
+                        return processed;
+                    })
                 : undefined;
 
             const campaignData = {
