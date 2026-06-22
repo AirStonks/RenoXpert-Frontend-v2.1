@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Layout Type System — Public Landing Mockup (Sub-project B)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','sans-serif'] },
+      colors: { campaign: { DEFAULT:'#D71E42',50:'#FDF2F4',100:'#FBE3E8',200:'#F6C2CC',600:'#BE1A3B',700:'#9F1631' } },
+      boxShadow: { card:'0 1px 2px rgba(16,24,40,.04),0 8px 28px rgba(16,24,40,.06)' },
+    } },
+  };
+</script>
+<style>
+  body { background:#eef1f5; font-family:'Inter',sans-serif; }
+  .scrollpane{ overflow-y:auto; scrollbar-width:thin; scrollbar-color:#cbd5e1 transparent; }
+  .scrollpane::-webkit-scrollbar{ width:8px; } .scrollpane::-webkit-scrollbar-thumb{ background:#cbd5e1; border-radius:8px; }
+  .annot{ outline:2px dashed #D71E42; outline-offset:3px; border-radius:14px; }
+  .ph{ background-image:linear-gradient(135deg,#fbe3e8,#f6c2cc 40%,#cbd5e1); position:relative; }
+  .ph2{ background-image:linear-gradient(135deg,#e6fffa,#99f6e4 40%,#cbd5e1); }
+  .ph3{ background-image:linear-gradient(135deg,#e0e7ff,#c7d2fe 40%,#cbd5e1); }
+</style>
+</head>
+<body class="text-slate-900">
+
+<div class="max-w-[1400px] mx-auto px-6 py-8">
+  <div class="flex items-start justify-between flex-wrap gap-4">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-widest text-campaign">RenoXpert · Campaign Refindment</p>
+      <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">Layout Type system — public landing mockup</h1>
+      <p class="text-slate-500 mt-2 max-w-2xl text-sm leading-relaxed">Two-level selection: pick a <strong>Layout Type</strong> first, then its sub-packages appear. Click a layout card and a rendering thumbnail — it's live. New pieces tagged <span class="inline-flex items-center align-middle gap-1 text-[10px] font-bold text-white bg-campaign px-1.5 py-0.5 rounded">NEW</span>.</p>
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-card p-4 text-sm w-full sm:w-auto">
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">What's new</p>
+      <ul class="space-y-1.5 text-slate-600">
+        <li><span class="inline-block w-9 text-center text-[10px] font-bold text-white bg-campaign rounded mr-2">H2</span>Layout Type → sub-package (two-level)</li>
+        <li><span class="inline-block w-9 text-center text-[10px] font-bold text-white bg-campaign rounded mr-2">H3</span>"Start from RMxxx" on sub-package cards</li>
+        <li><span class="inline-block w-9 text-center text-[10px] font-bold text-white bg-campaign rounded mr-2">H5</span>1 rental-projection image per layout</li>
+        <li><span class="inline-block w-9 text-center text-[10px] font-bold text-white bg-campaign rounded mr-2">H6</span>Many rendering images per layout</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-[1400px] mx-auto px-6 pb-24 flex flex-wrap gap-10 items-start justify-center">
+
+  <!-- DESKTOP -->
+  <div class="flex-1 min-w-[720px]">
+    <p class="text-sm font-semibold text-slate-500 mb-3">Desktop — layout selection → sub-packages</p>
+    <div class="rounded-2xl border border-slate-300 bg-white shadow-2xl overflow-hidden">
+      <div class="h-10 bg-slate-100 border-b border-slate-200 flex items-center px-4 gap-2">
+        <span class="w-3 h-3 rounded-full bg-[#ff5f57]"></span><span class="w-3 h-3 rounded-full bg-[#febc2e]"></span><span class="w-3 h-3 rounded-full bg-[#28c840]"></span>
+        <div class="ml-4 flex-1 max-w-md bg-white border border-slate-200 rounded-md text-xs text-slate-400 px-3 py-1 truncate">campaign.renoxpert.my/campaigns/astrum-belive</div>
+      </div>
+      <div class="b-app scrollpane bg-slate-50" style="height:820px" data-variant="desktop"></div>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="shrink-0">
+    <p class="text-sm font-semibold text-slate-500 mb-3">Mobile — 375px</p>
+    <div class="rounded-[2.5rem] border-[10px] border-slate-900 bg-slate-900 shadow-2xl overflow-hidden" style="width:375px">
+      <div class="relative bg-slate-50" style="height:780px">
+        <div class="absolute top-0 inset-x-0 h-6 bg-white z-40 flex items-center justify-center"><div class="w-24 h-4 bg-slate-900 rounded-b-2xl"></div></div>
+        <div class="b-app scrollpane" style="height:780px;padding-top:24px" data-variant="mobile"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const fmt = (n)=> n.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});
+const LAYOUTS = [
+  { id:'a', name:'Type A — Studio', ph:'ph',  desc:'Compact studio, optimised for solo professionals. ~450 sqft.',
+    renderings:['ph','ph2','ph3','ph'],
+    subs:[ {name:'Essential', startFrom:9500, booking:2000, popular:false},
+           {name:'Premium',   startFrom:12500, booking:2000, popular:true},
+           {name:'Luxe',      startFrom:16500, booking:2000, popular:false} ] },
+  { id:'b', name:'Type B — 1 Bedroom', ph:'ph2', desc:'One-bedroom with separate living. Great couple/co-living yield. ~650 sqft.',
+    renderings:['ph2','ph3','ph','ph2','ph3'],
+    subs:[ {name:'Essential', startFrom:12000, booking:2500, popular:false},
+           {name:'Premium',   startFrom:15500, booking:2500, popular:true},
+           {name:'Luxe',      startFrom:21000, booking:2500, popular:false} ] },
+  { id:'c', name:'Type C — 2 Bedroom', ph:'ph3', desc:'Two-bedroom family / shared layout, highest projected rental. ~900 sqft.',
+    renderings:['ph3','ph','ph2'],
+    subs:[ {name:'Essential', startFrom:16500, booking:3000, popular:false},
+           {name:'Premium',   startFrom:21500, booking:3000, popular:true} ] },
+];
+
+function renderApp(app){
+  const mobile = app.dataset.variant === 'mobile';
+  let active = 'a', selectedSub = 0;
+
+  app.innerHTML = `
+    <div class="bg-white border-b border-slate-200 sticky top-0 z-30">
+      <div class="${mobile?'px-4 py-3':'max-w-4xl mx-auto px-6 py-4'} flex items-center gap-3">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='28'%3E%3Crect width='110' height='28' rx='5' fill='%23D71E42'/%3E%3Ctext x='55' y='19' font-family='Inter,sans-serif' font-size='13' font-weight='800' fill='white' text-anchor='middle'%3ERenoXpert%3C/text%3E%3C/svg%3E" alt="RenoXpert" class="h-7"/>
+        <div class="text-${mobile?'[10px]':'xs'} font-medium uppercase tracking-wide text-slate-400 border-l border-slate-200 pl-3">Astrum × BeLive Co-Living</div>
+      </div>
+    </div>
+    <div class="${mobile?'px-4 py-5':'max-w-4xl mx-auto px-6 py-7'} space-y-6">
+      <div>
+        <h1 class="text-${mobile?'xl':'3xl'} font-extrabold tracking-tight text-slate-900">Choose your layout</h1>
+        <p class="text-slate-500 text-sm mt-1">Each layout has its own rental projection, renderings and packages.</p>
+      </div>
+
+      <!-- [H2/H5] Layout cards -->
+      <div class="annot relative pt-2">
+        <span class="absolute -top-2.5 left-3 bg-campaign text-white text-[10px] font-bold px-2 py-0.5 rounded">NEW · H2 + H5</span>
+        <div class="grid ${mobile?'grid-cols-1':'grid-cols-3'} gap-4">
+          ${LAYOUTS.map(l=>`
+            <button data-layout="${l.id}" class="b-card text-left rounded-2xl border bg-white overflow-hidden transition shadow-card hover:shadow-lg">
+              <div class="${l.ph} h-32 w-full grid place-items-center">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-white/90 bg-black/25 px-2 py-1 rounded">Rental Projection</span>
+              </div>
+              <div class="p-4">
+                <div class="b-cardname text-sm font-bold text-slate-900">${l.name}</div>
+                <div class="text-xs text-slate-500 mt-1 leading-snug">${l.desc}</div>
+                <div class="b-cardcta mt-3 text-xs font-semibold text-slate-400">${l.subs.length} package(s) ›</div>
+              </div>
+            </button>`).join('')}
+        </div>
+      </div>
+
+      <!-- selected layout panel -->
+      <div class="b-panel space-y-6"></div>
+    </div>
+
+    <!-- lightbox -->
+    <div class="b-lightbox hidden fixed inset-0 z-[60] bg-black/80 items-center justify-center p-6">
+      <div class="b-lightimg ph w-full max-w-xl aspect-video rounded-xl grid place-items-center text-white/90 font-semibold">Rendering</div>
+    </div>
+  `;
+
+  const panel = app.querySelector('.b-panel');
+  const lightbox = app.querySelector('.b-lightbox');
+  const lightimg = app.querySelector('.b-lightimg');
+
+  function renderPanel(){
+    const l = LAYOUTS.find(x=>x.id===active);
+    panel.innerHTML = `
+      <!-- [H6] Renderings gallery -->
+      <div class="annot relative pt-2">
+        <span class="absolute -top-2.5 left-3 bg-campaign text-white text-[10px] font-bold px-2 py-0.5 rounded">NEW · H6</span>
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-base font-bold text-slate-900">${l.name} · Renderings</h2>
+          <span class="text-xs text-slate-400">${l.renderings.length} photos · tap to enlarge</span>
+        </div>
+        <div class="grid grid-cols-${mobile?'2':'4'} gap-3">
+          ${l.renderings.map((c,i)=>`<button data-r="${i}" class="b-render ${c} aspect-[4/3] rounded-xl grid place-items-center text-[10px] font-semibold text-white/80"><span class="bg-black/25 px-1.5 py-0.5 rounded">Rendering ${i+1}</span></button>`).join('')}
+        </div>
+      </div>
+
+      <!-- sub-packages -->
+      <div>
+        <h2 class="text-base font-bold text-slate-900 mb-3">${l.name} · Packages</h2>
+        <div class="grid grid-cols-1 ${mobile?'':'sm:grid-cols-2'} gap-4">
+          ${l.subs.map((s,i)=>`
+            <label data-sub="${i}" class="b-sub relative block rounded-2xl border bg-white p-5 cursor-pointer transition">
+              ${s.popular?`<span class="absolute -top-3 left-5 inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-full bg-campaign text-white">Most popular</span>`:''}
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="text-sm font-bold text-slate-900">${s.name}</div>
+                  <!-- [H3] Start from -->
+                  <div class="mt-2 annot relative inline-block pr-2">
+                    <span class="absolute -top-2 -left-1 bg-campaign text-white text-[8px] font-bold px-1 rounded">H3</span>
+                    <div class="text-xs text-slate-400 leading-none mt-1">Start from</div>
+                    <div class="text-lg font-extrabold text-campaign leading-tight">RM ${fmt(s.startFrom)}<span class="text-[11px] font-medium text-slate-400"> initial down payment</span></div>
+                  </div>
+                  <div class="text-[11px] text-slate-500 mt-2">Booking Fee <span class="font-semibold text-slate-700">RM ${fmt(s.booking)}</span></div>
+                </div>
+                <span class="b-radio mt-1 h-5 w-5 rounded-full border-2 border-slate-300 grid place-items-center shrink-0"><span class="h-2.5 w-2.5 rounded-full bg-campaign opacity-0"></span></span>
+              </div>
+              <div class="mt-4 flex items-center justify-between">
+                <a class="text-xs font-semibold text-campaign hover:text-campaign-600">View Quotation ›</a>
+                <span class="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold">4 slots left</span>
+              </div>
+            </label>`).join('')}
+        </div>
+      </div>
+
+      <button class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-campaign text-white font-semibold rounded-xl px-6 py-3.5 shadow-[0_8px_24px_rgba(215,30,66,.25)]">
+        Book your slot →
+      </button>
+    `;
+    // sub selection
+    panel.querySelectorAll('.b-sub').forEach((el,i)=>{
+      const on = i===selectedSub;
+      el.classList.toggle('border-campaign', on);
+      el.classList.toggle('bg-campaign-50/40', on);
+      el.classList.toggle('border-slate-200', !on);
+      el.querySelector('.b-radio').classList.toggle('border-campaign', on);
+      el.querySelector('.b-radio span').style.opacity = on? '1':'0';
+      el.addEventListener('click',()=>{ selectedSub=i; renderPanel(); });
+    });
+    // renderings → lightbox
+    panel.querySelectorAll('.b-render').forEach((el)=>{
+      el.addEventListener('click',()=>{
+        lightimg.className = 'b-lightimg ' + el.className.split(' ').find(c=>c.startsWith('ph')) + ' w-full max-w-xl aspect-video rounded-xl grid place-items-center text-white/90 font-semibold';
+        lightimg.textContent = el.textContent.trim();
+        lightbox.classList.remove('hidden'); lightbox.classList.add('flex');
+      });
+    });
+  }
+
+  function renderCards(){
+    app.querySelectorAll('.b-card').forEach(c=>{
+      const on = c.dataset.layout===active;
+      c.classList.toggle('border-campaign', on);
+      c.classList.toggle('ring-2', on);
+      c.classList.toggle('ring-campaign', on);
+      c.classList.toggle('border-slate-200', !on);
+      c.querySelector('.b-cardcta').classList.toggle('text-campaign', on);
+      c.querySelector('.b-cardcta').classList.toggle('text-slate-400', !on);
+      c.onclick = ()=>{ active=c.dataset.layout; selectedSub=0; renderCards(); renderPanel(); };
+    });
+  }
+
+  lightbox.addEventListener('click',()=>{ lightbox.classList.add('hidden'); lightbox.classList.remove('flex'); });
+  renderCards(); renderPanel();
+}
+
+document.querySelectorAll('.b-app').forEach(renderApp);
+</script>
+</body>
+</html>
