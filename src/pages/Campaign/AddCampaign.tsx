@@ -17,7 +17,7 @@ import {
     ChevronDown,
     ChevronUp
 } from 'lucide-react';
-import { createCampaign, orderIndex } from '../../services/api';
+import { createCampaign, orderIndex, uploadCampaignThumbnailVideo } from '../../services/api';
 import { Order, CampaignPackage } from '../../types';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
@@ -57,6 +57,8 @@ export default function AddCampaign() {
     }>>({});
     const [collapsedPackages, setCollapsedPackages] = useState<Record<number, boolean>>({});
     const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+    const [videoFile, setVideoFile] = useState<File | null>(null);
+    const [videoError, setVideoError] = useState<string | null>(null);
 
     // Handle thumbnail preview URL
     useEffect(() => {
@@ -172,6 +174,17 @@ export default function AddCampaign() {
                 thumbnail: file
             }));
         }
+    };
+
+    const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setVideoError(null);
+        if (file.size > 50 * 1024 * 1024) {
+            setVideoError('Video must be 50MB or smaller.');
+            return;
+        }
+        setVideoFile(file);
     };
 
     // Package management functions
@@ -428,7 +441,16 @@ export default function AddCampaign() {
                 status: 'draft' // Default status for new campaigns
             };
 
-            await createCampaign(campaignData);
+            const created = await createCampaign(campaignData);
+            const newCampaignId = created?.data?.id;
+            if (videoFile && newCampaignId) {
+                try {
+                    await uploadCampaignThumbnailVideo(newCampaignId, videoFile);
+                } catch (videoErr) {
+                    console.error('Thumbnail video upload failed:', videoErr);
+                    setError('Campaign created, but the video upload failed — add it later from Edit.');
+                }
+            }
 
             // Navigate back to campaigns list
             navigate(`${LOCAL_PATH_PREFIX}campaigns`);
@@ -679,6 +701,38 @@ export default function AddCampaign() {
                                             </div>
                                         </div>
                                     )}
+                                </div>
+
+                                {/* Campaign Thumbnail Video */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Campaign Thumbnail Video (Optional)
+                                    </label>
+                                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-gray-400 transition-colors duration-200">
+                                        <div className="space-y-1 text-center">
+                                            <div className="flex text-sm text-gray-600 justify-center">
+                                                <label htmlFor="thumbnail-video-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                                                    <span>Upload a video</span>
+                                                    <input
+                                                        id="thumbnail-video-upload"
+                                                        name="thumbnail_video"
+                                                        type="file"
+                                                        accept="video/mp4,video/webm,video/quicktime"
+                                                        onChange={handleVideoChange}
+                                                        className="sr-only"
+                                                    />
+                                                </label>
+                                            </div>
+                                            <p className="text-xs text-gray-500">MP4, WebM, MOV up to 50MB · uploaded after the campaign is created</p>
+                                        </div>
+                                    </div>
+                                    {videoFile && (
+                                        <div className="mt-2 flex items-center justify-between text-sm text-gray-600">
+                                            <span>{videoFile.name}</span>
+                                            <button type="button" onClick={() => setVideoFile(null)} className="text-red-600 hover:text-red-800 font-medium">Remove</button>
+                                        </div>
+                                    )}
+                                    {videoError && <p className="mt-2 text-sm text-red-600">{videoError}</p>}
                                 </div>
 
                                 {/* Date Range */}
