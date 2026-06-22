@@ -144,6 +144,15 @@ function renderApp(app){
   function renderPanel(){
     const l = LAYOUTS.find(x=>x.id===active);
     panel.innerHTML = `
+      <!-- [H5] Rental projection (tap to enlarge) -->
+      <div class="annot relative pt-2">
+        <span class="absolute -top-2.5 left-3 bg-campaign text-white text-[10px] font-bold px-2 py-0.5 rounded">NEW · H5</span>
+        <h2 class="text-base font-bold text-slate-900 mb-2">${l.name} · Rental Projection</h2>
+        <button class="b-projection ${l.ph} w-full h-${mobile?'40':'56'} rounded-xl grid place-items-center text-white/90 font-semibold">
+          <span class="bg-black/25 px-2 py-1 rounded text-xs">Rental Projection · tap to enlarge</span>
+        </button>
+      </div>
+
       <!-- [H6] Renderings gallery -->
       <div class="annot relative pt-2">
         <span class="absolute -top-2.5 left-3 bg-campaign text-white text-[10px] font-bold px-2 py-0.5 rounded">NEW · H6</span>
@@ -205,6 +214,13 @@ function renderApp(app){
         lightimg.textContent = el.textContent.trim();
         lightbox.classList.remove('hidden'); lightbox.classList.add('flex');
       });
+    });
+    // rental projection → lightbox (same as renderings)
+    const proj = panel.querySelector('.b-projection');
+    if (proj) proj.addEventListener('click',()=>{
+      lightimg.className = 'b-lightimg ' + l.ph + ' w-full max-w-xl aspect-video rounded-xl grid place-items-center text-white/90 font-semibold';
+      lightimg.textContent = 'Rental Projection';
+      lightbox.classList.remove('hidden'); lightbox.classList.add('flex');
     });
   }
 
