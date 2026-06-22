@@ -49,3 +49,54 @@ export function getQuotationPackagePrice(pkg: Package, order?: Order | null): nu
 
     return perPackage;
 }
+
+type OrderWithQuotation = Order & {
+    latest_quotation?: { packages?: Package[]; bonus?: unknown } | null;
+};
+
+function parseBonusValue(bonus: unknown): number {
+    if (!bonus) return 0;
+    try {
+        const obj = typeof bonus === 'string' ? JSON.parse(bonus) : bonus;
+        return Number((obj as { value?: unknown })?.value) || 0;
+    } catch {
+        return 0;
+    }
+}
+
+/**
+ * Per-program "Initial Down Payment" (the "Start from RMxxx" figure), computed
+ * from a template order at DEFAULT add-on inclusion. Mirrors CampaignPackageDetailPage's
+ * originalInitialDownPayment so the landing/layout "Start from" matches the
+ * Quotation Detail page's Original Initial Down Payment.
+ */
+export function getInitialDownPayment(order?: OrderWithQuotation | null): number {
+    if (!order) return 0;
+    const packages: Package[] = order.latest_quotation?.packages ?? [];
+    const bonusValue = parseBonusValue(order.latest_quotation?.bonus ?? (order as { bonus?: unknown }).bonus);
+
+    // Reno Subscription (bePowered): upfront (be_powered_base_price + one-off packages) − bonus.
+    if (order.is_be_powered) {
+        const upfront = packages.reduce((acc, pkg) => {
+            const counts = pkg.payment_method === 'one-off' && (pkg.is_addon ? pkg.is_addon_included === true : true);
+            const unit = Number(pkg.markup_amount) || Number(pkg.total_price) || 0;
+            return acc + (counts ? unit * (pkg.quantity || 1) : 0);
+        }, Number(order.be_powered_base_price) || 0);
+        return upfront - bonusValue;
+    }
+
+    // RenoNow PayLater (rnpl): the RenoNow base price.
+    if (order.is_rnpl) {
+        return Number(order.rnpl_base_price) || 0;
+    }
+
+    // Full Payment / progressive: half of the total (recomputed from products, matching owner).
+    if (order.f_1 && order.total_amount != null) {
+        return Number(order.total_amount) / 2;
+    }
+    const total = packages.reduce((sum, pkg) => {
+        if (pkg.is_addon === true && pkg.is_addon_included === false) return sum;
+        return sum + getQuotationPackagePrice(pkg, order);
+    }, 0);
+    return total / 2;
+}

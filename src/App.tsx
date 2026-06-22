@@ -126,6 +126,7 @@ import EditCampaign from './pages/Campaign/EditCampaign';
 import CampaignDetail from './pages/Campaign/CampaignDetail';
 import CampaignDetailPage from './pages/CampaignPages/CampaignDetailPage';
 import CampaignPackageDetailPage from './pages/CampaignPages/CampaignPackageDetailPage';
+import CampaignLayoutDetailPage from './pages/CampaignPages/CampaignLayoutDetailPage';
 import FAQPage from './pages/CampaignPages/FAQPage';
 import KayaHeigIIFMain from './pages/InvestorInterestForm/KayaHeigIIFMain';
 import KayaHeigIIFDetail from './pages/InvestorInterestForm/KayaHeigIIFDetail';
@@ -297,6 +298,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
     [
         { path: '/campaigns/:campaignSlug', element: <CampaignDetailPage />, layout: null },
         { path: '/campaigns/:campaignSlug/packages/:campaignPackageId', element: <CampaignPackageDetailPage />, layout: null },
+        { path: '/campaigns/:campaignSlug/layouts/:layoutTypeId', element: <CampaignLayoutDetailPage />, layout: null },
         { path: '/campaigns/:campaignSlug/faq', element: <FAQPage />, layout: null },
         { path: '/campaigns/:campaignSlug/booking/payment/success', element: <PaymentSuccess />, layout: null },
         { path: '/campaigns/:campaignSlug/booking/payment/error', element: <PaymentError />, layout: null },
@@ -448,6 +450,7 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
     [
         { path: '/campaign/campaigns/:campaignSlug', element: <CampaignDetailPage />, layout: null },
         { path: '/campaign/campaigns/:campaignSlug/packages/:campaignPackageId', element: <CampaignPackageDetailPage />, layout: null },
+        { path: '/campaign/campaigns/:campaignSlug/layouts/:layoutTypeId', element: <CampaignLayoutDetailPage />, layout: null },
         { path: '/campaign/campaigns/:campaignSlug/faq', element: <FAQPage />, layout: null },
         { path: '/campaign/campaigns/:campaignSlug/booking/payment/success', element: <PaymentSuccess />, layout: null },
         { path: '/campaign/campaigns/:campaignSlug/booking/payment/error', element: <PaymentError />, layout: null },
