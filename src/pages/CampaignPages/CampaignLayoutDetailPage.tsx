@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import {
     User,
     Phone,
@@ -33,6 +33,8 @@ const formatRM = (value: number): string =>
 const CampaignLayoutDetailPage = () => {
     const { campaignSlug, layoutTypeId } = useParams<{ campaignSlug: string; layoutTypeId: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
+    const groupPrefix = location.pathname.startsWith('/campaign/campaigns/') ? '/campaign' : '';
 
     const [campaign, setCampaign] = useState<Campaign | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -257,7 +259,7 @@ const CampaignLayoutDetailPage = () => {
                     <Package className="h-16 w-16 text-slate-400 mx-auto mb-4" />
                     <h1 className="text-2xl font-bold text-slate-900 mb-2">Layout Not Found</h1>
                     <p className="text-slate-500 mb-6">This layout doesn&apos;t exist for this campaign.</p>
-                    <Button onClick={() => navigate(`/campaigns/${campaignSlug}`)}>Back to campaign</Button>
+                    <Button onClick={() => navigate(`${groupPrefix}/campaigns/${campaignSlug}`)}>Back to campaign</Button>
                 </Card>
             </div>
         );
@@ -270,7 +272,7 @@ const CampaignLayoutDetailPage = () => {
         <div className="w-full min-h-screen bg-slate-50">
             <CampaignHeader
                 right={
-                    <Link to={`/campaigns/${campaignSlug}/faq`} className={buttonClasses({ variant: 'secondary', size: 'md' })}>
+                    <Link to={`${groupPrefix}/campaigns/${campaignSlug}/faq`} className={buttonClasses({ variant: 'secondary', size: 'md' })}>
                         <HelpCircle className="h-4 w-4" /> FAQ
                     </Link>
                 }
@@ -280,7 +282,7 @@ const CampaignLayoutDetailPage = () => {
             <div className="bg-white border-b border-slate-200">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-3">
                     <Link
-                        to={`/campaigns/${campaignSlug}`}
+                        to={`${groupPrefix}/campaigns/${campaignSlug}`}
                         className="p-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 transition-colors"
                         aria-label="Back to campaign"
                     >
@@ -455,7 +457,7 @@ const CampaignLayoutDetailPage = () => {
                                                         {pkg.id && pkg.order_id && (
                                                             <div className="pt-1">
                                                                 <Link
-                                                                    to={`/campaigns/${campaignSlug}/packages/${pkg.id}`}
+                                                                    to={`${groupPrefix}/campaigns/${campaignSlug}/packages/${pkg.id}`}
                                                                     onClick={(e) => e.stopPropagation()}
                                                                     className={buttonClasses({ variant: 'secondary', size: 'md' })}
                                                                 >
