@@ -351,7 +351,24 @@ In the `if (campaign) { ... }` block, after the existing package-load (`setPacka
 
 - [ ] **Step 3: Layout helpers (with immediate upload/remove)**
 
-Add `addLayoutType`, `updateLayoutType`, `addSubPackage` (same as Task 2 Step 2). `removeLayoutType` mirrors Task 2 but also reindexes `layoutProjectionUrl`/`layoutRenderingImgs`. Add immediate image handlers that call the API when the layout has an id (existing), else hold for the post-save two-step (new layouts in edit):
+Add `addLayoutType`, `updateLayoutType`, `addSubPackage` (same as Task 2 Step 2). `removeLayoutType` mirrors Task 2 but also reindexes `layoutProjectionUrl`/`layoutRenderingImgs`.
+
+**CRITICAL (apply the Task-2 reindex fix here too):** EditCampaign's `removePackage` keeps the same per-index maps (`packageErrors`, `packageValueSources`, `collapsedPackages`, `selectedPackageOrderTemplates`, and the new `packageLayoutIndex`) keyed by the package's array position. The existing `removePackage` only `delete`s the removed key — it must instead **reindex** every map (drop the removed key; shift keys > index down by 1) so grouping isn't corrupted when a non-tail package/layout is removed. Add the same helpers used in Task 2 and call them in `removePackage`:
+```tsx
+const shiftIndexMap = <T,>(map: Record<string, T>, removed: number): Record<string, T> => {
+    const next: Record<string, T> = {};
+    Object.entries(map).forEach(([k, v]) => { const i = Number(k); if (i === removed) return; next[String(i > removed ? i - 1 : i)] = v; });
+    return next;
+};
+const shiftNumericIndexMap = <T,>(map: Record<number, T>, removed: number): Record<number, T> => {
+    const next: Record<number, T> = {};
+    Object.entries(map).forEach(([k, v]) => { const i = Number(k); if (i === removed) return; next[i > removed ? i - 1 : i] = v; });
+    return next;
+};
+```
+`removePackage(index)`: `setPackages(prev => prev.filter((_, i) => i !== index));` then `setPackageErrors(p => shiftIndexMap(p, index))`, `setPackageValueSources(p => shiftIndexMap(p, index))`, `setSelectedPackageOrderTemplates(p => shiftIndexMap(p, index))`, `setCollapsedPackages(p => shiftNumericIndexMap(p, index))`, `setPackageLayoutIndex(p => shiftNumericIndexMap(p, index))`.
+
+Add immediate image handlers that call the API when the layout has an id (existing), else hold for the post-save two-step (new layouts in edit):
 ```tsx
     const handleEditLayoutProjection = async (layoutIdx: number, file: File | null) => {
         setLayoutError(null);
@@ -407,7 +424,7 @@ Same as Task 2 Steps 3–4 (toggle + "Add Layout Type" + per-layout sections + g
 
 - [ ] **Step 5: Thread layout data into handleSubmit**
 
-In `handleSubmit`, when `useLayoutTypes`: set each processed package's `layout_type_index = packageLayoutIndex[origIndex]` and `layout_type_id` if its layout has an existing id (`layoutTypes[packageLayoutIndex[origIndex]]?.id`); add `campaignData.layout_types = layoutTypes.map((lt, i) => ({ id: lt.id, name: lt.name, description: lt.description ?? '', sort: i }))`. After `updateCampaign` returns, for any NEW layout (no prior id) that has pending images, mirror the Add two-step using the returned `data.layout_types[]` ids. (If you chose to block image upload on new edit-layouts until save — per Step 3's guard — do the post-save upload here.)
+In `handleSubmit`, when `useLayoutTypes`: **exclude packages that have no `packageLayoutIndex` entry from the submitted payload** (only from the payload, not from state — same as Task 2's fix, so a layered campaign never persists layout-less packages); for the remaining packages set `layout_type_index = packageLayoutIndex[origIndex]` and `layout_type_id` if its layout has an existing id (`layoutTypes[packageLayoutIndex[origIndex]]?.id`); add `campaignData.layout_types = layoutTypes.map((lt, i) => ({ id: lt.id, name: lt.name, description: lt.description ?? '', sort: i }))`. When `useLayoutTypes` is false, submit all packages unchanged. After `updateCampaign` returns, for any NEW layout (no prior id) that has pending images, mirror the Add two-step using the returned `data.layout_types[]` ids. (If you chose to block image upload on new edit-layouts until save — per Step 3's guard — do the post-save upload here.)
 
 - [ ] **Step 6: Verify**
 ```bash
