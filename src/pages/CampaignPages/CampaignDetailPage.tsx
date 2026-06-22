@@ -360,7 +360,7 @@ const CampaignDetailPage = () => {
                     </div>
                 ) : isLayered ? (
                     /* Layered Campaign — Choose your layout (cards link to the layout detail page) */
-                    <div className="lg:col-span-3 space-y-4 sm:space-y-6">
+                    <div id="packages-section" className="lg:col-span-3 space-y-4 sm:space-y-6">
                         <div>
                             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">Choose your layout</h2>
                             <p className="text-base text-slate-500">Pick a layout to see its photos, packages and pricing.</p>
