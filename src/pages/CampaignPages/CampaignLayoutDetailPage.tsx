@@ -438,18 +438,30 @@ const CampaignLayoutDetailPage = () => {
 
                                                         {/* Pricing — Start from (Initial Down Payment) */}
                                                         <div className="pt-4 border-t border-slate-100">
-                                                            <div className="text-xs text-slate-400 leading-none mb-1">Start from</div>
-                                                            <div className="text-2xl sm:text-3xl font-bold text-campaign">
-                                                                RM {formatRM(startFrom)}
-                                                                <span className="text-xs sm:text-sm font-medium text-slate-400"> initial down</span>
-                                                            </div>
-                                                            {pkg.booking_amount && pkg.booking_amount > 0 && (
-                                                                <div className="mt-2">
-                                                                    <div className="text-sm text-slate-500">
-                                                                        Booking Fee <span className="font-semibold text-slate-700">RM {pkg.booking_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                            {startFrom > 0 ? (
+                                                                <>
+                                                                    <div className="text-xs text-slate-400 leading-none mb-1">Start from</div>
+                                                                    <div className="text-2xl sm:text-3xl font-bold text-campaign">
+                                                                        RM {formatRM(startFrom)}
+                                                                        <span className="text-xs sm:text-sm font-medium text-slate-400"> initial down</span>
                                                                     </div>
-                                                                    <div className="text-[10px] sm:text-xs font-semibold text-red-600">Non-refundable</div>
-                                                                </div>
+                                                                    {pkg.booking_amount && pkg.booking_amount > 0 && (
+                                                                        <div className="mt-2">
+                                                                            <div className="text-sm text-slate-500">Booking Fee <span className="font-semibold text-slate-700">RM {pkg.booking_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
+                                                                            <div className="text-[10px] sm:text-xs font-semibold text-red-600">Non-refundable</div>
+                                                                        </div>
+                                                                    )}
+                                                                </>
+                                                            ) : (
+                                                                pkg.booking_amount && pkg.booking_amount > 0 ? (
+                                                                    <>
+                                                                        <div className="text-xs text-slate-400 leading-none mb-1">Booking Fee</div>
+                                                                        <div className="text-2xl sm:text-3xl font-bold text-campaign">
+                                                                            RM {pkg.booking_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        </div>
+                                                                        <div className="text-[10px] sm:text-xs font-semibold text-red-600 mt-1">Non-refundable</div>
+                                                                    </>
+                                                                ) : null
                                                             )}
                                                         </div>
 

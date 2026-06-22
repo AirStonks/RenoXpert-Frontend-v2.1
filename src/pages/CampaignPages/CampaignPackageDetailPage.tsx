@@ -1113,13 +1113,6 @@ export default function CampaignPackageDetailPage() {
                             </p>
                         </div>
                     )}
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('tnc')}
-                        className="text-xs font-medium text-campaign hover:text-campaign-600 transition-colors whitespace-nowrap"
-                    >
-                        Terms &amp; Conditions
-                    </button>
                 </div>
             )}
         </div>
