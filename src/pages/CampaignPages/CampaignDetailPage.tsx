@@ -14,7 +14,9 @@ import {
     Percent,
     Calendar,
     ArrowDown,
-    HelpCircle
+    HelpCircle,
+    Play,
+    X
 } from 'lucide-react';
 import { Attachment, Campaign, CampaignPackage } from '../../types';
 import { bookingPaymentIntent, getCampaign } from '../../services/publicApi';
@@ -42,7 +44,16 @@ const CampaignDetailPage = () => {
     const [selectedPackage, setSelectedPackage] = useState<CampaignPackage | null>(null);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [isFullyBooked, setIsFullyBooked] = useState<boolean>(false);
+    const [videoOpen, setVideoOpen] = useState<boolean>(false);
 
+    useEffect(() => {
+        if (!videoOpen) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setVideoOpen(false);
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [videoOpen]);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -292,13 +303,28 @@ const CampaignDetailPage = () => {
                     </div>
                     {/* Image */}
                     <div className="order-1 lg:order-2">
-                        <div className="rounded-3xl overflow-hidden ring-1 ring-slate-200">
+                        <div className="relative rounded-3xl overflow-hidden ring-1 ring-slate-200">
                             {campaign.thumbnail ? (
-                                <img src={(campaign.thumbnail as Attachment).file_url} alt={campaign.title} className="w-full h-56 sm:h-80 lg:h-[420px] object-cover" />
+                                <img
+                                    src={(campaign.thumbnail as Attachment).file_url}
+                                    alt={campaign.title}
+                                    className="w-full h-56 sm:h-80 lg:h-[420px] object-cover"
+                                />
                             ) : (
                                 <div className="w-full h-56 sm:h-80 lg:h-[420px] bg-slate-100 grid place-items-center text-slate-400">
                                     <Package className="h-16 w-16" />
                                 </div>
+                            )}
+                            {campaign.thumbnail_video && (
+                                <button
+                                    type="button"
+                                    onClick={() => setVideoOpen(true)}
+                                    aria-label="Play campaign video"
+                                    className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-campaign px-4 py-2.5 text-white shadow-lg hover:bg-campaign-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-campaign/40"
+                                >
+                                    <Play className="h-5 w-5" fill="currentColor" />
+                                    <span className="text-sm font-semibold">Watch video</span>
+                                </button>
                             )}
                         </div>
                     </div>
@@ -629,6 +655,31 @@ const CampaignDetailPage = () => {
                     }}>
                         Book now <ArrowRight className="h-4 w-4" />
                     </Button>
+                </div>
+            )}
+
+            {videoOpen && campaign.thumbnail_video && (
+                <div
+                    className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4"
+                    onClick={() => setVideoOpen(false)}
+                    role="dialog"
+                    aria-modal="true"
+                >
+                    <button
+                        type="button"
+                        onClick={() => setVideoOpen(false)}
+                        aria-label="Close video"
+                        className="absolute top-4 right-4 inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+                    >
+                        <X className="h-6 w-6" />
+                    </button>
+                    <video
+                        src={(campaign.thumbnail_video as Attachment).file_url}
+                        controls
+                        autoPlay
+                        onClick={(e) => e.stopPropagation()}
+                        className="max-h-[80vh] w-auto max-w-full rounded-xl bg-black"
+                    />
                 </div>
             )}
 
