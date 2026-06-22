@@ -62,6 +62,7 @@ export default function AddCampaign() {
         booking_amount: 'fixed' | 'custom';
     }>>({});
     const [collapsedPackages, setCollapsedPackages] = useState<Record<number, boolean>>({});
+    const [collapsedLayoutTypes, setCollapsedLayoutTypes] = useState<Record<number, boolean>>({});
     const [useLayoutTypes, setUseLayoutTypes] = useState<boolean>(false);
     const [layoutTypes, setLayoutTypes] = useState<{ id?: number | string; name: string; description?: string }[]>([]);
     const [packageLayoutIndex, setPackageLayoutIndex] = useState<Record<number, number>>({});
@@ -316,6 +317,8 @@ export default function AddCampaign() {
         }));
     };
 
+    const toggleLayoutCollapse = (idx: number) => setCollapsedLayoutTypes(prev => ({ ...prev, [idx]: !prev[idx] }));
+
     // Layout Type management functions
     const addLayoutType = () => {
         setLayoutTypes(prev => [...prev, { name: '', description: '' }]);
@@ -343,6 +346,7 @@ export default function AddCampaign() {
         });
         setLayoutProjectionFile(prev => shiftNumericIndexMap(prev, idx));
         setLayoutRenderingFiles(prev => shiftNumericIndexMap(prev, idx));
+        setCollapsedLayoutTypes(prev => shiftNumericIndexMap(prev, idx));
     };
 
     const addSubPackage = (layoutIdx: number) => {
@@ -1385,12 +1389,25 @@ export default function AddCampaign() {
                                         layoutTypes.map((lt, layoutIdx) => (
                                             <div key={layoutIdx} className="border-2 border-indigo-200 rounded-2xl bg-indigo-50/30 p-5 space-y-5">
                                                 <div className="flex items-start justify-between gap-4">
-                                                    <h3 className="text-base font-semibold text-gray-900">
-                                                        Layout Type {layoutIdx + 1}
-                                                        {lt.name && (
-                                                            <span className="ml-2 text-sm font-normal text-gray-600">- {lt.name}</span>
-                                                        )}
-                                                    </h3>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => toggleLayoutCollapse(layoutIdx)}
+                                                            className="p-1 hover:bg-indigo-100 rounded-lg transition-colors duration-200"
+                                                        >
+                                                            {collapsedLayoutTypes[layoutIdx] ? (
+                                                                <ChevronDown className="h-4 w-4 text-gray-600" />
+                                                            ) : (
+                                                                <ChevronUp className="h-4 w-4 text-gray-600" />
+                                                            )}
+                                                        </button>
+                                                        <h3 className="text-base font-semibold text-gray-900">
+                                                            Layout Type {layoutIdx + 1}
+                                                            {lt.name && (
+                                                                <span className="ml-2 text-sm font-normal text-gray-600">- {lt.name}</span>
+                                                            )}
+                                                        </h3>
+                                                    </div>
                                                     <button
                                                         type="button"
                                                         onClick={() => {
@@ -1404,6 +1421,7 @@ export default function AddCampaign() {
                                                     </button>
                                                 </div>
 
+                                                {!collapsedLayoutTypes[layoutIdx] && (<>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1511,6 +1529,7 @@ export default function AddCampaign() {
                                                 <p className="text-xs text-gray-500">
                                                     MP4/PNG/JPG up to 10MB · images upload after the campaign is created
                                                 </p>
+                                                </>)}
                                             </div>
                                         ))
                                     )}

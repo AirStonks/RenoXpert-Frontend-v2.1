@@ -68,6 +68,7 @@ export default function EditCampaign() {
         booking_amount: 'fixed' | 'custom';
     }>>({});
     const [collapsedPackages, setCollapsedPackages] = useState<Record<number, boolean>>({});
+    const [collapsedLayoutTypes, setCollapsedLayoutTypes] = useState<Record<number, boolean>>({});
     const [orderSearch, setOrderSearch] = useState<string>('');
     const [orderOptions, setOrderOptions] = useState<Order[]>([]);
     const [orderLoading, setOrderLoading] = useState<boolean>(false);
@@ -425,6 +426,8 @@ export default function EditCampaign() {
         }));
     };
 
+    const toggleLayoutCollapse = (idx: number) => setCollapsedLayoutTypes(prev => ({ ...prev, [idx]: !prev[idx] }));
+
     // Layout Type management functions
     const addLayoutType = () => {
         setLayoutTypes(prev => [...prev, { name: '', description: '' }]);
@@ -455,6 +458,7 @@ export default function EditCampaign() {
         setLayoutUploading(prev => shiftNumericIndexMap(prev, idx));
         setPendingLayoutProjectionFile(prev => shiftNumericIndexMap(prev, idx));
         setPendingLayoutRenderingFiles(prev => shiftNumericIndexMap(prev, idx));
+        setCollapsedLayoutTypes(prev => shiftNumericIndexMap(prev, idx));
     };
 
     const addSubPackage = (layoutIdx: number) => {
@@ -1510,15 +1514,28 @@ export default function EditCampaign() {
                                         layoutTypes.map((lt, layoutIdx) => (
                                             <div key={layoutIdx} className="border-2 border-indigo-200 rounded-2xl bg-indigo-50/30 p-5 space-y-5">
                                                 <div className="flex items-start justify-between gap-4">
-                                                    <h3 className="text-base font-semibold text-gray-900">
-                                                        Layout Type {layoutIdx + 1}
-                                                        {lt.name && (
-                                                            <span className="ml-2 text-sm font-normal text-gray-600">- {lt.name}</span>
-                                                        )}
-                                                        {lt.id == null && (
-                                                            <span className="ml-2 text-xs font-normal text-amber-600">(unsaved)</span>
-                                                        )}
-                                                    </h3>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => toggleLayoutCollapse(layoutIdx)}
+                                                            className="p-1 hover:bg-indigo-100 rounded-lg transition-colors duration-200"
+                                                        >
+                                                            {collapsedLayoutTypes[layoutIdx] ? (
+                                                                <ChevronDown className="h-4 w-4 text-gray-600" />
+                                                            ) : (
+                                                                <ChevronUp className="h-4 w-4 text-gray-600" />
+                                                            )}
+                                                        </button>
+                                                        <h3 className="text-base font-semibold text-gray-900">
+                                                            Layout Type {layoutIdx + 1}
+                                                            {lt.name && (
+                                                                <span className="ml-2 text-sm font-normal text-gray-600">- {lt.name}</span>
+                                                            )}
+                                                            {lt.id == null && (
+                                                                <span className="ml-2 text-xs font-normal text-amber-600">(unsaved)</span>
+                                                            )}
+                                                        </h3>
+                                                    </div>
                                                     <button
                                                         type="button"
                                                         onClick={() => {
@@ -1532,6 +1549,7 @@ export default function EditCampaign() {
                                                     </button>
                                                 </div>
 
+                                                {!collapsedLayoutTypes[layoutIdx] && (<>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1701,6 +1719,7 @@ export default function EditCampaign() {
                                                         ? 'Images for unsaved layouts upload after you save the campaign.'
                                                         : 'PNG/JPG up to 10MB · images upload immediately.'}
                                                 </p>
+                                                </>)}
                                             </div>
                                         ))
                                     )}
