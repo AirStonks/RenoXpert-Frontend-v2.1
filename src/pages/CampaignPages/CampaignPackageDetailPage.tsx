@@ -182,6 +182,18 @@ export default function CampaignPackageDetailPage() {
         return overrideTotalQuotationAmount ?? totalExcludedAddonAmount - bonusValue;
     }, [overrideTotalQuotationAmount, totalExcludedAddonAmount, bonusValue]);
 
+    // [Q1] Non-refundable booking fee + the original (pre-fee) initial down payment per program.
+    const bookingFee = useMemo(
+        () => Number(selectedCampaignPackage?.booking_amount || 0),
+        [selectedCampaignPackage?.booking_amount],
+    );
+
+    const originalInitialDownPayment = useMemo(() => {
+        if (selectedProgram === 'bePowered') return upfrontAmount - bonusValue;
+        if (selectedProgram === 'rnpl') return totalRenoNowPrice;
+        return totalExcludedAddonAmount / 2;
+    }, [selectedProgram, upfrontAmount, bonusValue, totalRenoNowPrice, totalExcludedAddonAmount]);
+
     const togglePackage = (pkgId: string) => {
         setExpandedPackageIds((prev) => ({ ...prev, [pkgId]: !prev[pkgId] }));
     };
@@ -819,33 +831,40 @@ export default function CampaignPackageDetailPage() {
                                             </span>
                                         </div>
 
-                                        {/* Initial/Balance payment breakdown (match owner quotation summary style) */}
+                                        {/* [Q1] Initial Down Payment breakdown with non-refundable booking fee */}
                                         {!templateOrder?.is_progressive_payment && !templateOrder?.is_be_powered && !templateOrder?.is_rnpl ? null : (
-                                            <div className="flex justify-between items-center py-3">
-                                                <span className="text-sm text-slate-500">Initial Down Payment</span>
-                                                {selectedProgram === 'bePowered' && (
-                                                    <span className="text-sm text-slate-900 font-semibold whitespace-nowrap">
-                                                        RM {(upfrontAmount - bonusValue).toLocaleString(undefined, {
-                                                            minimumFractionDigits: 0,
-                                                            maximumFractionDigits: 2,
-                                                        })}
-                                                    </span>
-                                                )}
-                                                {selectedProgram === 'rnpl' && (
-                                                    <span className="text-sm text-slate-900 font-semibold whitespace-nowrap">
-                                                        RM {totalRenoNowPrice.toLocaleString(undefined, {
-                                                            minimumFractionDigits: 0,
-                                                            maximumFractionDigits: 2,
-                                                        })}
-                                                    </span>
-                                                )}
-                                                {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
-                                                    <span className="text-sm text-slate-900 font-semibold whitespace-nowrap">
-                                                        RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
-                                                            minimumFractionDigits: 0,
-                                                            maximumFractionDigits: 2,
-                                                        })}
-                                                    </span>
+                                            <div className="py-3">
+                                                {bookingFee > 0 ? (
+                                                    <>
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="text-sm text-slate-500 flex items-center gap-2">
+                                                                Booking Fee
+                                                                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-red-50 text-red-600">Non-refundable</span>
+                                                            </span>
+                                                            <span className="text-sm text-red-600 font-semibold whitespace-nowrap">
+                                                                − RM {bookingFee.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center mt-2">
+                                                            <span className="text-sm font-semibold text-slate-900">Initial Down Payment</span>
+                                                            <span className="text-sm text-slate-900 font-bold whitespace-nowrap">
+                                                                RM {(originalInitialDownPayment - bookingFee).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center mt-1 pl-4">
+                                                            <span className="text-xs text-slate-400">Original Initial Down Payment</span>
+                                                            <span className="text-xs text-slate-400 whitespace-nowrap">
+                                                                RM {originalInitialDownPayment.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                                                            </span>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-sm text-slate-500">Initial Down Payment</span>
+                                                        <span className="text-sm text-slate-900 font-semibold whitespace-nowrap">
+                                                            RM {originalInitialDownPayment.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                                                        </span>
+                                                    </div>
                                                 )}
                                             </div>
                                         )}
