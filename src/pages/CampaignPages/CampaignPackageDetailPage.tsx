@@ -50,6 +50,8 @@ export default function CampaignPackageDetailPage() {
     const [expandedPackageIds, setExpandedPackageIds] = useState<Record<string, boolean>>({});
     const [selectedPlan, setSelectedPlan] = useState<string>('60');
     const [activeTab, setActiveTab] = useState<'quotation' | 'tnc'>('quotation');
+    // [Q2] client-side add-on inclusion overrides, keyed by package id. Preview only — never persisted.
+    const [addonOverrides, setAddonOverrides] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
         const run = async () => {
@@ -127,9 +129,20 @@ export default function CampaignPackageDetailPage() {
         return 'normal';
     }, [templateOrder?.is_be_powered, templateOrder?.is_rnpl]);
 
+    // [Q2] Apply user toggles over each add-on's is_addon_included; non-add-ons pass through unchanged.
+    const effectivePackages = useMemo<Package[]>(() => {
+        const pkgs = templateQuotation?.packages || [];
+        return pkgs.map((pkg) => {
+            if (!pkg.is_addon) return pkg;
+            const id = String(pkg.id ?? pkg.name ?? 'pkg');
+            const included = id in addonOverrides ? addonOverrides[id] : pkg.is_addon_included !== false;
+            return { ...pkg, is_addon_included: included };
+        });
+    }, [templateQuotation?.packages, addonOverrides]);
+
     const upfrontAmount = useMemo(() => {
         if (!templateOrder?.is_be_powered) return 0;
-        const pkgs = templateQuotation?.packages || [];
+        const pkgs = effectivePackages;
         return pkgs.reduce(
             (acc, pkg) =>
                 acc +
@@ -140,17 +153,17 @@ export default function CampaignPackageDetailPage() {
                     : 0),
             templateOrder.be_powered_base_price || 0,
         );
-    }, [templateOrder?.is_be_powered, templateOrder?.be_powered_base_price, templateQuotation?.packages]);
+    }, [templateOrder?.is_be_powered, templateOrder?.be_powered_base_price, effectivePackages]);
 
     const totalExcludedAddonAmount = useMemo(() => {
         if (templateOrder?.f_1 && templateOrder?.total_amount != null) return Number(templateOrder.total_amount);
-        const pkgs = templateQuotation?.packages || [];
+        const pkgs = effectivePackages;
         return pkgs.reduce((total, pkg) => {
             if (pkg.is_addon === true && pkg.is_addon_included === false) return total;
             const packagePrice = templateOrder?.is_rnpl && pkg.markup_amount ? pkg.markup_amount : pkg.total_price || 0;
             return total + Number(packagePrice) * (pkg.quantity || 1);
         }, 0);
-    }, [templateOrder?.f_1, templateOrder?.total_amount, templateOrder?.is_rnpl, templateQuotation?.packages]);
+    }, [templateOrder?.f_1, templateOrder?.total_amount, templateOrder?.is_rnpl, effectivePackages]);
 
     const totalRenoNowPrice = useMemo(() => {
         if (!templateOrder?.is_rnpl) return 0;
@@ -196,6 +209,12 @@ export default function CampaignPackageDetailPage() {
 
     const togglePackage = (pkgId: string) => {
         setExpandedPackageIds((prev) => ({ ...prev, [pkgId]: !prev[pkgId] }));
+    };
+
+    const toggleAddon = (pkg: Package) => {
+        const id = String(pkg.id ?? pkg.name ?? 'pkg');
+        const current = id in addonOverrides ? addonOverrides[id] : pkg.is_addon_included !== false;
+        setAddonOverrides((prev) => ({ ...prev, [id]: !current }));
     };
 
     const tnc = (
@@ -924,20 +943,24 @@ export default function CampaignPackageDetailPage() {
                                     {/* Quotation packages */}
                                     <div className="space-y-4">
                                         {(() => {
-                                            const pkgs = templateQuotation.packages || [];
+                                            const pkgs = effectivePackages;
                                             const regularPackages = pkgs.filter((pkg) => !pkg.is_addon);
                                             const addonPackages = pkgs.filter((pkg) => pkg.is_addon === true);
 
                                             const renderPackage = (pkg: Package, isAddon: boolean) => {
                                                 const pkgId = String(pkg.id ?? pkg.name ?? 'pkg');
                                                 const products = ((pkg.products || []) as Product[]).filter((p) => p.pivot?.visibility == true);
+                                                const included = isAddon
+                                                    ? (pkgId in addonOverrides ? addonOverrides[pkgId] : pkg.is_addon_included !== false)
+                                                    : true;
+                                                const showToggle = isAddon && !templateOrder?.f_1;
 
-                                                return (
+                                                const accordion = (
                                                     <AccordionItem
                                                         key={pkgId}
                                                         open={!!expandedPackageIds[pkgId]}
                                                         onToggle={() => togglePackage(pkgId)}
-                                                        className={isAddon ? 'border-slate-200 bg-slate-50/50' : ''}
+                                                        className={isAddon ? `border-slate-200 bg-slate-50/50 ${included ? '' : 'opacity-60'}` : ''}
                                                         headerClassName="bg-slate-50/70 hover:bg-slate-100"
                                                         header={
                                                             <div>
@@ -946,7 +969,7 @@ export default function CampaignPackageDetailPage() {
                                                                         <Pill tone="brand">Add-on</Pill>
                                                                     </div>
                                                                 )}
-                                                                <div className="text-sm font-semibold text-slate-900">{pkg.name || 'Package'}</div>
+                                                                <div className={`text-sm font-semibold text-slate-900 ${isAddon && !included ? 'line-through decoration-slate-300' : ''}`}>{pkg.name || 'Package'}</div>
                                                                 <div className="text-xs text-slate-400 mt-1">{products.length} item(s)</div>
                                                             </div>
                                                         }
@@ -981,6 +1004,28 @@ export default function CampaignPackageDetailPage() {
                                                             </div>
                                                         )}
                                                     </AccordionItem>
+                                                );
+
+                                                if (!showToggle) return accordion;
+
+                                                return (
+                                                    <div key={pkgId}>
+                                                        <div className="flex items-center justify-end mb-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => toggleAddon(pkg)}
+                                                                className="inline-flex items-center gap-2"
+                                                                aria-pressed={included}
+                                                                aria-label={`${included ? 'Exclude' : 'Include'} ${pkg.name || 'add-on'}`}
+                                                            >
+                                                                <span className={`text-xs font-semibold ${included ? 'text-campaign' : 'text-slate-400'}`}>{included ? 'Included' : 'Excluded'}</span>
+                                                                <span className={`relative inline-block w-11 h-6 rounded-full transition-colors ${included ? 'bg-campaign' : 'bg-slate-200'}`}>
+                                                                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${included ? 'translate-x-5' : ''}`} />
+                                                                </span>
+                                                            </button>
+                                                        </div>
+                                                        {accordion}
+                                                    </div>
                                                 );
                                             };
 
