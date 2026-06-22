@@ -1514,11 +1514,11 @@ export default function EditCampaign() {
                                         layoutTypes.map((lt, layoutIdx) => (
                                             <div key={layoutIdx} className="border-2 border-indigo-200 rounded-2xl bg-indigo-50/30 p-5 space-y-5">
                                                 <div className="flex items-start justify-between gap-4">
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 flex-1 min-w-0">
                                                         <button
                                                             type="button"
                                                             onClick={() => toggleLayoutCollapse(layoutIdx)}
-                                                            className="p-1 hover:bg-indigo-100 rounded-lg transition-colors duration-200"
+                                                            className="p-1 hover:bg-indigo-100 rounded-lg transition-colors duration-200 shrink-0"
                                                         >
                                                             {collapsedLayoutTypes[layoutIdx] ? (
                                                                 <ChevronDown className="h-4 w-4 text-gray-600" />
@@ -1526,15 +1526,18 @@ export default function EditCampaign() {
                                                                 <ChevronUp className="h-4 w-4 text-gray-600" />
                                                             )}
                                                         </button>
-                                                        <h3 className="text-base font-semibold text-gray-900">
-                                                            Layout Type {layoutIdx + 1}
-                                                            {lt.name && (
-                                                                <span className="ml-2 text-sm font-normal text-gray-600">- {lt.name}</span>
-                                                            )}
-                                                            {lt.id == null && (
-                                                                <span className="ml-2 text-xs font-normal text-amber-600">(unsaved)</span>
-                                                            )}
-                                                        </h3>
+                                                        <div className="flex flex-col min-w-0 flex-1">
+                                                            <span className="text-xs font-medium text-indigo-500 leading-none mb-1">
+                                                                Layout Type {layoutIdx + 1}{lt.id == null && <span className="ml-1 text-amber-600">(unsaved)</span>}
+                                                            </span>
+                                                            <input
+                                                                type="text"
+                                                                value={lt.name}
+                                                                onChange={(e) => updateLayoutType(layoutIdx, 'name', e.target.value)}
+                                                                className="w-full px-2 py-1 rounded-md border border-gray-300 bg-white/80 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-0 focus:border-indigo-500 transition-all duration-200"
+                                                                placeholder="Layout name (e.g. Type A)"
+                                                            />
+                                                        </div>
                                                     </div>
                                                     <button
                                                         type="button"
@@ -1550,31 +1553,17 @@ export default function EditCampaign() {
                                                 </div>
 
                                                 {!collapsedLayoutTypes[layoutIdx] && (<>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Layout Name *
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={lt.name}
-                                                            onChange={(e) => updateLayoutType(layoutIdx, 'name', e.target.value)}
-                                                            className="w-full px-3 py-2 rounded-lg border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-indigo-500 transition-all duration-200"
-                                                            placeholder="e.g. Type A"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Description
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={lt.description || ''}
-                                                            onChange={(e) => updateLayoutType(layoutIdx, 'description', e.target.value)}
-                                                            className="w-full px-3 py-2 rounded-lg border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-indigo-500 transition-all duration-200"
-                                                            placeholder="Short description (optional)"
-                                                        />
-                                                    </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        Description
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={lt.description || ''}
+                                                        onChange={(e) => updateLayoutType(layoutIdx, 'description', e.target.value)}
+                                                        className="w-full px-3 py-2 rounded-lg border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-indigo-500 transition-all duration-200"
+                                                        placeholder="Short description (optional)"
+                                                    />
                                                 </div>
 
                                                 {/* Rental Projection (single image) */}
