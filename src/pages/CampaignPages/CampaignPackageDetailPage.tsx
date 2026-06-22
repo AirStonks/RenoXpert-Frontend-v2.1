@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Package as PackageIcon, Award, CreditCard } from 'lucide-react';
 import { InformationCircleIcon } from '@heroicons/react/24/solid';
@@ -52,6 +52,9 @@ export default function CampaignPackageDetailPage() {
     const [activeTab, setActiveTab] = useState<'quotation' | 'tnc'>('quotation');
     // [Q2] client-side add-on inclusion overrides, keyed by package id. Preview only — never persisted.
     const [addonOverrides, setAddonOverrides] = useState<Record<string, boolean>>({});
+    // [Q3] mobile sticky bar visibility, driven by an IntersectionObserver on the Payment Summary card.
+    const [showStickyBar, setShowStickyBar] = useState<boolean>(false);
+    const paymentSummaryRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         const run = async () => {
@@ -105,6 +108,20 @@ export default function CampaignPackageDetailPage() {
         const pkgTitle = selectedCampaignPackage?.name ? ` - ${selectedCampaignPackage.name}` : '';
         document.title = `${title}${pkgTitle} | Package Detail`;
     }, [campaign?.title, selectedCampaignPackage?.name]);
+
+    useEffect(() => {
+        const el = paymentSummaryRef.current;
+        if (!el) {
+            setShowStickyBar(false);
+            return;
+        }
+        const observer = new IntersectionObserver(
+            ([entry]) => setShowStickyBar(!entry.isIntersecting),
+            { threshold: 0 },
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [activeTab, selectedCampaignPackage, templateOrder, templateQuotation]);
 
     // Parse bonus from quotation or order
     const bonus = useMemo(() => {
@@ -697,6 +714,7 @@ export default function CampaignPackageDetailPage() {
                             ) : (
                                 <>
                                     {/* Payment Summary */}
+                                    <div ref={paymentSummaryRef}>
                                     <Card className="p-6">
                                         <div className="flex flex-col space-y-2">
                                         <div className="flex items-center justify-between gap-3">
@@ -801,6 +819,7 @@ export default function CampaignPackageDetailPage() {
                                         )}
                                         </div>
                                     </Card>
+                                    </div>
 
                                     {/* Pricing summary */}
                                     <Card className="p-6 divide-y divide-slate-100">
@@ -1052,6 +1071,46 @@ export default function CampaignPackageDetailPage() {
                     </div>
                 )}
             </div>
+
+            {/* [Q3] Mobile sticky payment bar — appears after the Payment Summary scrolls off; mirrors the gross primary figure. */}
+            {activeTab === 'quotation' && selectedCampaignPackage && templateOrder && templateQuotation && (
+                <div
+                    className={`lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 flex items-center justify-between transition-transform duration-300 shadow-[0_-8px_24px_rgba(16,24,40,0.10)] ${showStickyBar ? 'translate-y-0' : 'translate-y-full'}`}
+                >
+                    <div>
+                        <p className="text-[10px] text-slate-400 leading-none uppercase tracking-wide">
+                            {selectedProgram === 'bePowered' ? 'Reno Subscription' : selectedProgram === 'rnpl' ? 'RenoNow PayLater' : 'Full Payment'}
+                        </p>
+                        <p className="text-base font-extrabold text-slate-900 leading-tight mt-0.5">
+                            {selectedProgram === 'normal' && (
+                                <>
+                                    RM {(((totalExcludedAddonAmount - bonusValue) * (selectedPlan === '60' ? 1.14 : 1.105)) / Number(selectedPlan)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                    <span className="text-xs font-medium text-slate-500">/mo</span>
+                                </>
+                            )}
+                            {selectedProgram === 'bePowered' && (
+                                <>
+                                    RM {(upfrontAmount - bonusValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                    <span className="text-xs font-medium text-slate-500"> upfront</span>
+                                </>
+                            )}
+                            {selectedProgram === 'rnpl' && (
+                                <>
+                                    RM {totalRenoNowPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                    <span className="text-xs font-medium text-slate-500"> to start</span>
+                                </>
+                            )}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('tnc')}
+                        className="text-xs font-medium text-campaign hover:text-campaign-600 transition-colors"
+                    >
+                        Terms &amp; Conditions
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
