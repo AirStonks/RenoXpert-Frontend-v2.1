@@ -3011,7 +3011,12 @@ export const createCampaign = async (campaignData: any) => {
                 // Handle packages array
                 campaignData[key].forEach((pkg: any, index: number) => {
                     Object.keys(pkg).forEach(pkgKey => {
-                        formData.append(`packages[${index}][${pkgKey}]`, pkg[pkgKey]);
+                        // Skip null/undefined so they aren't appended as the literal strings
+                        // "null"/"undefined" (FormData coerces them), which fail backend
+                        // nullable|integer rules — e.g. layout_type_id on flat campaigns.
+                        if (pkg[pkgKey] !== null && pkg[pkgKey] !== undefined) {
+                            formData.append(`packages[${index}][${pkgKey}]`, pkg[pkgKey]);
+                        }
                     });
                 });
             } else if (key === 'layout_types' && campaignData[key]) {
@@ -3053,7 +3058,12 @@ export const updateCampaign = async (id: string | number, campaignData: any) => 
                 // Handle packages array
                 campaignData[key].forEach((pkg: any, index: number) => {
                     Object.keys(pkg).forEach(pkgKey => {
-                        formData.append(`packages[${index}][${pkgKey}]`, pkg[pkgKey]);
+                        // Skip null/undefined so they aren't appended as the literal strings
+                        // "null"/"undefined" (FormData coerces them), which fail backend
+                        // nullable|integer rules — e.g. layout_type_id on flat campaigns.
+                        if (pkg[pkgKey] !== null && pkg[pkgKey] !== undefined) {
+                            formData.append(`packages[${index}][${pkgKey}]`, pkg[pkgKey]);
+                        }
                     });
                 });
             } else if (key === 'layout_types' && campaignData[key]) {
