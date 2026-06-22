@@ -3014,6 +3014,15 @@ export const createCampaign = async (campaignData: any) => {
                         formData.append(`packages[${index}][${pkgKey}]`, pkg[pkgKey]);
                     });
                 });
+            } else if (key === 'layout_types' && campaignData[key]) {
+                // Handle layout_types array
+                (campaignData[key] as Record<string, string | Blob>[]).forEach((lt, index: number) => {
+                    Object.keys(lt).forEach(ltKey => {
+                        if (lt[ltKey] !== null && lt[ltKey] !== undefined) {
+                            formData.append(`layout_types[${index}][${ltKey}]`, lt[ltKey]);
+                        }
+                    });
+                });
             } else if (key === 'thumbnail' && campaignData[key] instanceof File) {
                 // Handle thumbnail file
                 formData.append('thumbnail', campaignData[key]);
@@ -3047,6 +3056,15 @@ export const updateCampaign = async (id: string | number, campaignData: any) => 
                         formData.append(`packages[${index}][${pkgKey}]`, pkg[pkgKey]);
                     });
                 });
+            } else if (key === 'layout_types' && campaignData[key]) {
+                // Handle layout_types array
+                (campaignData[key] as Record<string, string | Blob>[]).forEach((lt, index: number) => {
+                    Object.keys(lt).forEach(ltKey => {
+                        if (lt[ltKey] !== null && lt[ltKey] !== undefined) {
+                            formData.append(`layout_types[${index}][${ltKey}]`, lt[ltKey]);
+                        }
+                    });
+                });
             } else if (key === 'thumbnail' && campaignData[key] instanceof File) {
                 // Handle thumbnail file
                 formData.append('thumbnail', campaignData[key]);
@@ -3065,6 +3083,39 @@ export const updateCampaign = async (id: string | number, campaignData: any) => 
     } catch (error) {
         handle401Error(error as AxiosError);
     }
+};
+
+export const uploadCampaignLayoutTypeRentalProjection = async (layoutTypeId: number | string, file: File) => {
+    const formData = new FormData();
+    formData.append('rental_projection', file);
+    const response = await axios.post(`${API_URL}campaign-layout-types/${layoutTypeId}/rental-projection`, formData, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+};
+
+export const deleteCampaignLayoutTypeRentalProjection = async (layoutTypeId: number | string) => {
+    const response = await axios.delete(`${API_URL}campaign-layout-types/${layoutTypeId}/rental-projection`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    });
+    return response.data;
+};
+
+export const uploadCampaignLayoutTypeRenderings = async (layoutTypeId: number | string, files: File[]) => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append('rendering_images[]', file));
+    const response = await axios.post(`${API_URL}campaign-layout-types/${layoutTypeId}/renderings`, formData, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+};
+
+export const deleteCampaignLayoutTypeRendering = async (layoutTypeId: number | string, path: string) => {
+    const response = await axios.delete(`${API_URL}campaign-layout-types/${layoutTypeId}/renderings`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        data: { path },
+    });
+    return response.data;
 };
 
 export const uploadCampaignThumbnailVideo = async (campaignId: number | string, file: File) => {

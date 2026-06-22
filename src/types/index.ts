@@ -1622,6 +1622,16 @@ export interface ApiKeyUpdateRequest {
     expires_at?: string;
 }
 
+export interface CampaignLayoutType {
+    id?: number | string;
+    campaign_id?: number | string;
+    name?: string;
+    description?: string;
+    sort?: number;
+    rental_projection?: Attachment | null;
+    rendering_images?: Attachment[] | null;
+}
+
 export interface Campaign {
     id?: string;
     title?: string;
@@ -1630,6 +1640,7 @@ export interface Campaign {
     internal_description?: string;
     thumbnail?: Attachment | File;
     thumbnail_video?: Attachment | File;
+    layout_types?: CampaignLayoutType[];
     packages?: CampaignPackage[];
     base_amount?: number;
     booking_amount?: number;
@@ -1662,6 +1673,8 @@ export interface CampaignPackage {
      * Backend: Order status="template".
      */
     order_id?: string;
+    layout_type_id?: number | string;
+    layout_type_index?: number;
     order?: Order;
     start_date?: string;
     end_date?: string;
