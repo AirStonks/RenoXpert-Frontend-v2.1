@@ -444,7 +444,7 @@ const CampaignLayoutDetailPage = () => {
                                                             {pkg.booking_amount && pkg.booking_amount > 0 && (
                                                                 <div className="mt-2">
                                                                     <div className="text-sm text-slate-500">
-                                                                        Booking Fee <span className="font-semibold text-slate-700">RM {formatRM(pkg.booking_amount)}</span>
+                                                                        Booking Fee <span className="font-semibold text-slate-700">RM {pkg.booking_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                                                     </div>
                                                                     <div className="text-[10px] sm:text-xs font-semibold text-red-600">Non-refundable</div>
                                                                 </div>
@@ -599,7 +599,7 @@ const CampaignLayoutDetailPage = () => {
                     <div>
                         <p className="text-[11px] text-slate-400 leading-none">Booking Fee</p>
                         <p className="text-base font-extrabold text-slate-900">
-                            RM {formatRM(selectedPackage?.booking_amount || 0)}
+                            RM {(selectedPackage?.booking_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                     </div>
                     <Button onClick={() => {
