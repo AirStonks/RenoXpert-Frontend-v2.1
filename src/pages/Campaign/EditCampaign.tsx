@@ -29,6 +29,22 @@ import {
 } from '../../services/api';
 import useFetchCampaign from '../../hook/useFetchCampaign';
 import { Attachment, CampaignLayoutType, CampaignPackage, Order } from '../../types';
+import {
+    DndContext,
+    closestCenter,
+    PointerSensor,
+    KeyboardSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    arrayMove,
+} from '@dnd-kit/sortable';
+import { SortableCampaignItem, DragHandle } from './components/SortableCampaignItems';
 
 // Shape of a rendering image entry kept in local state / returned by the layout image API.
 type LayoutRenderingImage = { file_url?: string; path?: string };
@@ -89,6 +105,12 @@ export default function EditCampaign() {
 
     const campaignId = id ? parseInt(id, 10) : null;
     const { campaign, loading, error: fetchError } = useFetchCampaign(campaignId);
+
+    // @dnd-kit sensors (pointer + keyboard) for drag-reorder of packages & layouts
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    );
 
     // Handle thumbnail preview URL
     useEffect(() => {
@@ -467,6 +489,118 @@ export default function EditCampaign() {
         setPackageLayoutIndex(prev => ({ ...prev, [newPkgIndex]: layoutIdx }));
     };
 
+    // Stable sortable ids (indices shift on reorder, so never use the index as the dnd id)
+    const packageDndId = (pkg: CampaignPackage, i: number) => String(pkg.id ?? `new-pkg-${i}`);
+    const layoutDndId = (lt: { id?: number | string }, i: number) => String(lt.id ?? `new-lt-${i}`);
+
+    // Bundle every per-index package map, arrayMove, then rebuild EACH map keyed by the new index.
+    // `from`/`to` are absolute indices into the full `packages` array.
+    const reorderPackages = (from: number, to: number) => {
+        if (from === to || from < 0 || to < 0 || from >= packages.length || to >= packages.length) return;
+        const desc = packages.map((pkg, i) => ({
+            pkg,
+            vs: packageValueSources[String(i)],
+            col: collapsedPackages[i],
+            tmpl: selectedPackageOrderTemplates[String(i)],
+            err: packageErrors[String(i)],
+            layoutIdx: packageLayoutIndex[i],
+        }));
+        const moved = arrayMove(desc, from, to);
+        setPackages(moved.map(d => d.pkg));
+        setPackageValueSources(Object.fromEntries(
+            moved.map((d, i) => [String(i), d.vs] as const).filter(([, v]) => v !== undefined),
+        ));
+        setSelectedPackageOrderTemplates(Object.fromEntries(
+            moved.map((d, i) => [String(i), d.tmpl] as const).filter(([, v]) => v !== undefined),
+        ));
+        setPackageErrors(Object.fromEntries(
+            moved.map((d, i) => [String(i), d.err] as const).filter(([, v]) => v !== undefined),
+        ));
+        setCollapsedPackages(Object.fromEntries(
+            moved.map((d, i) => [i, d.col] as const).filter(([, v]) => v !== undefined),
+        ));
+        setPackageLayoutIndex(Object.fromEntries(
+            moved.map((d, i) => [i, d.layoutIdx] as const).filter(([, v]) => v !== undefined),
+        ));
+        // The active template-search row is keyed by index; drop it to avoid pointing at the wrong card.
+        setActivePackageOrderIndex(null);
+    };
+
+    // Reorder LAYOUT TYPES: arrayMove layoutTypes, rebuild ALL layout-index-keyed maps, AND remap
+    // packageLayoutIndex VALUES (each package's layoutIdx -> its layout's NEW position).
+    const reorderLayouts = (from: number, to: number) => {
+        if (from === to || from < 0 || to < 0 || from >= layoutTypes.length || to >= layoutTypes.length) return;
+        const desc = layoutTypes.map((lt, i) => ({
+            lt,
+            col: collapsedLayoutTypes[i],
+            projUrl: layoutProjectionUrl[i],
+            rendImgs: layoutRenderingImgs[i],
+            uploading: layoutUploading[i],
+            pendProj: pendingLayoutProjectionFile[i],
+            pendRend: pendingLayoutRenderingFiles[i],
+            oldIdx: i,
+        }));
+        const moved = arrayMove(desc, from, to);
+        // oldToNew[oldLayoutIdx] = newLayoutIdx
+        const oldToNew: number[] = new Array(layoutTypes.length);
+        moved.forEach((d, newIdx) => { oldToNew[d.oldIdx] = newIdx; });
+
+        setLayoutTypes(moved.map(d => d.lt));
+        setCollapsedLayoutTypes(Object.fromEntries(
+            moved.map((d, i) => [i, d.col] as const).filter(([, v]) => v !== undefined),
+        ));
+        setLayoutProjectionUrl(Object.fromEntries(
+            moved.map((d, i) => [i, d.projUrl] as const).filter(([, v]) => v !== undefined),
+        ));
+        setLayoutRenderingImgs(Object.fromEntries(
+            moved.map((d, i) => [i, d.rendImgs] as const).filter(([, v]) => v !== undefined),
+        ));
+        setLayoutUploading(Object.fromEntries(
+            moved.map((d, i) => [i, d.uploading] as const).filter(([, v]) => v !== undefined),
+        ));
+        setPendingLayoutProjectionFile(Object.fromEntries(
+            moved.map((d, i) => [i, d.pendProj] as const).filter(([, v]) => v !== undefined),
+        ));
+        setPendingLayoutRenderingFiles(Object.fromEntries(
+            moved.map((d, i) => [i, d.pendRend] as const).filter(([, v]) => v !== undefined),
+        ));
+        // Remap each package's layout VALUE through the permutation.
+        setPackageLayoutIndex(prev => {
+            const next: Record<number, number> = {};
+            Object.entries(prev).forEach(([pIdx, lIdx]) => {
+                const mapped = oldToNew[lIdx];
+                next[Number(pIdx)] = mapped === undefined ? lIdx : mapped;
+            });
+            return next;
+        });
+    };
+
+    const handleFlatPackageDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        const from = packages.findIndex((pkg, i) => packageDndId(pkg, i) === String(active.id));
+        const to = packages.findIndex((pkg, i) => packageDndId(pkg, i) === String(over.id));
+        reorderPackages(from, to);
+    };
+
+    // Packages WITHIN one layout's sub-list — ids map back to absolute `packages` indices;
+    // descriptors carry layoutIdx so grouping by packageLayoutIndex still renders correctly.
+    const handleLayoutPackageDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        const from = packages.findIndex((pkg, i) => packageDndId(pkg, i) === String(active.id));
+        const to = packages.findIndex((pkg, i) => packageDndId(pkg, i) === String(over.id));
+        reorderPackages(from, to);
+    };
+
+    const handleLayoutDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        const from = layoutTypes.findIndex((lt, i) => layoutDndId(lt, i) === String(active.id));
+        const to = layoutTypes.findIndex((lt, i) => layoutDndId(lt, i) === String(over.id));
+        reorderLayouts(from, to);
+    };
+
     // Immediate image upload/remove (Edit: layout ids exist for loaded layouts).
     // Newly-added layouts have no id yet — their images are deferred until after the next save.
     const handleEditLayoutProjection = async (layoutIdx: number, file: File | null) => {
@@ -718,9 +852,15 @@ export default function EditCampaign() {
 
     // Reusable per-package card (used by the flat list and inside each layout section)
     const renderPackageCard = (pkg: CampaignPackage, index: number) => (
-        <div key={index} className="border border-gray-200 rounded-xl bg-white/50 overflow-hidden">
+        <SortableCampaignItem
+            key={packageDndId(pkg, index)}
+            id={packageDndId(pkg, index)}
+            className="border border-gray-200 rounded-xl bg-white/50 overflow-hidden"
+        >
+            {({ handleProps }) => (<>
             <div className="flex items-center justify-between p-4 bg-gray-50/50 border-b border-gray-200">
                 <div className="flex items-center gap-3">
+                    <DragHandle handleProps={handleProps} label={`Drag to reorder package ${index + 1}`} />
                     <button
                         type="button"
                         onClick={() => togglePackageCollapse(index)}
@@ -1067,7 +1207,8 @@ export default function EditCampaign() {
                     </div>
                 </div>
             )}
-        </div>
+            </>)}
+        </SortableCampaignItem>
     );
 
     if (loading) {
@@ -1511,10 +1652,25 @@ export default function EditCampaign() {
                                             <p className="text-sm">Click "Add Layout Type" to get started</p>
                                         </div>
                                     ) : (
-                                        layoutTypes.map((lt, layoutIdx) => (
-                                            <div key={layoutIdx} className="border-2 border-indigo-200 rounded-2xl bg-indigo-50/30 p-5 space-y-5">
+                                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleLayoutDragEnd}>
+                                            <SortableContext
+                                                items={layoutTypes.map((lt, i) => layoutDndId(lt, i))}
+                                                strategy={verticalListSortingStrategy}
+                                            >
+                                        {layoutTypes.map((lt, layoutIdx) => (
+                                            <SortableCampaignItem
+                                                key={layoutDndId(lt, layoutIdx)}
+                                                id={layoutDndId(lt, layoutIdx)}
+                                                className="border-2 border-indigo-200 rounded-2xl bg-indigo-50/30 p-5 space-y-5"
+                                            >
+                                            {({ handleProps }) => (<>
                                                 <div className="flex items-start justify-between gap-4">
                                                     <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                        <DragHandle
+                                                            handleProps={handleProps}
+                                                            label={`Drag to reorder layout type ${layoutIdx + 1}`}
+                                                            className="p-1 hover:bg-indigo-100 rounded-lg text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing transition-colors duration-200 shrink-0"
+                                                        />
                                                         <button
                                                             type="button"
                                                             onClick={() => toggleLayoutCollapse(layoutIdx)}
@@ -1697,10 +1853,21 @@ export default function EditCampaign() {
                                                             Add sub-package
                                                         </button>
                                                     </div>
-                                                    {packages
-                                                        .map((pkg, index) => ({ pkg, index }))
-                                                        .filter(({ index }) => packageLayoutIndex[index] === layoutIdx)
-                                                        .map(({ pkg, index }) => renderPackageCard(pkg, index))}
+                                                    {(() => {
+                                                        const layoutPkgs = packages
+                                                            .map((pkg, index) => ({ pkg, index }))
+                                                            .filter(({ index }) => packageLayoutIndex[index] === layoutIdx);
+                                                        return (
+                                                            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleLayoutPackageDragEnd}>
+                                                                <SortableContext
+                                                                    items={layoutPkgs.map(({ pkg, index }) => packageDndId(pkg, index))}
+                                                                    strategy={verticalListSortingStrategy}
+                                                                >
+                                                                    {layoutPkgs.map(({ pkg, index }) => renderPackageCard(pkg, index))}
+                                                                </SortableContext>
+                                                            </DndContext>
+                                                        );
+                                                    })()}
                                                 </div>
 
                                                 <p className="text-xs text-gray-500">
@@ -1709,8 +1876,11 @@ export default function EditCampaign() {
                                                         : 'PNG/JPG up to 10MB · images upload immediately.'}
                                                 </p>
                                                 </>)}
-                                            </div>
-                                        ))
+                                            </>)}
+                                            </SortableCampaignItem>
+                                        ))}
+                                            </SortableContext>
+                                        </DndContext>
                                     )}
                                     {layoutError && <p className="text-sm text-red-600">{layoutError}</p>}
                                 </div>
@@ -1721,9 +1891,16 @@ export default function EditCampaign() {
                                     <p className="text-sm">Click "Add Package" to get started</p>
                                 </div>
                             ) : (
-                                <div className="space-y-6">
-                                    {packages.map((pkg, index) => renderPackageCard(pkg, index))}
-                                </div>
+                                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleFlatPackageDragEnd}>
+                                    <SortableContext
+                                        items={packages.map((pkg, index) => packageDndId(pkg, index))}
+                                        strategy={verticalListSortingStrategy}
+                                    >
+                                        <div className="space-y-6">
+                                            {packages.map((pkg, index) => renderPackageCard(pkg, index))}
+                                        </div>
+                                    </SortableContext>
+                                </DndContext>
                             )}
                         </div>
                     </div>
