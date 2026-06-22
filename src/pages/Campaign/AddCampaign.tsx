@@ -17,7 +17,13 @@ import {
     ChevronDown,
     ChevronUp
 } from 'lucide-react';
-import { createCampaign, orderIndex, uploadCampaignThumbnailVideo } from '../../services/api';
+import {
+    createCampaign,
+    orderIndex,
+    uploadCampaignThumbnailVideo,
+    uploadCampaignLayoutTypeRentalProjection,
+    uploadCampaignLayoutTypeRenderings,
+} from '../../services/api';
 import { Order, CampaignPackage } from '../../types';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
@@ -56,6 +62,12 @@ export default function AddCampaign() {
         booking_amount: 'fixed' | 'custom';
     }>>({});
     const [collapsedPackages, setCollapsedPackages] = useState<Record<number, boolean>>({});
+    const [useLayoutTypes, setUseLayoutTypes] = useState<boolean>(false);
+    const [layoutTypes, setLayoutTypes] = useState<{ id?: number | string; name: string; description?: string }[]>([]);
+    const [packageLayoutIndex, setPackageLayoutIndex] = useState<Record<number, number>>({});
+    const [layoutProjectionFile, setLayoutProjectionFile] = useState<Record<number, File>>({});
+    const [layoutRenderingFiles, setLayoutRenderingFiles] = useState<Record<number, File[]>>({});
+    const [layoutError, setLayoutError] = useState<string | null>(null);
     const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [videoError, setVideoError] = useState<string | null>(null);
@@ -294,6 +306,56 @@ export default function AddCampaign() {
         }));
     };
 
+    // Layout Type management functions
+    const addLayoutType = () => {
+        setLayoutTypes(prev => [...prev, { name: '', description: '' }]);
+    };
+
+    const updateLayoutType = (idx: number, field: 'name' | 'description', value: string) => {
+        setLayoutTypes(prev => prev.map((lt, i) => (i === idx ? { ...lt, [field]: value } : lt)));
+    };
+
+    const removeLayoutType = (idx: number) => {
+        // remove the layout's sub-packages, then the layout; reindex packageLayoutIndex
+        const pkgIdxToRemove = Object.entries(packageLayoutIndex)
+            .filter(([, lIdx]) => lIdx === idx)
+            .map(([pIdx]) => Number(pIdx))
+            .sort((a, b) => b - a);
+        pkgIdxToRemove.forEach(p => removePackage(p));
+        setLayoutTypes(prev => prev.filter((_, i) => i !== idx));
+        setPackageLayoutIndex(prev => {
+            const next: Record<number, number> = {};
+            Object.entries(prev).forEach(([pIdx, lIdx]) => {
+                if (lIdx === idx) return;
+                next[Number(pIdx)] = lIdx > idx ? lIdx - 1 : lIdx;
+            });
+            return next;
+        });
+        setLayoutProjectionFile(prev => { const n = { ...prev }; delete n[idx]; return n; });
+        setLayoutRenderingFiles(prev => { const n = { ...prev }; delete n[idx]; return n; });
+    };
+
+    const addSubPackage = (layoutIdx: number) => {
+        const newPkgIndex = packages.length;
+        addPackage();
+        setPackageLayoutIndex(prev => ({ ...prev, [newPkgIndex]: layoutIdx }));
+    };
+
+    const handleLayoutProjectionChange = (layoutIdx: number, file: File | null) => {
+        setLayoutError(null);
+        if (!file) return;
+        if (file.size > 10 * 1024 * 1024) { setLayoutError('Image must be 10MB or smaller.'); return; }
+        setLayoutProjectionFile(prev => ({ ...prev, [layoutIdx]: file }));
+    };
+
+    const handleLayoutRenderingsChange = (layoutIdx: number, files: FileList | null) => {
+        setLayoutError(null);
+        if (!files || !files.length) return;
+        const arr = Array.from(files);
+        if (arr.some(f => f.size > 10 * 1024 * 1024)) { setLayoutError('Each image must be 10MB or smaller.'); return; }
+        setLayoutRenderingFiles(prev => ({ ...prev, [layoutIdx]: [...(prev[layoutIdx] || []), ...arr] }));
+    };
+
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
         const newPackageErrors: Record<string, Record<string, string>> = {};
@@ -429,6 +491,14 @@ export default function AddCampaign() {
                         delete (processed as any).order_id;
                     }
 
+                    // Thread the layout assignment (0-based index into submitted layout_types)
+                    if (useLayoutTypes) {
+                        const layoutIdx = packageLayoutIndex[index];
+                        if (layoutIdx !== undefined) {
+                            processed.layout_type_index = layoutIdx;
+                        }
+                    }
+
                     return processed;
                 })
                 : undefined;
@@ -436,6 +506,10 @@ export default function AddCampaign() {
             const campaignData = {
                 ...formData,
                 packages: campaignMode === 'packages' ? processedPackages : undefined,
+                // Nested layout types (only when the toggle is on)
+                layout_types: (campaignMode === 'packages' && useLayoutTypes)
+                    ? layoutTypes.map((lt, i) => ({ name: lt.name, description: lt.description ?? '', sort: i }))
+                    : undefined,
                 // Package-level template linkage only
                 order_id: undefined as string | undefined,
                 status: 'draft' // Default status for new campaigns
@@ -454,6 +528,24 @@ export default function AddCampaign() {
                 setError('Campaign created, but the video could not be uploaded — add it later from Edit.');
             }
 
+            if (useLayoutTypes && created?.data?.layout_types?.length) {
+                try {
+                    for (let i = 0; i < created.data.layout_types.length; i++) {
+                        const layoutId = created.data.layout_types[i]?.id;
+                        if (!layoutId) continue;
+                        if (layoutProjectionFile[i]) {
+                            await uploadCampaignLayoutTypeRentalProjection(layoutId, layoutProjectionFile[i]);
+                        }
+                        if (layoutRenderingFiles[i]?.length) {
+                            await uploadCampaignLayoutTypeRenderings(layoutId, layoutRenderingFiles[i]);
+                        }
+                    }
+                } catch (imgErr) {
+                    console.error('Layout image upload failed:', imgErr);
+                    setError('Campaign created, but some layout images failed to upload — add them from Edit.');
+                }
+            }
+
             // Navigate back to campaigns list
             navigate(`${LOCAL_PATH_PREFIX}campaigns`);
         } catch (err) {
@@ -467,6 +559,412 @@ export default function AddCampaign() {
     const handleBackClick = () => {
         navigate(`${LOCAL_PATH_PREFIX}campaigns`);
     };
+
+    // Reusable per-package card (used by the flat list and inside each layout section)
+    const renderPackageCard = (pkg: CampaignPackage, index: number) => (
+        <div key={index} className="border border-gray-200 rounded-xl bg-white/50 overflow-hidden">
+            <div className="flex items-center justify-between p-4 bg-gray-50/50 border-b border-gray-200">
+                <div className="flex items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={() => togglePackageCollapse(index)}
+                        className="p-1 hover:bg-gray-200 rounded-lg transition-colors duration-200"
+                        disabled={campaignMode !== 'packages'}
+                    >
+                        {collapsedPackages[index] ? (
+                            <ChevronDown className="h-4 w-4 text-gray-600" />
+                        ) : (
+                            <ChevronUp className="h-4 w-4 text-gray-600" />
+                        )}
+                    </button>
+                    <h3 className="font-semibold text-gray-900">
+                        Package {index + 1}
+                        {pkg.name && (
+                            <span className="ml-2 text-sm font-normal text-gray-600">
+                                - {pkg.name}
+                            </span>
+                        )}
+                    </h3>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => removePackage(index)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                    disabled={campaignMode !== 'packages'}
+                >
+                    <Trash2 className="h-4 w-4" />
+                </button>
+            </div>
+
+            {!collapsedPackages[index] && (
+                <div className="p-4">
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Linked Template Order (per package) */}
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Linked Template Order (Optional)
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={
+                                        activePackageOrderIndex === index
+                                            ? orderSearch
+                                            : (selectedPackageOrderTemplates[String(index)]?.order_no || '')
+                                    }
+                                    onFocus={() => {
+                                        setActivePackageOrderIndex(index);
+                                        setOrderSearch('');
+                                        setOrderOptions([]);
+                                    }}
+                                    onChange={(e) => {
+                                        setActivePackageOrderIndex(index);
+                                        setOrderSearch(e.target.value);
+                                    }}
+                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all duration-200"
+                                    placeholder="Search template orders by order no..."
+                                    disabled={campaignMode !== 'packages'}
+                                />
+                                {(pkg.order_id || selectedPackageOrderTemplates[String(index)]) && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleClearPackageTemplateOrder(index)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-red-600 hover:text-red-800"
+                                        disabled={campaignMode !== 'packages'}
+                                    >
+                                        Clear
+                                    </button>
+                                )}
+                            </div>
+                            <p className="mt-1 text-sm text-gray-500">
+                                {selectedPackageOrderTemplates[String(index)]
+                                    ? `Selected: ${selectedPackageOrderTemplates[String(index)]?.order_no || selectedPackageOrderTemplates[String(index)]?.id}`
+                                    : (pkg.order_id ? `Selected order id: ${pkg.order_id}` : 'Type to search and select an existing template order.')}
+                            </p>
+                            {activePackageOrderIndex === index && orderLoading && (
+                                <div className="mt-2 text-sm text-gray-500">Searching…</div>
+                            )}
+                            {activePackageOrderIndex === index && !orderLoading && orderOptions.length > 0 && (
+                                <div className="mt-2 border border-gray-200 rounded-xl bg-white shadow-lg overflow-hidden">
+                                    {orderOptions.map((o) => (
+                                        <button
+                                            key={String(o.id)}
+                                            type="button"
+                                            onClick={() => handleSelectTemplateOrder(o)}
+                                            className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center justify-between"
+                                        >
+                                            <div>
+                                                <div className="font-medium text-gray-900">{o.order_no || `Order #${o.id}`}</div>
+                                                <div className="text-xs text-gray-500">ID: {o.id}</div>
+                                            </div>
+                                            {typeof o.total_amount === 'number' && (
+                                                <div className="text-sm font-semibold text-gray-900">
+                                                    RM {o.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </div>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Package Name */}
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Package Name *
+                            </label>
+                            <input
+                                type="text"
+                                value={pkg.name || ''}
+                                onChange={(e) => updatePackage(index, 'name', e.target.value)}
+                                className={`w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${packageErrors[index.toString()]?.name
+                                    ? 'border-red-300 bg-red-50 focus:border-red-500'
+                                    : 'border-gray-200 bg-white/70 focus:border-blue-500'
+                                    }`}
+                                placeholder="Enter package name"
+                                disabled={campaignMode !== 'packages'}
+                            />
+                            {packageErrors[index.toString()]?.name && (
+                                <p className="mt-1 text-sm text-red-600 flex items-center">
+                                    <AlertCircle className="h-4 w-4 mr-1" />
+                                    {packageErrors[index.toString()].name}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Package Description */}
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Description
+                            </label>
+                            <textarea
+                                value={pkg.description || ''}
+                                onChange={(e) => updatePackage(index, 'description', e.target.value)}
+                                rows={3}
+                                className="w-full px-3 py-2 rounded-lg border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all duration-200"
+                                placeholder="Enter package description"
+                                disabled={campaignMode !== 'packages'}
+                            />
+                        </div>
+
+                        {/* Internal Description */}
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Internal Description
+                            </label>
+                            <textarea
+                                value={pkg.internal_description || ''}
+                                onChange={(e) => updatePackage(index, 'internal_description', e.target.value)}
+                                rows={2}
+                                className="w-full px-3 py-2 rounded-lg border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all duration-200"
+                                placeholder="Internal notes (optional)"
+                                disabled={campaignMode !== 'packages'}
+                            />
+                        </div>
+
+                        {/* Slot Total */}
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Slot Number
+                                </label>
+                                <div className="flex items-center space-x-2">
+                                    <label className="flex items-center text-xs cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name={`slot_source_${index}`}
+                                            checked={packageValueSources[index.toString()]?.slot_total === 'fixed'}
+                                            onChange={() => handleValueSourceChange(index, 'slot_total', 'fixed')}
+                                            className="w-3 h-3 text-blue-600"
+                                            disabled={campaignMode !== 'packages'}
+                                        />
+                                        <Link className="ml-1 h-3 w-3 text-blue-600" />
+                                        <span className="ml-1 text-gray-600">Fixed</span>
+                                    </label>
+                                    <label className="flex items-center text-xs cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name={`slot_source_${index}`}
+                                            checked={packageValueSources[index.toString()]?.slot_total === 'custom'}
+                                            onChange={() => handleValueSourceChange(index, 'slot_total', 'custom')}
+                                            className="w-3 h-3 text-blue-600"
+                                            disabled={campaignMode !== 'packages'}
+                                        />
+                                        <Edit3 className="ml-1 h-3 w-3 text-green-600" />
+                                        <span className="ml-1 text-gray-600">Custom</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <input
+                                type="number"
+                                min="0"
+                                value={packageValueSources[index.toString()]?.slot_total === 'fixed' ? formData.slot_total : (pkg.slot_total || '')}
+                                onChange={(e) => updatePackage(index, 'slot_total', Number(e.target.value))}
+                                className={`w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${packageErrors[index.toString()]?.slot_total
+                                    ? 'border-red-300 bg-red-50 focus:border-red-500'
+                                    : 'border-gray-200 bg-white/70 focus:border-blue-500'
+                                    }`}
+                                placeholder="0"
+                                disabled={campaignMode !== 'packages' || packageValueSources[index.toString()]?.slot_total === 'fixed'}
+                            />
+                            {packageValueSources[index.toString()]?.slot_total === 'fixed' && (
+                                <p className="mt-1 text-xs text-blue-600">
+                                    Using campaign value: {formData.slot_total}
+                                </p>
+                            )}
+                            {packageErrors[index.toString()]?.slot_total && (
+                                <p className="mt-1 text-sm text-red-600 flex items-center">
+                                    <AlertCircle className="h-4 w-4 mr-1" />
+                                    {packageErrors[index.toString()].slot_total}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Base Amount */}
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Base Amount (RM)
+                                </label>
+                                <div className="flex items-center space-x-2">
+                                    <label className="flex items-center text-xs cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name={`base_source_${index}`}
+                                            checked={packageValueSources[index.toString()]?.base_amount === 'fixed'}
+                                            onChange={() => handleValueSourceChange(index, 'base_amount', 'fixed')}
+                                            className="w-3 h-3 text-blue-600"
+                                            disabled={campaignMode !== 'packages'}
+                                        />
+                                        <Link className="ml-1 h-3 w-3 text-blue-600" />
+                                        <span className="ml-1 text-gray-600">Fixed</span>
+                                    </label>
+                                    <label className="flex items-center text-xs cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name={`base_source_${index}`}
+                                            checked={packageValueSources[index.toString()]?.base_amount === 'custom'}
+                                            onChange={() => handleValueSourceChange(index, 'base_amount', 'custom')}
+                                            className="w-3 h-3 text-blue-600"
+                                            disabled={campaignMode !== 'packages'}
+                                        />
+                                        <Edit3 className="ml-1 h-3 w-3 text-green-600" />
+                                        <span className="ml-1 text-gray-600">Custom</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span className="text-gray-500 sm:text-sm">RM</span>
+                                </div>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={packageValueSources[index.toString()]?.base_amount === 'fixed' ? formData.base_amount : (pkg.base_amount || '')}
+                                    onChange={(e) => updatePackage(index, 'base_amount', Number(e.target.value))}
+                                    className={`w-full pl-10 pr-3 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${packageErrors[index.toString()]?.base_amount
+                                        ? 'border-red-300 bg-red-50 focus:border-red-500'
+                                        : 'border-gray-200 bg-white/70 focus:border-blue-500'
+                                        }`}
+                                    placeholder="0.00"
+                                    disabled={campaignMode !== 'packages' || packageValueSources[index.toString()]?.base_amount === 'fixed'}
+                                />
+                            </div>
+                            {packageValueSources[index.toString()]?.base_amount === 'fixed' && (
+                                <p className="mt-1 text-xs text-blue-600">
+                                    Using campaign value: RM {formData.base_amount}
+                                </p>
+                            )}
+                            {packageErrors[index.toString()]?.base_amount && (
+                                <p className="mt-1 text-sm text-red-600 flex items-center">
+                                    <AlertCircle className="h-4 w-4 mr-1" />
+                                    {packageErrors[index.toString()].base_amount}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Booking Amount */}
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Booking Amount (RM)
+                                </label>
+                                <div className="flex items-center space-x-2">
+                                    <label className="flex items-center text-xs cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name={`booking_source_${index}`}
+                                            checked={packageValueSources[index.toString()]?.booking_amount === 'fixed'}
+                                            onChange={() => handleValueSourceChange(index, 'booking_amount', 'fixed')}
+                                            className="w-3 h-3 text-blue-600"
+                                            disabled={campaignMode !== 'packages'}
+                                        />
+                                        <Link className="ml-1 h-3 w-3 text-blue-600" />
+                                        <span className="ml-1 text-gray-600">Fixed</span>
+                                    </label>
+                                    <label className="flex items-center text-xs cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name={`booking_source_${index}`}
+                                            checked={packageValueSources[index.toString()]?.booking_amount === 'custom'}
+                                            onChange={() => handleValueSourceChange(index, 'booking_amount', 'custom')}
+                                            className="w-3 h-3 text-blue-600"
+                                            disabled={campaignMode !== 'packages'}
+                                        />
+                                        <Edit3 className="ml-1 h-3 w-3 text-green-600" />
+                                        <span className="ml-1 text-gray-600">Custom</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span className="text-gray-500 sm:text-sm">RM</span>
+                                </div>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={packageValueSources[index.toString()]?.booking_amount === 'fixed' ? formData.booking_amount : (pkg.booking_amount || '')}
+                                    onChange={(e) => updatePackage(index, 'booking_amount', Number(e.target.value))}
+                                    className={`w-full pl-10 pr-3 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${packageErrors[index.toString()]?.booking_amount
+                                        ? 'border-red-300 bg-red-50 focus:border-red-500'
+                                        : 'border-gray-200 bg-white/70 focus:border-blue-500'
+                                        }`}
+                                    placeholder="0.00"
+                                    disabled={campaignMode !== 'packages' || packageValueSources[index.toString()]?.booking_amount === 'fixed'}
+                                />
+                            </div>
+                            {packageValueSources[index.toString()]?.booking_amount === 'fixed' && (
+                                <p className="mt-1 text-xs text-blue-600">
+                                    Using campaign value: RM {formData.booking_amount}
+                                </p>
+                            )}
+                            {packageErrors[index.toString()]?.booking_amount && (
+                                <p className="mt-1 text-sm text-red-600 flex items-center">
+                                    <AlertCircle className="h-4 w-4 mr-1" />
+                                    {packageErrors[index.toString()].booking_amount}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Start Date */}
+                        {/* <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Start Date
+                    </label>
+                    <div className="relative">
+                        <input
+                            type="date"
+                            value={pkg.start_date || ''}
+                            onChange={(e) => updatePackage(index, 'start_date', e.target.value)}
+                            className={`w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${packageErrors[index.toString()]?.start_date
+                                ? 'border-red-300 bg-red-50 focus:border-red-500'
+                                : 'border-gray-200 bg-white/70 focus:border-blue-500'
+                                }`}
+                            disabled={campaignMode !== 'packages'}
+                        />
+                        <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    </div>
+                    {packageErrors[index.toString()]?.start_date && (
+                        <p className="mt-1 text-sm text-red-600 flex items-center">
+                            <AlertCircle className="h-4 w-4 mr-1" />
+                            {packageErrors[index.toString()].start_date}
+                        </p>
+                    )}
+                </div> */}
+
+                        {/* End Date */}
+                        {/* <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        End Date
+                    </label>
+                    <div className="relative">
+                        <input
+                            type="date"
+                            value={pkg.end_date || ''}
+                            onChange={(e) => updatePackage(index, 'end_date', e.target.value)}
+                            className={`w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${packageErrors[index.toString()]?.end_date
+                                ? 'border-red-300 bg-red-50 focus:border-red-500'
+                                : 'border-gray-200 bg-white/70 focus:border-blue-500'
+                                }`}
+                            disabled={campaignMode !== 'packages'}
+                        />
+                        <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    </div>
+                    {packageErrors[index.toString()]?.end_date && (
+                        <p className="mt-1 text-sm text-red-600 flex items-center">
+                            <AlertCircle className="h-4 w-4 mr-1" />
+                            {packageErrors[index.toString()].end_date}
+                        </p>
+                    )}
+                </div> */}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -821,14 +1319,188 @@ export default function AddCampaign() {
                                     type="button"
                                     onClick={addPackage}
                                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    disabled={campaignMode !== 'packages'}
+                                    disabled={campaignMode !== 'packages' || useLayoutTypes}
                                 >
                                     <Plus className="h-4 w-4" />
                                     Add Package
                                 </button>
                             </div>
 
-                            {packages.length === 0 && campaignMode === 'packages' ? (
+                            {/* Use layout types toggle */}
+                            {campaignMode === 'packages' && (
+                                <div className="mb-6 flex items-start justify-between gap-4 p-4 bg-indigo-50/60 border border-indigo-200 rounded-xl">
+                                    <div>
+                                        <h3 className="text-sm font-semibold text-gray-900">Use layout types</h3>
+                                        <p className="text-xs text-gray-600">
+                                            Group packages under layout types, each with its own renderings &amp; rental projection.
+                                        </p>
+                                    </div>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            className="sr-only peer"
+                                            checked={useLayoutTypes}
+                                            onChange={(e) => setUseLayoutTypes(e.target.checked)}
+                                        />
+                                        <div className="w-11 h-6 bg-gray-300 peer-checked:bg-indigo-600 rounded-full transition-colors duration-200 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
+                                    </label>
+                                </div>
+                            )}
+
+                            {useLayoutTypes && campaignMode === 'packages' ? (
+                                /* Nested Layout Type UI */
+                                <div className="space-y-6">
+                                    <button
+                                        type="button"
+                                        onClick={addLayoutType}
+                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 flex items-center gap-2"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        Add Layout Type
+                                    </button>
+
+                                    {layoutTypes.length === 0 ? (
+                                        <div className="text-center py-8 text-gray-500">
+                                            <Package className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                                            <p>No layout types added yet</p>
+                                            <p className="text-sm">Click "Add Layout Type" to get started</p>
+                                        </div>
+                                    ) : (
+                                        layoutTypes.map((lt, layoutIdx) => (
+                                            <div key={layoutIdx} className="border-2 border-indigo-200 rounded-2xl bg-indigo-50/30 p-5 space-y-5">
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <h3 className="text-base font-semibold text-gray-900">
+                                                        Layout Type {layoutIdx + 1}
+                                                        {lt.name && (
+                                                            <span className="ml-2 text-sm font-normal text-gray-600">- {lt.name}</span>
+                                                        )}
+                                                    </h3>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (window.confirm('Remove this layout type and all its sub-packages?')) {
+                                                                removeLayoutType(layoutIdx);
+                                                            }
+                                                        }}
+                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                            Layout Name *
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={lt.name}
+                                                            onChange={(e) => updateLayoutType(layoutIdx, 'name', e.target.value)}
+                                                            className="w-full px-3 py-2 rounded-lg border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-indigo-500 transition-all duration-200"
+                                                            placeholder="e.g. Type A"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                            Description
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={lt.description || ''}
+                                                            onChange={(e) => updateLayoutType(layoutIdx, 'description', e.target.value)}
+                                                            className="w-full px-3 py-2 rounded-lg border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-indigo-500 transition-all duration-200"
+                                                            placeholder="Short description (optional)"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Rental Projection (single image) */}
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        Rental Projection (single image)
+                                                    </label>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => handleLayoutProjectionChange(layoutIdx, e.target.files?.[0] ?? null)}
+                                                        className="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200"
+                                                    />
+                                                    {layoutProjectionFile[layoutIdx] && (
+                                                        <div className="mt-2 flex items-center justify-between text-sm text-gray-600">
+                                                            <span>{layoutProjectionFile[layoutIdx].name}</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setLayoutProjectionFile(prev => { const n = { ...prev }; delete n[layoutIdx]; return n; })}
+                                                                className="text-red-600 hover:text-red-800 font-medium"
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Renderings (multiple images) */}
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        Renderings (multiple images)
+                                                    </label>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        multiple
+                                                        onChange={(e) => handleLayoutRenderingsChange(layoutIdx, e.target.files)}
+                                                        className="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200"
+                                                    />
+                                                    {layoutRenderingFiles[layoutIdx]?.length > 0 && (
+                                                        <ul className="mt-2 space-y-1">
+                                                            {layoutRenderingFiles[layoutIdx].map((f, fIdx) => (
+                                                                <li key={fIdx} className="flex items-center justify-between text-sm text-gray-600">
+                                                                    <span>{f.name}</span>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setLayoutRenderingFiles(prev => ({
+                                                                            ...prev,
+                                                                            [layoutIdx]: (prev[layoutIdx] || []).filter((_, i) => i !== fIdx),
+                                                                        }))}
+                                                                        className="text-red-600 hover:text-red-800 font-medium"
+                                                                    >
+                                                                        Remove
+                                                                    </button>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    )}
+                                                </div>
+
+                                                {/* Sub-packages for this layout */}
+                                                <div className="space-y-4 pt-2 border-t border-indigo-200">
+                                                    <div className="flex items-center justify-between">
+                                                        <h4 className="text-sm font-semibold text-gray-900">Sub-packages</h4>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => addSubPackage(layoutIdx)}
+                                                            className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 flex items-center gap-2 text-sm"
+                                                        >
+                                                            <Plus className="h-4 w-4" />
+                                                            Add sub-package
+                                                        </button>
+                                                    </div>
+                                                    {packages
+                                                        .map((pkg, index) => ({ pkg, index }))
+                                                        .filter(({ index }) => packageLayoutIndex[index] === layoutIdx)
+                                                        .map(({ pkg, index }) => renderPackageCard(pkg, index))}
+                                                </div>
+
+                                                <p className="text-xs text-gray-500">
+                                                    MP4/PNG/JPG up to 10MB · images upload after the campaign is created
+                                                </p>
+                                            </div>
+                                        ))
+                                    )}
+                                    {layoutError && <p className="text-sm text-red-600">{layoutError}</p>}
+                                </div>
+                            ) : packages.length === 0 && campaignMode === 'packages' ? (
                                 <div className="text-center py-8 text-gray-500">
                                     <Package className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                                     <p>No packages added yet</p>
@@ -836,415 +1508,11 @@ export default function AddCampaign() {
                                 </div>
                             ) : (
                                 <div className="space-y-6">
-                                    {packages.map((pkg, index) => (
-                                        <div key={index} className="border border-gray-200 rounded-xl bg-white/50 overflow-hidden">
-                                            <div className="flex items-center justify-between p-4 bg-gray-50/50 border-b border-gray-200">
-                                                <div className="flex items-center gap-3">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => togglePackageCollapse(index)}
-                                                        className="p-1 hover:bg-gray-200 rounded-lg transition-colors duration-200"
-                                                        disabled={campaignMode !== 'packages'}
-                                                    >
-                                                        {collapsedPackages[index] ? (
-                                                            <ChevronDown className="h-4 w-4 text-gray-600" />
-                                                        ) : (
-                                                            <ChevronUp className="h-4 w-4 text-gray-600" />
-                                                        )}
-                                                    </button>
-                                                    <h3 className="font-semibold text-gray-900">
-                                                        Package {index + 1}
-                                                        {pkg.name && (
-                                                            <span className="ml-2 text-sm font-normal text-gray-600">
-                                                                - {pkg.name}
-                                                            </span>
-                                                        )}
-                                                    </h3>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removePackage(index)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                                                    disabled={campaignMode !== 'packages'}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            </div>
-
-                                            {!collapsedPackages[index] && (
-                                                <div className="p-4">
-
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        {/* Linked Template Order (per package) */}
-                                                        <div className="md:col-span-2">
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                                Linked Template Order (Optional)
-                                                            </label>
-                                                            <div className="relative">
-                                                                <input
-                                                                    type="text"
-                                                                    value={
-                                                                        activePackageOrderIndex === index
-                                                                            ? orderSearch
-                                                                            : (selectedPackageOrderTemplates[String(index)]?.order_no || '')
-                                                                    }
-                                                                    onFocus={() => {
-                                                                        setActivePackageOrderIndex(index);
-                                                                        setOrderSearch('');
-                                                                        setOrderOptions([]);
-                                                                    }}
-                                                                    onChange={(e) => {
-                                                                        setActivePackageOrderIndex(index);
-                                                                        setOrderSearch(e.target.value);
-                                                                    }}
-                                                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all duration-200"
-                                                                    placeholder="Search template orders by order no..."
-                                                                    disabled={campaignMode !== 'packages'}
-                                                                />
-                                                                {(pkg.order_id || selectedPackageOrderTemplates[String(index)]) && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => handleClearPackageTemplateOrder(index)}
-                                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-red-600 hover:text-red-800"
-                                                                        disabled={campaignMode !== 'packages'}
-                                                                    >
-                                                                        Clear
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                            <p className="mt-1 text-sm text-gray-500">
-                                                                {selectedPackageOrderTemplates[String(index)]
-                                                                    ? `Selected: ${selectedPackageOrderTemplates[String(index)]?.order_no || selectedPackageOrderTemplates[String(index)]?.id}`
-                                                                    : (pkg.order_id ? `Selected order id: ${pkg.order_id}` : 'Type to search and select an existing template order.')}
-                                                            </p>
-                                                            {activePackageOrderIndex === index && orderLoading && (
-                                                                <div className="mt-2 text-sm text-gray-500">Searching…</div>
-                                                            )}
-                                                            {activePackageOrderIndex === index && !orderLoading && orderOptions.length > 0 && (
-                                                                <div className="mt-2 border border-gray-200 rounded-xl bg-white shadow-lg overflow-hidden">
-                                                                    {orderOptions.map((o) => (
-                                                                        <button
-                                                                            key={String(o.id)}
-                                                                            type="button"
-                                                                            onClick={() => handleSelectTemplateOrder(o)}
-                                                                            className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center justify-between"
-                                                                        >
-                                                                            <div>
-                                                                                <div className="font-medium text-gray-900">{o.order_no || `Order #${o.id}`}</div>
-                                                                                <div className="text-xs text-gray-500">ID: {o.id}</div>
-                                                                            </div>
-                                                                            {typeof o.total_amount === 'number' && (
-                                                                                <div className="text-sm font-semibold text-gray-900">
-                                                                                    RM {o.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                                </div>
-                                                                            )}
-                                                                        </button>
-                                                                    ))}
-                                                                </div>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Package Name */}
-                                                        <div className="md:col-span-2">
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                                Package Name *
-                                                            </label>
-                                                            <input
-                                                                type="text"
-                                                                value={pkg.name || ''}
-                                                                onChange={(e) => updatePackage(index, 'name', e.target.value)}
-                                                                className={`w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${packageErrors[index.toString()]?.name
-                                                                    ? 'border-red-300 bg-red-50 focus:border-red-500'
-                                                                    : 'border-gray-200 bg-white/70 focus:border-blue-500'
-                                                                    }`}
-                                                                placeholder="Enter package name"
-                                                                disabled={campaignMode !== 'packages'}
-                                                            />
-                                                            {packageErrors[index.toString()]?.name && (
-                                                                <p className="mt-1 text-sm text-red-600 flex items-center">
-                                                                    <AlertCircle className="h-4 w-4 mr-1" />
-                                                                    {packageErrors[index.toString()].name}
-                                                                </p>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Package Description */}
-                                                        <div className="md:col-span-2">
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                                Description
-                                                            </label>
-                                                            <textarea
-                                                                value={pkg.description || ''}
-                                                                onChange={(e) => updatePackage(index, 'description', e.target.value)}
-                                                                rows={3}
-                                                                className="w-full px-3 py-2 rounded-lg border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all duration-200"
-                                                                placeholder="Enter package description"
-                                                                disabled={campaignMode !== 'packages'}
-                                                            />
-                                                        </div>
-
-                                                        {/* Internal Description */}
-                                                        <div className="md:col-span-2">
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                                Internal Description
-                                                            </label>
-                                                            <textarea
-                                                                value={pkg.internal_description || ''}
-                                                                onChange={(e) => updatePackage(index, 'internal_description', e.target.value)}
-                                                                rows={2}
-                                                                className="w-full px-3 py-2 rounded-lg border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all duration-200"
-                                                                placeholder="Internal notes (optional)"
-                                                                disabled={campaignMode !== 'packages'}
-                                                            />
-                                                        </div>
-
-                                                        {/* Slot Total */}
-                                                        <div>
-                                                            <div className="flex items-center justify-between mb-2">
-                                                                <label className="block text-sm font-medium text-gray-700">
-                                                                    Slot Number
-                                                                </label>
-                                                                <div className="flex items-center space-x-2">
-                                                                    <label className="flex items-center text-xs cursor-pointer">
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`slot_source_${index}`}
-                                                                            checked={packageValueSources[index.toString()]?.slot_total === 'fixed'}
-                                                                            onChange={() => handleValueSourceChange(index, 'slot_total', 'fixed')}
-                                                                            className="w-3 h-3 text-blue-600"
-                                                                            disabled={campaignMode !== 'packages'}
-                                                                        />
-                                                                        <Link className="ml-1 h-3 w-3 text-blue-600" />
-                                                                        <span className="ml-1 text-gray-600">Fixed</span>
-                                                                    </label>
-                                                                    <label className="flex items-center text-xs cursor-pointer">
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`slot_source_${index}`}
-                                                                            checked={packageValueSources[index.toString()]?.slot_total === 'custom'}
-                                                                            onChange={() => handleValueSourceChange(index, 'slot_total', 'custom')}
-                                                                            className="w-3 h-3 text-blue-600"
-                                                                            disabled={campaignMode !== 'packages'}
-                                                                        />
-                                                                        <Edit3 className="ml-1 h-3 w-3 text-green-600" />
-                                                                        <span className="ml-1 text-gray-600">Custom</span>
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-                                                            <input
-                                                                type="number"
-                                                                min="0"
-                                                                value={packageValueSources[index.toString()]?.slot_total === 'fixed' ? formData.slot_total : (pkg.slot_total || '')}
-                                                                onChange={(e) => updatePackage(index, 'slot_total', Number(e.target.value))}
-                                                                className={`w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${packageErrors[index.toString()]?.slot_total
-                                                                    ? 'border-red-300 bg-red-50 focus:border-red-500'
-                                                                    : 'border-gray-200 bg-white/70 focus:border-blue-500'
-                                                                    }`}
-                                                                placeholder="0"
-                                                                disabled={campaignMode !== 'packages' || packageValueSources[index.toString()]?.slot_total === 'fixed'}
-                                                            />
-                                                            {packageValueSources[index.toString()]?.slot_total === 'fixed' && (
-                                                                <p className="mt-1 text-xs text-blue-600">
-                                                                    Using campaign value: {formData.slot_total}
-                                                                </p>
-                                                            )}
-                                                            {packageErrors[index.toString()]?.slot_total && (
-                                                                <p className="mt-1 text-sm text-red-600 flex items-center">
-                                                                    <AlertCircle className="h-4 w-4 mr-1" />
-                                                                    {packageErrors[index.toString()].slot_total}
-                                                                </p>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Base Amount */}
-                                                        <div>
-                                                            <div className="flex items-center justify-between mb-2">
-                                                                <label className="block text-sm font-medium text-gray-700">
-                                                                    Base Amount (RM)
-                                                                </label>
-                                                                <div className="flex items-center space-x-2">
-                                                                    <label className="flex items-center text-xs cursor-pointer">
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`base_source_${index}`}
-                                                                            checked={packageValueSources[index.toString()]?.base_amount === 'fixed'}
-                                                                            onChange={() => handleValueSourceChange(index, 'base_amount', 'fixed')}
-                                                                            className="w-3 h-3 text-blue-600"
-                                                                            disabled={campaignMode !== 'packages'}
-                                                                        />
-                                                                        <Link className="ml-1 h-3 w-3 text-blue-600" />
-                                                                        <span className="ml-1 text-gray-600">Fixed</span>
-                                                                    </label>
-                                                                    <label className="flex items-center text-xs cursor-pointer">
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`base_source_${index}`}
-                                                                            checked={packageValueSources[index.toString()]?.base_amount === 'custom'}
-                                                                            onChange={() => handleValueSourceChange(index, 'base_amount', 'custom')}
-                                                                            className="w-3 h-3 text-blue-600"
-                                                                            disabled={campaignMode !== 'packages'}
-                                                                        />
-                                                                        <Edit3 className="ml-1 h-3 w-3 text-green-600" />
-                                                                        <span className="ml-1 text-gray-600">Custom</span>
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-                                                            <div className="relative">
-                                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                                    <span className="text-gray-500 sm:text-sm">RM</span>
-                                                                </div>
-                                                                <input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    step="0.01"
-                                                                    value={packageValueSources[index.toString()]?.base_amount === 'fixed' ? formData.base_amount : (pkg.base_amount || '')}
-                                                                    onChange={(e) => updatePackage(index, 'base_amount', Number(e.target.value))}
-                                                                    className={`w-full pl-10 pr-3 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${packageErrors[index.toString()]?.base_amount
-                                                                        ? 'border-red-300 bg-red-50 focus:border-red-500'
-                                                                        : 'border-gray-200 bg-white/70 focus:border-blue-500'
-                                                                        }`}
-                                                                    placeholder="0.00"
-                                                                    disabled={campaignMode !== 'packages' || packageValueSources[index.toString()]?.base_amount === 'fixed'}
-                                                                />
-                                                            </div>
-                                                            {packageValueSources[index.toString()]?.base_amount === 'fixed' && (
-                                                                <p className="mt-1 text-xs text-blue-600">
-                                                                    Using campaign value: RM {formData.base_amount}
-                                                                </p>
-                                                            )}
-                                                            {packageErrors[index.toString()]?.base_amount && (
-                                                                <p className="mt-1 text-sm text-red-600 flex items-center">
-                                                                    <AlertCircle className="h-4 w-4 mr-1" />
-                                                                    {packageErrors[index.toString()].base_amount}
-                                                                </p>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Booking Amount */}
-                                                        <div>
-                                                            <div className="flex items-center justify-between mb-2">
-                                                                <label className="block text-sm font-medium text-gray-700">
-                                                                    Booking Amount (RM)
-                                                                </label>
-                                                                <div className="flex items-center space-x-2">
-                                                                    <label className="flex items-center text-xs cursor-pointer">
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`booking_source_${index}`}
-                                                                            checked={packageValueSources[index.toString()]?.booking_amount === 'fixed'}
-                                                                            onChange={() => handleValueSourceChange(index, 'booking_amount', 'fixed')}
-                                                                            className="w-3 h-3 text-blue-600"
-                                                                            disabled={campaignMode !== 'packages'}
-                                                                        />
-                                                                        <Link className="ml-1 h-3 w-3 text-blue-600" />
-                                                                        <span className="ml-1 text-gray-600">Fixed</span>
-                                                                    </label>
-                                                                    <label className="flex items-center text-xs cursor-pointer">
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`booking_source_${index}`}
-                                                                            checked={packageValueSources[index.toString()]?.booking_amount === 'custom'}
-                                                                            onChange={() => handleValueSourceChange(index, 'booking_amount', 'custom')}
-                                                                            className="w-3 h-3 text-blue-600"
-                                                                            disabled={campaignMode !== 'packages'}
-                                                                        />
-                                                                        <Edit3 className="ml-1 h-3 w-3 text-green-600" />
-                                                                        <span className="ml-1 text-gray-600">Custom</span>
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-                                                            <div className="relative">
-                                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                                    <span className="text-gray-500 sm:text-sm">RM</span>
-                                                                </div>
-                                                                <input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    step="0.01"
-                                                                    value={packageValueSources[index.toString()]?.booking_amount === 'fixed' ? formData.booking_amount : (pkg.booking_amount || '')}
-                                                                    onChange={(e) => updatePackage(index, 'booking_amount', Number(e.target.value))}
-                                                                    className={`w-full pl-10 pr-3 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${packageErrors[index.toString()]?.booking_amount
-                                                                        ? 'border-red-300 bg-red-50 focus:border-red-500'
-                                                                        : 'border-gray-200 bg-white/70 focus:border-blue-500'
-                                                                        }`}
-                                                                    placeholder="0.00"
-                                                                    disabled={campaignMode !== 'packages' || packageValueSources[index.toString()]?.booking_amount === 'fixed'}
-                                                                />
-                                                            </div>
-                                                            {packageValueSources[index.toString()]?.booking_amount === 'fixed' && (
-                                                                <p className="mt-1 text-xs text-blue-600">
-                                                                    Using campaign value: RM {formData.booking_amount}
-                                                                </p>
-                                                            )}
-                                                            {packageErrors[index.toString()]?.booking_amount && (
-                                                                <p className="mt-1 text-sm text-red-600 flex items-center">
-                                                                    <AlertCircle className="h-4 w-4 mr-1" />
-                                                                    {packageErrors[index.toString()].booking_amount}
-                                                                </p>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Start Date */}
-                                                        {/* <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                        Start Date
-                                                    </label>
-                                                    <div className="relative">
-                                                        <input
-                                                            type="date"
-                                                            value={pkg.start_date || ''}
-                                                            onChange={(e) => updatePackage(index, 'start_date', e.target.value)}
-                                                            className={`w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${packageErrors[index.toString()]?.start_date
-                                                                ? 'border-red-300 bg-red-50 focus:border-red-500'
-                                                                : 'border-gray-200 bg-white/70 focus:border-blue-500'
-                                                                }`}
-                                                            disabled={campaignMode !== 'packages'}
-                                                        />
-                                                        <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                                    </div>
-                                                    {packageErrors[index.toString()]?.start_date && (
-                                                        <p className="mt-1 text-sm text-red-600 flex items-center">
-                                                            <AlertCircle className="h-4 w-4 mr-1" />
-                                                            {packageErrors[index.toString()].start_date}
-                                                        </p>
-                                                    )}
-                                                </div> */}
-
-                                                        {/* End Date */}
-                                                        {/* <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                        End Date
-                                                    </label>
-                                                    <div className="relative">
-                                                        <input
-                                                            type="date"
-                                                            value={pkg.end_date || ''}
-                                                            onChange={(e) => updatePackage(index, 'end_date', e.target.value)}
-                                                            className={`w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${packageErrors[index.toString()]?.end_date
-                                                                ? 'border-red-300 bg-red-50 focus:border-red-500'
-                                                                : 'border-gray-200 bg-white/70 focus:border-blue-500'
-                                                                }`}
-                                                            disabled={campaignMode !== 'packages'}
-                                                        />
-                                                        <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                                    </div>
-                                                    {packageErrors[index.toString()]?.end_date && (
-                                                        <p className="mt-1 text-sm text-red-600 flex items-center">
-                                                            <AlertCircle className="h-4 w-4 mr-1" />
-                                                            {packageErrors[index.toString()].end_date}
-                                                        </p>
-                                                    )}
-                                                </div> */}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
+                                    {packages.map((pkg, index) => renderPackageCard(pkg, index))}
                                 </div>
                             )}
                         </div>
                     </div>
-
                     {/* Right Sidebar - Settings and Configuration */}
                     <div className="xl:col-span-4 space-y-6">
                         {/* Campaign Mode Toggle */}
