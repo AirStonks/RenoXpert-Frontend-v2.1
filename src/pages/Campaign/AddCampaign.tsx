@@ -450,6 +450,8 @@ export default function AddCampaign() {
                     console.error('Thumbnail video upload failed:', videoErr);
                     setError('Campaign created, but the video upload failed — add it later from Edit.');
                 }
+            } else if (videoFile && !newCampaignId) {
+                setError('Campaign created, but the video could not be uploaded — add it later from Edit.');
             }
 
             // Navigate back to campaigns list

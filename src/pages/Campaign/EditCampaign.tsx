@@ -778,14 +778,27 @@ export default function EditCampaign() {
                                     {existingVideoUrl ? (
                                         <div className="mt-1">
                                             <video src={existingVideoUrl} controls className="w-full h-48 object-cover rounded-lg border border-gray-200 bg-black" />
-                                            <button
-                                                type="button"
-                                                onClick={handleVideoRemove}
-                                                disabled={videoUploading}
-                                                className="mt-2 text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50"
-                                            >
-                                                {videoUploading ? 'Removing…' : 'Remove video'}
-                                            </button>
+                                            <div className="mt-2 flex items-center gap-4">
+                                                <label htmlFor="thumbnail-video-replace" className="cursor-pointer text-blue-600 hover:text-blue-500 text-sm font-medium">
+                                                    {videoUploading ? 'Uploading…' : 'Replace video'}
+                                                    <input
+                                                        id="thumbnail-video-replace"
+                                                        type="file"
+                                                        accept="video/mp4,video/webm,video/quicktime"
+                                                        onChange={handleVideoChange}
+                                                        disabled={videoUploading}
+                                                        className="sr-only"
+                                                    />
+                                                </label>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleVideoRemove}
+                                                    disabled={videoUploading}
+                                                    className="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50"
+                                                >
+                                                    {videoUploading ? 'Removing…' : 'Remove video'}
+                                                </button>
+                                            </div>
                                         </div>
                                     ) : (
                                         <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-gray-400 transition-colors duration-200">
