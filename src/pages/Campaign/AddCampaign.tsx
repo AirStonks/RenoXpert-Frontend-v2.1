@@ -341,8 +341,8 @@ export default function AddCampaign() {
             });
             return next;
         });
-        setLayoutProjectionFile(prev => { const n = { ...prev }; delete n[idx]; return n; });
-        setLayoutRenderingFiles(prev => { const n = { ...prev }; delete n[idx]; return n; });
+        setLayoutProjectionFile(prev => shiftNumericIndexMap(prev, idx));
+        setLayoutRenderingFiles(prev => shiftNumericIndexMap(prev, idx));
     };
 
     const addSubPackage = (layoutIdx: number) => {
