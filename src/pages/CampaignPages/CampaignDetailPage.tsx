@@ -18,8 +18,9 @@ import {
     Play,
     X
 } from 'lucide-react';
-import { Attachment, Campaign, CampaignPackage } from '../../types';
+import { Attachment, Campaign, CampaignPackage, Order } from '../../types';
 import { bookingPaymentIntent, getCampaign } from '../../services/publicApi';
+import { getInitialDownPayment } from '../../utils/quotationPricing';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Button } from './components/Button';
 import { buttonClasses } from './components/buttonClasses';
@@ -243,6 +244,8 @@ const CampaignDetailPage = () => {
         );
     }
 
+    const isLayered = (campaign?.layout_types?.length ?? 0) > 0;
+
     return (
         <div className="w-full min-h-screen bg-slate-50">
             <CampaignHeader
@@ -354,6 +357,49 @@ const CampaignDetailPage = () => {
                                 </p>
                             </div>
                         </Card>
+                    </div>
+                ) : isLayered ? (
+                    /* Layered Campaign — Choose your layout (cards link to the layout detail page) */
+                    <div className="lg:col-span-3 space-y-4 sm:space-y-6">
+                        <div>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">Choose your layout</h2>
+                            <p className="text-base text-slate-500">Pick a layout to see its photos, packages and pricing.</p>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                            {(campaign.layout_types ?? []).map((lt) => {
+                                const ltPackages = (campaign.packages ?? []).filter((p) => String(p.layout_type_id) === String(lt.id));
+                                const startFrom = ltPackages.reduce((min, p) => {
+                                    const v = getInitialDownPayment(p.order as Order | undefined);
+                                    return v > 0 && (min === 0 || v < min) ? v : min;
+                                }, 0);
+                                const proj = lt.rental_projection as Attachment | undefined;
+                                return (
+                                    <Link
+                                        key={String(lt.id)}
+                                        to={`layouts/${lt.id}`}
+                                        className="group block rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_28px_rgba(16,24,40,0.06)] hover:shadow-lg transition"
+                                    >
+                                        <div className="h-36 w-full bg-slate-100">
+                                            {proj?.file_url ? (
+                                                <img src={proj.file_url} alt={lt.name} className="h-36 w-full object-cover" />
+                                            ) : (
+                                                <div className="h-36 w-full grid place-items-center text-slate-400"><Package className="h-10 w-10" /></div>
+                                            )}
+                                        </div>
+                                        <div className="p-5">
+                                            <h3 className="text-lg font-bold text-slate-900">{lt.name}</h3>
+                                            {lt.description && <p className="text-sm text-slate-500 mt-1 line-clamp-2">{lt.description}</p>}
+                                            <div className="mt-4 flex items-center justify-between">
+                                                {startFrom > 0 && (
+                                                    <span className="text-sm text-slate-400">Start from <span className="font-bold text-campaign">RM {startFrom.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span></span>
+                                                )}
+                                                <span className="text-sm font-semibold text-campaign inline-flex items-center gap-1">View layout <ArrowRight className="h-4 w-4" /></span>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </div>
                     </div>
                 ) : (
                     /* Available Campaign Layout */
@@ -641,7 +687,7 @@ const CampaignDetailPage = () => {
             </div>
 
             {/* Mobile sticky bottom action bar */}
-            {!isFullyBooked && (
+            {!isFullyBooked && !isLayered && (
                 <div className="lg:hidden sticky bottom-0 z-40 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 flex items-center justify-between">
                     <div>
                         <p className="text-[11px] text-slate-400 leading-none">From</p>
