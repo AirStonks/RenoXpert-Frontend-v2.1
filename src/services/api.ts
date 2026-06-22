@@ -3067,6 +3067,27 @@ export const updateCampaign = async (id: string | number, campaignData: any) => 
     }
 };
 
+export const uploadCampaignThumbnailVideo = async (campaignId: number | string, file: File) => {
+    const formData = new FormData();
+    formData.append('thumbnail_video', file);
+    const response = await axios.post(`${API_URL}campaigns/${campaignId}/thumbnail-video/upload`, formData, {
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    return response.data;
+};
+
+export const deleteCampaignThumbnailVideo = async (campaignId: number | string) => {
+    const response = await axios.delete(`${API_URL}campaigns/${campaignId}/thumbnail-video`, {
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+    });
+    return response.data;
+};
+
 export const deleteCampaign = async (id: string | number) => {
     try {
         const response = await axios.delete(API_URL + `campaigns/${id}`, {

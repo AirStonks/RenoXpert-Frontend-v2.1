@@ -1629,6 +1629,7 @@ export interface Campaign {
     description?: string;
     internal_description?: string;
     thumbnail?: Attachment | File;
+    thumbnail_video?: Attachment | File;
     packages?: CampaignPackage[];
     base_amount?: number;
     booking_amount?: number;
