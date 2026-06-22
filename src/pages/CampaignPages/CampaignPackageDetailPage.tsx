@@ -5,6 +5,7 @@ import { InformationCircleIcon } from '@heroicons/react/24/solid';
 import { getCampaign } from '../../services/publicApi';
 import type { Campaign, CampaignPackage, Order, OrderQuotation, Package, Product } from '../../types';
 import { getRenoSubscriptionFixedOverrideNettAmount } from '../../utils/renoSubscription';
+import { getQuotationPackagePrice } from '../../utils/quotationPricing';
 import { Card } from './components/Card';
 import { Tabs } from './components/Tabs';
 import { AccordionItem } from './components/AccordionItem';
@@ -177,10 +178,12 @@ export default function CampaignPackageDetailPage() {
         const pkgs = effectivePackages;
         return pkgs.reduce((total, pkg) => {
             if (pkg.is_addon === true && pkg.is_addon_included === false) return total;
-            const packagePrice = templateOrder?.is_rnpl && pkg.markup_amount ? pkg.markup_amount : pkg.total_price || 0;
-            return total + Number(packagePrice) * (pkg.quantity || 1);
+            // Match the Owner "Summary Pricing" basis: recompute from products
+            // (via the shared util) instead of the package's stored total_price,
+            // which can drift out of sync. Keeps campaign total == owner total.
+            return total + getQuotationPackagePrice(pkg, templateOrder);
         }, 0);
-    }, [templateOrder?.f_1, templateOrder?.total_amount, templateOrder?.is_rnpl, effectivePackages]);
+    }, [templateOrder, effectivePackages]);
 
     const totalRenoNowPrice = useMemo(() => {
         if (!templateOrder?.is_rnpl) return 0;
