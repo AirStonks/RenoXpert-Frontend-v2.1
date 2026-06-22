@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quotation Detail Refinement — Mockup (Desktop + Mobile)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+        colors: {
+          campaign: { DEFAULT: '#D71E42', 50: '#FDF2F4', 100: '#FBE3E8', 200: '#F6C2CC', 600: '#BE1A3B', 700: '#9F1631' },
+        },
+        boxShadow: { card: '0 1px 2px rgba(16,24,40,0.04), 0 8px 28px rgba(16,24,40,0.06)' },
+      },
+    },
+  };
+</script>
+<style>
+  body { background:#eef1f5; font-family:'Inter',sans-serif; }
+  .scrollpane { overflow-y:auto; scrollbar-width:thin; scrollbar-color:#cbd5e1 transparent; }
+  .scrollpane::-webkit-scrollbar { width:8px; }
+  .scrollpane::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:8px; }
+  .newtag { box-shadow:0 0 0 2px #fff, 0 0 0 4px #D71E42; }
+  .annot { outline:2px dashed #D71E42; outline-offset:3px; border-radius:14px; }
+</style>
+</head>
+<body class="text-slate-900">
+
+<!-- ===================== PAGE HEADER ===================== -->
+<div class="max-w-[1400px] mx-auto px-6 py-8">
+  <div class="flex items-start justify-between flex-wrap gap-4">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-widest text-campaign">RenoXpert · Campaign Refindment</p>
+      <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">Quotation Detail — Sub-project A mockup</h1>
+      <p class="text-slate-500 mt-2 max-w-2xl text-sm leading-relaxed">Premium-Minimal crimson design system. The add-on toggles and the months selector are <strong>live</strong> — change them and watch every figure recompute. New pieces are tagged <span class="inline-flex items-center align-middle gap-1 text-[10px] font-bold text-white bg-campaign px-1.5 py-0.5 rounded">NEW</span>.</p>
+    </div>
+    <!-- Legend -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-card p-4 text-sm w-full sm:w-auto">
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">What's new</p>
+      <ul class="space-y-1.5 text-slate-600">
+        <li><span class="inline-block w-9 text-center text-[10px] font-bold text-white bg-campaign rounded mr-2">Q1</span>Booking-fee breakdown on Initial Down Payment</li>
+        <li><span class="inline-block w-9 text-center text-[10px] font-bold text-white bg-campaign rounded mr-2">Q2</span>Toggle-able add-on packages (live preview)</li>
+        <li><span class="inline-block w-9 text-center text-[10px] font-bold text-white bg-campaign rounded mr-2">Q3</span>Mobile sticky payment bar</li>
+        <li><span class="inline-block w-9 text-center text-[10px] font-bold text-white bg-campaign rounded mr-2">Q4</span>T&amp;C "payment = acknowledgement" clause</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-[1400px] mx-auto px-6 pb-24 flex flex-wrap gap-10 items-start justify-center">
+
+  <!-- ===================== DESKTOP FRAME ===================== -->
+  <div class="flex-1 min-w-[680px]">
+    <p class="text-sm font-semibold text-slate-500 mb-3 flex items-center gap-2">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Desktop — Quotation tab (≈1280px; content column max-w-3xl, centered)
+    </p>
+    <div class="rounded-2xl border border-slate-300 bg-white shadow-2xl overflow-hidden">
+      <!-- browser chrome -->
+      <div class="h-10 bg-slate-100 border-b border-slate-200 flex items-center px-4 gap-2">
+        <span class="w-3 h-3 rounded-full bg-[#ff5f57]"></span>
+        <span class="w-3 h-3 rounded-full bg-[#febc2e]"></span>
+        <span class="w-3 h-3 rounded-full bg-[#28c840]"></span>
+        <div class="ml-4 flex-1 max-w-md bg-white border border-slate-200 rounded-md text-xs text-slate-400 px-3 py-1 truncate">campaign.renoxpert.my/campaigns/sunway-grid/packages/12</div>
+      </div>
+      <!-- app viewport -->
+      <div class="qd-app scrollpane bg-slate-50" style="height:760px" data-base="38000" data-discount="2000" data-bookingfee="500">
+        <!-- top bar -->
+        <div class="bg-white border-b border-slate-200 sticky top-0 z-30">
+          <div class="max-w-3xl mx-auto px-6 py-4 flex items-center gap-3">
+            <button class="p-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200">
+              <svg class="h-5 w-5 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </button>
+            <div>
+              <div class="text-xs font-medium uppercase tracking-wide text-slate-400">Campaign package detail</div>
+              <div class="font-semibold text-slate-900">RenoXpert × Sunway Grid Residences</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="max-w-3xl mx-auto px-6 py-6 space-y-6">
+          <!-- header card -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-card p-6 sm:p-8">
+            <h1 class="text-2xl font-bold text-slate-900">Studio — Smart Co-Living Package</h1>
+            <p class="text-sm mt-3 text-slate-500 leading-relaxed">A turnkey studio renovation tuned for co-living yield: full reno, smart-home IoT, and optional premium upgrades.</p>
+          </div>
+
+          <!-- tabs -->
+          <div class="inline-flex gap-1 p-1 bg-slate-100 rounded-xl">
+            <button class="px-5 py-2 rounded-lg text-sm font-semibold bg-campaign text-white shadow-sm">Quotation</button>
+            <button class="px-5 py-2 rounded-lg text-sm font-semibold text-slate-500 hover:text-slate-900">Terms &amp; Conditions</button>
+          </div>
+
+          <!-- Payment Summary -->
+          <div class="qd-summary bg-white rounded-2xl border border-slate-200 shadow-card p-6">
+            <div class="flex flex-col space-y-2">
+              <div class="flex items-center justify-between gap-3">
+                <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-campaign-50 text-campaign">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                  Full Payment
+                </span>
+                <select class="qd-tenure rounded-lg border border-slate-200 text-sm bg-white py-1.5 px-3">
+                  <option value="36">36 months</option>
+                  <option value="60" selected>60 months</option>
+                </select>
+              </div>
+              <div class="flex justify-between">
+                <div class="flex flex-col items-start w-full">
+                  <p class="text-2xl text-campaign font-bold">RM <span class="qd-monthly">798</span><span class="text-sm text-slate-500">/month </span><span class="text-xs text-slate-500">for <span class="qd-tenure-label">60</span> months</span></p>
+                  <button class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-campaign hover:text-campaign-600">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg>
+                    <span>(Terms &amp; Conditions)</span>
+                  </button>
+                </div>
+              </div>
+              <div class="flex items-start justify-between mt-2">
+                <span class="text-xs text-slate-500"><strong>Or</strong> pay one-time: RM <span class="qd-onetime">42,000.00</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pricing summary -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-card p-6 divide-y divide-slate-100">
+            <!-- discount -->
+            <div class="pb-4">
+              <div class="rounded-xl bg-teal-50/60 p-4">
+                <h3 class="text-xs text-teal-700 font-bold">Discount:</h3>
+                <div class="text-xs text-slate-500 font-medium space-y-1 mt-1">
+                  <p>Early-bird campaign rebate</p>
+                  <p>Loyalty referral credit</p>
+                </div>
+                <div class="flex justify-between items-center mt-2">
+                  <span class="text-xs text-slate-500 font-medium">Total Discount:</span>
+                  <p class="text-sm text-teal-700 font-bold">RM 2,000.00</p>
+                </div>
+              </div>
+            </div>
+            <!-- total -->
+            <div class="flex justify-between items-center py-3">
+              <span class="text-sm text-slate-500">Total Quotation Amount</span>
+              <span class="text-sm text-slate-900 font-semibold whitespace-nowrap">RM <span class="qd-total">42,000</span></span>
+            </div>
+            <!-- payment terms -->
+            <div class="flex justify-between items-center py-3">
+              <span class="text-sm text-slate-500">Payment Terms</span>
+              <span class="text-sm text-slate-900 font-semibold">Full Payment</span>
+            </div>
+
+            <!-- [Q1] Initial Down Payment block -->
+            <div class="py-3 annot relative">
+              <span class="absolute -top-2.5 left-3 bg-campaign text-white text-[10px] font-bold px-2 py-0.5 rounded">NEW · Q1</span>
+              <!-- booking fee -->
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-slate-500 flex items-center gap-2">Booking Fee
+                  <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-red-50 text-red-600">Non-refundable</span>
+                </span>
+                <span class="text-sm text-red-600 font-semibold whitespace-nowrap">− RM 500</span>
+              </div>
+              <!-- initial down (net) -->
+              <div class="flex justify-between items-center mt-2">
+                <span class="text-sm font-semibold text-slate-900">Initial Down Payment</span>
+                <span class="text-sm text-slate-900 font-bold whitespace-nowrap">RM <span class="qd-net">20,500</span></span>
+              </div>
+              <!-- original sub-item -->
+              <div class="flex justify-between items-center mt-1 pl-4">
+                <span class="text-xs text-slate-400">Original Initial Down Payment</span>
+                <span class="text-xs text-slate-400 whitespace-nowrap">RM <span class="qd-original">21,000</span></span>
+              </div>
+            </div>
+
+            <!-- balance -->
+            <div class="flex justify-between items-center py-3">
+              <span class="text-sm text-slate-500">Balance Payment</span>
+              <span class="text-sm text-slate-900 font-semibold whitespace-nowrap">RM <span class="qd-balance">21,000</span></span>
+            </div>
+          </div>
+
+          <!-- Quotation packages -->
+          <div class="space-y-4">
+            <!-- regular -->
+            <div class="rounded-2xl border border-slate-200 overflow-hidden">
+              <button class="w-full flex items-center justify-between p-5 text-left bg-slate-50/70 hover:bg-slate-100">
+                <div><div class="text-sm font-semibold text-slate-900">Renovation Package</div><div class="text-xs text-slate-400 mt-1">12 item(s)</div></div>
+                <svg class="h-5 w-5 text-slate-400 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="p-5 border-t border-slate-100">
+                <table class="w-full text-sm">
+                  <thead><tr><th class="text-slate-400 text-xs uppercase font-semibold py-2 pr-4 text-left">Item</th><th class="text-slate-400 text-xs uppercase font-semibold py-2 px-3 text-center">Qty</th></tr></thead>
+                  <tbody class="divide-y divide-slate-50">
+                    <tr><td class="py-3 pr-4"><div class="font-medium text-slate-900">Cement screed flooring</div><div class="text-xs text-slate-400 mt-1">Living + bedroom</div></td><td class="text-slate-600 py-3 px-3 text-center">38 sqft</td></tr>
+                    <tr><td class="py-3 pr-4"><div class="font-medium text-slate-900">Built-in wardrobe</div></td><td class="text-slate-600 py-3 px-3 text-center">1 unit</td></tr>
+                    <tr><td class="py-3 pr-4"><div class="font-medium text-slate-900">Kitchen cabinet</div></td><td class="text-slate-600 py-3 px-3 text-center">1 set</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="rounded-2xl border border-slate-200 overflow-hidden">
+              <button class="w-full flex items-center justify-between p-5 text-left bg-slate-50/70 hover:bg-slate-100">
+                <div><div class="text-sm font-semibold text-slate-900">Smart Home &amp; IoT</div><div class="text-xs text-slate-400 mt-1">6 item(s)</div></div>
+                <svg class="h-5 w-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+            </div>
+
+            <!-- [Q2] add-ons -->
+            <div class="mt-4 space-y-4 annot relative pt-2">
+              <span class="absolute -top-2.5 left-3 bg-campaign text-white text-[10px] font-bold px-2 py-0.5 rounded">NEW · Q2</span>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-campaign-50 text-campaign">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></svg>
+                </span>
+                <h3 class="text-sm font-bold text-slate-900">OPTIONAL ADD-ON PACKAGES</h3>
+                <span class="text-xs text-slate-400">— tap a switch to include / exclude</span>
+              </div>
+
+              <!-- add-on A (included) -->
+              <div class="qd-addon-row rounded-2xl border border-slate-200 overflow-hidden transition">
+                <div class="flex items-center justify-between p-5 bg-slate-50/70">
+                  <div>
+                    <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-campaign-50 text-campaign mb-1.5">Add-on</span>
+                    <div class="text-sm font-semibold text-slate-900">Premium Furnishing</div>
+                    <div class="text-xs text-slate-400 mt-1">8 item(s) · <span class="font-semibold text-slate-600">RM 6,000</span></div>
+                  </div>
+                  <label class="flex items-center gap-2 cursor-pointer select-none">
+                    <span class="qd-addon-label text-xs font-semibold text-campaign">Included</span>
+                    <span class="relative inline-block w-11 h-6">
+                      <input type="checkbox" class="qd-addon peer sr-only" data-price="6000" checked>
+                      <span class="absolute inset-0 rounded-full bg-slate-200 peer-checked:bg-campaign transition"></span>
+                      <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition peer-checked:translate-x-5"></span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- add-on B (excluded) -->
+              <div class="qd-addon-row rounded-2xl border border-slate-200 overflow-hidden transition opacity-60">
+                <div class="flex items-center justify-between p-5 bg-slate-50/70">
+                  <div>
+                    <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-campaign-50 text-campaign mb-1.5">Add-on</span>
+                    <div class="text-sm font-semibold text-slate-900 line-through decoration-slate-300">Air-Conditioning Upgrade</div>
+                    <div class="text-xs text-slate-400 mt-1">3 item(s) · <span class="font-semibold text-slate-600">RM 4,000</span></div>
+                  </div>
+                  <label class="flex items-center gap-2 cursor-pointer select-none">
+                    <span class="qd-addon-label text-xs font-semibold text-slate-400">Excluded</span>
+                    <span class="relative inline-block w-11 h-6">
+                      <input type="checkbox" class="qd-addon peer sr-only" data-price="4000">
+                      <span class="absolute inset-0 rounded-full bg-slate-200 peer-checked:bg-campaign transition"></span>
+                      <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition peer-checked:translate-x-5"></span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="h-4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MOBILE FRAME ===================== -->
+  <div class="shrink-0">
+    <p class="text-sm font-semibold text-slate-500 mb-3 flex items-center gap-2">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>
+      Mobile — 375px (with Q3 sticky bar)
+    </p>
+    <div class="rounded-[2.5rem] border-[10px] border-slate-900 bg-slate-900 shadow-2xl overflow-hidden" style="width:375px">
+      <div class="relative bg-slate-50" style="height:740px">
+        <!-- status notch -->
+        <div class="absolute top-0 inset-x-0 h-6 bg-white z-40 flex items-center justify-center">
+          <div class="w-24 h-4 bg-slate-900 rounded-b-2xl"></div>
+        </div>
+        <div class="qd-app scrollpane" style="height:740px; padding-top:24px" data-base="38000" data-discount="2000" data-bookingfee="500">
+          <!-- top bar -->
+          <div class="bg-white border-b border-slate-200 sticky top-0 z-30">
+            <div class="px-4 py-3 flex items-center gap-3">
+              <button class="p-2 rounded-xl bg-white border border-slate-200">
+                <svg class="h-5 w-5 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </button>
+              <div>
+                <div class="text-[10px] font-medium uppercase tracking-wide text-slate-400">Campaign package detail</div>
+                <div class="font-semibold text-slate-900 text-sm">Sunway Grid Residences</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-4 py-4 space-y-4">
+            <!-- header card -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-card p-4">
+              <h1 class="text-lg font-bold text-slate-900">Studio — Smart Co-Living Package</h1>
+              <p class="text-xs mt-2 text-slate-500 leading-relaxed">Turnkey studio reno tuned for co-living yield.</p>
+            </div>
+            <!-- tabs -->
+            <div class="inline-flex gap-1 p-1 bg-slate-100 rounded-xl text-xs">
+              <button class="px-4 py-2 rounded-lg font-semibold bg-campaign text-white shadow-sm">Quotation</button>
+              <button class="px-4 py-2 rounded-lg font-semibold text-slate-500">Terms &amp; Conditions</button>
+            </div>
+
+            <!-- payment summary -->
+            <div class="qd-summary bg-white rounded-2xl border border-slate-200 shadow-card p-4">
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-campaign-50 text-campaign">
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                  Full Payment
+                </span>
+                <select class="qd-tenure rounded-lg border border-slate-200 text-xs bg-white py-1 px-2">
+                  <option value="36">36 months</option><option value="60" selected>60 months</option>
+                </select>
+              </div>
+              <p class="text-xl text-campaign font-bold">RM <span class="qd-monthly">798</span><span class="text-xs text-slate-500">/mo</span> <span class="text-[11px] text-slate-500">· <span class="qd-tenure-label">60</span> mo</span></p>
+              <p class="text-[11px] text-slate-500 mt-1"><strong>Or</strong> one-time: RM <span class="qd-onetime">42,000.00</span></p>
+            </div>
+
+            <!-- pricing summary -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-card p-4 divide-y divide-slate-100 text-sm">
+              <div class="pb-3">
+                <div class="rounded-xl bg-teal-50/60 p-3">
+                  <h3 class="text-[11px] text-teal-700 font-bold">Discount:</h3>
+                  <div class="flex justify-between items-center mt-1"><span class="text-[11px] text-slate-500">Total Discount:</span><span class="text-xs text-teal-700 font-bold">RM 2,000.00</span></div>
+                </div>
+              </div>
+              <div class="flex justify-between items-center py-2.5"><span class="text-slate-500">Total Quotation Amount</span><span class="font-semibold">RM <span class="qd-total">42,000</span></span></div>
+              <div class="flex justify-between items-center py-2.5"><span class="text-slate-500">Payment Terms</span><span class="font-semibold">Full Payment</span></div>
+              <!-- Q1 -->
+              <div class="py-2.5 annot relative">
+                <span class="absolute -top-2.5 left-2 bg-campaign text-white text-[9px] font-bold px-1.5 py-0.5 rounded">Q1</span>
+                <div class="flex justify-between items-center"><span class="text-slate-500 flex items-center gap-1.5 text-[13px]">Booking Fee <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-red-50 text-red-600">Non-refundable</span></span><span class="text-red-600 font-semibold">− RM 500</span></div>
+                <div class="flex justify-between items-center mt-1.5"><span class="font-semibold text-slate-900">Initial Down Payment</span><span class="font-bold">RM <span class="qd-net">20,500</span></span></div>
+                <div class="flex justify-between items-center mt-1 pl-3"><span class="text-[11px] text-slate-400">Original Initial Down Payment</span><span class="text-[11px] text-slate-400">RM <span class="qd-original">21,000</span></span></div>
+              </div>
+              <div class="flex justify-between items-center py-2.5"><span class="text-slate-500">Balance Payment</span><span class="font-semibold">RM <span class="qd-balance">21,000</span></span></div>
+            </div>
+
+            <!-- add-ons (Q2) -->
+            <div class="space-y-3 annot relative pt-2">
+              <span class="absolute -top-2.5 left-2 bg-campaign text-white text-[9px] font-bold px-1.5 py-0.5 rounded">Q2</span>
+              <div class="flex items-center gap-2"><span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-campaign-50 text-campaign"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></svg></span><h3 class="text-xs font-bold text-slate-900">OPTIONAL ADD-ONS</h3></div>
+              <div class="qd-addon-row rounded-2xl border border-slate-200 p-4 bg-slate-50/70 flex items-center justify-between transition">
+                <div><div class="text-sm font-semibold text-slate-900">Premium Furnishing</div><div class="text-[11px] text-slate-400 mt-0.5">RM 6,000</div></div>
+                <label class="flex items-center gap-1.5 cursor-pointer"><span class="qd-addon-label text-[11px] font-semibold text-campaign">Included</span>
+                  <span class="relative inline-block w-10 h-5"><input type="checkbox" class="qd-addon peer sr-only" data-price="6000" checked><span class="absolute inset-0 rounded-full bg-slate-200 peer-checked:bg-campaign transition"></span><span class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition peer-checked:translate-x-5"></span></span>
+                </label>
+              </div>
+              <div class="qd-addon-row rounded-2xl border border-slate-200 p-4 bg-slate-50/70 flex items-center justify-between transition opacity-60">
+                <div><div class="text-sm font-semibold text-slate-900 line-through decoration-slate-300">Air-Con Upgrade</div><div class="text-[11px] text-slate-400 mt-0.5">RM 4,000</div></div>
+                <label class="flex items-center gap-1.5 cursor-pointer"><span class="qd-addon-label text-[11px] font-semibold text-slate-400">Excluded</span>
+                  <span class="relative inline-block w-10 h-5"><input type="checkbox" class="qd-addon peer sr-only" data-price="4000"><span class="absolute inset-0 rounded-full bg-slate-200 peer-checked:bg-campaign transition"></span><span class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition peer-checked:translate-x-5"></span></span>
+                </label>
+              </div>
+            </div>
+            <div class="h-24"></div>
+          </div>
+
+          <!-- [Q3] sticky bar (appears after scrolling past Payment Summary) -->
+          <div class="qd-sticky absolute bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 flex items-center justify-between translate-y-full transition-transform duration-300 shadow-[0_-8px_24px_rgba(16,24,40,0.10)]">
+            <div>
+              <p class="text-[10px] text-slate-400 leading-none uppercase tracking-wide">Full Payment</p>
+              <p class="text-base font-extrabold text-slate-900 leading-tight mt-0.5">RM <span class="qd-sticky-monthly">798</span><span class="text-xs font-medium text-slate-500">/mo</span></p>
+            </div>
+            <div class="text-right">
+              <p class="text-[10px] text-slate-400 leading-none">Initial Down</p>
+              <p class="text-sm font-bold text-campaign leading-tight mt-0.5">RM <span class="qd-sticky-net">20,500</span></p>
+            </div>
+            <span class="ml-3 bg-campaign text-white text-[9px] font-bold px-1.5 py-0.5 rounded self-start">Q3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== T&C (Q4) FRAME ===================== -->
+  <div class="shrink-0">
+    <p class="text-sm font-semibold text-slate-500 mb-3 flex items-center gap-2">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+      Terms &amp; Conditions tab — Q4 clause
+    </p>
+    <div class="rounded-2xl border border-slate-300 bg-white shadow-2xl overflow-hidden" style="width:420px">
+      <div class="h-10 bg-slate-100 border-b border-slate-200 flex items-center px-4 gap-2">
+        <span class="w-3 h-3 rounded-full bg-[#ff5f57]"></span><span class="w-3 h-3 rounded-full bg-[#febc2e]"></span><span class="w-3 h-3 rounded-full bg-[#28c840]"></span>
+      </div>
+      <div class="scrollpane bg-slate-50 p-5" style="height:740px">
+        <div class="inline-flex gap-1 p-1 bg-slate-100 rounded-xl text-xs mb-5">
+          <button class="px-4 py-2 rounded-lg font-semibold text-slate-500">Quotation</button>
+          <button class="px-4 py-2 rounded-lg font-semibold bg-campaign text-white shadow-sm">Terms &amp; Conditions</button>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-card p-6 text-sm space-y-5">
+          <h1 class="text-lg font-bold">Terms &amp; Conditions – Owner Collaboration Quotation</h1>
+          <p class="text-justify leading-relaxed text-slate-600">These Terms &amp; Conditions form an integral part of the official quotation issued by <strong>BeLive Ventures Sdn. Bhd.</strong> ("Company") to the Owner…</p>
+
+          <!-- Q4 callout -->
+          <div class="annot relative rounded-xl bg-campaign-50 border border-campaign-100 p-4">
+            <span class="absolute -top-2.5 left-3 bg-campaign text-white text-[10px] font-bold px-2 py-0.5 rounded">NEW · Q4</span>
+            <p class="text-sm text-slate-700 leading-relaxed"><strong>Payment constitutes acknowledgement.</strong> By making any payment toward this quotation, the Owner acknowledges having read, understood, and agreed to this quotation and these Terms &amp; Conditions.</p>
+          </div>
+
+          <div>
+            <h2 id="tnc-sec-3" class="text-sm font-bold text-slate-900 mt-2">3. Payment Terms</h2>
+            <p class="text-justify leading-relaxed text-slate-500 mt-2">3.1 Payments shall be made according to the schedule stated in the quotation…</p>
+            <p class="text-justify leading-relaxed text-slate-500 mt-2"><strong>3.5 Acknowledgement by payment.</strong> The Owner's payment of the booking fee or any sum stated herein shall be deemed conclusive acknowledgement and acceptance of this quotation and these Terms &amp; Conditions.</p>
+          </div>
+          <p class="text-xs text-slate-400">…remaining sections (4–8) unchanged.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const fmt0 = (n) => n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const fmt2 = (n) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  document.querySelectorAll('.qd-app').forEach((app) => {
+    const base = Number(app.dataset.base);
+    const discount = Number(app.dataset.discount);
+    const bookingFee = Number(app.dataset.bookingfee);
+    const set = (cls, val) => app.querySelectorAll('.' + cls).forEach((el) => (el.textContent = val));
+
+    function recompute() {
+      let addonSum = 0;
+      app.querySelectorAll('.qd-addon').forEach((cb) => {
+        const row = cb.closest('.qd-addon-row');
+        const label = row && row.querySelector('.qd-addon-label');
+        const title = row && row.querySelector('.text-sm.font-semibold, .font-semibold.text-slate-900');
+        if (cb.checked) {
+          addonSum += Number(cb.dataset.price);
+          if (row) row.classList.remove('opacity-60');
+          if (label) { label.textContent = 'Included'; label.classList.add('text-campaign'); label.classList.remove('text-slate-400'); }
+          if (title) title.classList.remove('line-through', 'decoration-slate-300');
+        } else {
+          if (row) row.classList.add('opacity-60');
+          if (label) { label.textContent = 'Excluded'; label.classList.remove('text-campaign'); label.classList.add('text-slate-400'); }
+          if (title) title.classList.add('line-through', 'decoration-slate-300');
+        }
+      });
+
+      const tenureEl = app.querySelector('.qd-tenure');
+      const tenure = tenureEl ? Number(tenureEl.value) : 60;
+      const total = base + addonSum - discount;        // Total Quotation Amount
+      const original = total / 2;                       // Original Initial Down Payment (Full Payment)
+      const net = original - bookingFee;               // Initial Down Payment (net of booking fee)
+      const balance = total / 2;                        // Balance Payment
+      const monthly = (total * (tenure === 60 ? 1.14 : 1.105)) / tenure;
+
+      set('qd-total', fmt0(total));
+      set('qd-original', fmt0(original));
+      set('qd-net', fmt0(net));
+      set('qd-balance', fmt0(balance));
+      set('qd-onetime', fmt2(total));
+      set('qd-monthly', fmt0(monthly));
+      set('qd-sticky-monthly', fmt0(monthly));
+      set('qd-sticky-net', fmt0(net));
+      set('qd-tenure-label', String(tenure));
+    }
+
+    app.querySelectorAll('.qd-addon').forEach((cb) => cb.addEventListener('change', recompute));
+    const tenureEl = app.querySelector('.qd-tenure');
+    if (tenureEl) tenureEl.addEventListener('change', recompute);
+    recompute();
+
+    // [Q3] sticky bar appears after the Payment Summary card scrolls out of view
+    const sticky = app.querySelector('.qd-sticky');
+    const summary = app.querySelector('.qd-summary');
+    if (sticky && summary) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            sticky.classList.toggle('translate-y-full', e.isIntersecting);
+          });
+        },
+        { root: app, threshold: 0 }
+      );
+      io.observe(summary);
+    }
+  });
+</script>
+</body>
+</html>
