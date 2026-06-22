@@ -96,6 +96,8 @@ const toggleAddon = (pkg) => {
 
 **Decision (locked):** hidden until the Payment Summary card scrolls out of view, then it slides up.
 
+> **Amendment (2026-06-22, post-merge):** the bar also shows the **Initial Down Payment** amount (the net displayed value, `originalInitialDownPayment − bookingFee`) as a middle element — shown only when the Initial Down Payment row applies (`is_progressive_payment || is_be_powered || is_rnpl`) — so the three elements (program+primary / Initial Down / T&C) spread via `justify-between`. Also: the page content container gets `pb-28 lg:pb-6` so the `fixed` bar no longer overlaps the last package card on mobile.
+
 - Attach a `ref` to the Payment Summary `Card` (line 660). Add `const [showStickyBar, setShowStickyBar] = useState(false)`.
 - In a `useEffect`, create an `IntersectionObserver` on that ref; set `showStickyBar` to `true` when the card is **not** intersecting (scrolled past), `false` otherwise. Clean up the observer on unmount / when the ref/tab changes. Guard for `ref.current` existing (it only renders on the quotation tab with a valid `templateOrder`).
 - Render a bar as a page-level child, shown only when `activeTab === 'quotation' && showStickyBar`: classes `lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3` with a subtle slide-in.

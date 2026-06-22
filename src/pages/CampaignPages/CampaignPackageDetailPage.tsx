@@ -650,7 +650,7 @@ export default function CampaignPackageDetailPage() {
                 </div>
             </div>
 
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-28 lg:pb-6 space-y-6">
                 {/* Header card */}
                 <Card className="p-6 sm:p-8">
                     <h1 className="text-2xl font-bold text-slate-900">{selectedCampaignPackage?.name || campaign.title}</h1>
@@ -1102,10 +1102,18 @@ export default function CampaignPackageDetailPage() {
                             )}
                         </p>
                     </div>
+                    {(templateOrder.is_progressive_payment || templateOrder.is_be_powered || templateOrder.is_rnpl) && (
+                        <div className="text-center">
+                            <p className="text-[10px] text-slate-400 leading-none uppercase tracking-wide">Initial Down</p>
+                            <p className="text-sm font-bold text-campaign leading-tight mt-0.5 whitespace-nowrap">
+                                RM {(originalInitialDownPayment - bookingFee).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                            </p>
+                        </div>
+                    )}
                     <button
                         type="button"
                         onClick={() => setActiveTab('tnc')}
-                        className="text-xs font-medium text-campaign hover:text-campaign-600 transition-colors"
+                        className="text-xs font-medium text-campaign hover:text-campaign-600 transition-colors whitespace-nowrap"
                     >
                         Terms &amp; Conditions
                     </button>
