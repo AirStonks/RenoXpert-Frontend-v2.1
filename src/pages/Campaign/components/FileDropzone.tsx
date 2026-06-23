@@ -72,7 +72,7 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`${className} ${isDragging ? 'border-2 border-dashed border-campaign bg-campaign/5' : ''}`.trim()}
+            className={`${className} ${isDragging ? 'ring-2 ring-inset ring-campaign bg-campaign/5' : ''}`.trim()}
         >
             {children}
         </div>
