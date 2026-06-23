@@ -991,7 +991,10 @@ export default function CampaignPackageDetailPage() {
                                                                         <Pill tone="brand">Add-on</Pill>
                                                                     </div>
                                                                 )}
-                                                                <div className={`text-sm font-semibold text-slate-900 ${isAddon && !included ? 'line-through decoration-slate-300' : ''}`}>{pkg.name || 'Package'}</div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className={`text-sm font-semibold text-slate-900 ${isAddon && !included ? 'line-through decoration-slate-300' : ''}`}>{pkg.name || 'Package'}</div>
+                                                                    <span className="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-semibold text-slate-600">×{pkg.quantity || 1}</span>
+                                                                </div>
                                                                 <div className="text-xs text-slate-400 mt-1">{products.length} item(s)</div>
                                                             </div>
                                                         }
