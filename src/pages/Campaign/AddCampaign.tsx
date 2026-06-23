@@ -41,6 +41,7 @@ import {
     arrayMove,
 } from '@dnd-kit/sortable';
 import { SortableCampaignItem, DragHandle } from './components/SortableCampaignItems';
+import FileDropzone from './components/FileDropzone';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -201,25 +202,30 @@ export default function AddCampaign() {
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setFormData(prev => ({
-                ...prev,
-                thumbnail: file
-            }));
-        }
+    const handleThumbnailFile = (file: File) => {
+        setFormData(prev => ({
+            ...prev,
+            thumbnail: file
+        }));
     };
 
-    const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+        if (file) handleThumbnailFile(file);
+    };
+
+    const handleVideoFile = (file: File) => {
         setVideoError(null);
         if (file.size > 50 * 1024 * 1024) {
             setVideoError('Video must be 50MB or smaller.');
             return;
         }
         setVideoFile(file);
+    };
+
+    const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) handleVideoFile(file);
     };
 
     // Package management functions
@@ -486,12 +492,11 @@ export default function AddCampaign() {
         setLayoutProjectionFile(prev => ({ ...prev, [layoutIdx]: file }));
     };
 
-    const handleLayoutRenderingsChange = (layoutIdx: number, files: FileList | null) => {
+    const handleLayoutRenderingsChange = (layoutIdx: number, files: File[]) => {
         setLayoutError(null);
-        if (!files || !files.length) return;
-        const arr = Array.from(files);
-        if (arr.some(f => f.size > 10 * 1024 * 1024)) { setLayoutError('Each image must be 10MB or smaller.'); return; }
-        setLayoutRenderingFiles(prev => ({ ...prev, [layoutIdx]: [...(prev[layoutIdx] || []), ...arr] }));
+        if (!files.length) return;
+        if (files.some(f => f.size > 10 * 1024 * 1024)) { setLayoutError('Each image must be 10MB or smaller.'); return; }
+        setLayoutRenderingFiles(prev => ({ ...prev, [layoutIdx]: [...(prev[layoutIdx] || []), ...files] }));
     };
 
     const validateForm = () => {
@@ -1278,7 +1283,7 @@ export default function AddCampaign() {
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Campaign Thumbnail (Optional)
                                     </label>
-                                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-gray-400 transition-colors duration-200">
+                                    <FileDropzone accept="image" onFiles={(f) => handleThumbnailFile(f[0])} className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-gray-400 transition-colors duration-200">
                                         <div className="space-y-1 text-center">
                                             <svg
                                                 className="mx-auto h-12 w-12 text-gray-400"
@@ -1315,7 +1320,7 @@ export default function AddCampaign() {
                                                 PNG, JPG, GIF up to 10MB
                                             </p>
                                         </div>
-                                    </div>
+                                    </FileDropzone>
                                     {formData.thumbnail && (
                                         <div className="mt-4">
                                             <div className="flex items-center justify-between mb-2">
@@ -1359,7 +1364,7 @@ export default function AddCampaign() {
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Campaign Thumbnail Video (Optional)
                                     </label>
-                                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-gray-400 transition-colors duration-200">
+                                    <FileDropzone accept="video" onFiles={(f) => handleVideoFile(f[0])} className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-gray-400 transition-colors duration-200">
                                         <div className="space-y-1 text-center">
                                             <div className="flex text-sm text-gray-600 justify-center">
                                                 <label htmlFor="thumbnail-video-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
@@ -1376,7 +1381,7 @@ export default function AddCampaign() {
                                             </div>
                                             <p className="text-xs text-gray-500">MP4, WebM, MOV up to 50MB · uploaded after the campaign is created</p>
                                         </div>
-                                    </div>
+                                    </FileDropzone>
                                     {videoFile && (
                                         <div className="mt-2 flex items-center justify-between text-sm text-gray-600">
                                             <span>{videoFile.name}</span>
@@ -1588,7 +1593,7 @@ export default function AddCampaign() {
                                                 </div>
 
                                                 {/* Rental Projection (single image) */}
-                                                <div>
+                                                <FileDropzone accept="image" onFiles={(f) => handleLayoutProjectionChange(layoutIdx, f[0] ?? null)}>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                                         Rental Projection (single image)
                                                     </label>
@@ -1610,10 +1615,10 @@ export default function AddCampaign() {
                                                             </button>
                                                         </div>
                                                     )}
-                                                </div>
+                                                </FileDropzone>
 
                                                 {/* Renderings (multiple images) */}
-                                                <div>
+                                                <FileDropzone accept="image" multiple onFiles={(f) => handleLayoutRenderingsChange(layoutIdx, f)}>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                                         Renderings (multiple images)
                                                     </label>
@@ -1621,7 +1626,7 @@ export default function AddCampaign() {
                                                         type="file"
                                                         accept="image/*"
                                                         multiple
-                                                        onChange={(e) => handleLayoutRenderingsChange(layoutIdx, e.target.files)}
+                                                        onChange={(e) => handleLayoutRenderingsChange(layoutIdx, Array.from(e.target.files ?? []))}
                                                         className="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200"
                                                     />
                                                     {layoutRenderingFiles[layoutIdx]?.length > 0 && (
@@ -1643,7 +1648,7 @@ export default function AddCampaign() {
                                                             ))}
                                                         </ul>
                                                     )}
-                                                </div>
+                                                </FileDropzone>
 
                                                 {/* Sub-packages for this layout */}
                                                 <div className="space-y-4 pt-2 border-t border-indigo-200">
