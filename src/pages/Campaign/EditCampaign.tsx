@@ -45,6 +45,7 @@ import {
     arrayMove,
 } from '@dnd-kit/sortable';
 import { SortableCampaignItem, DragHandle } from './components/SortableCampaignItems';
+import FileDropzone from './components/FileDropzone';
 
 // Shape of a rendering image entry kept in local state / returned by the layout image API.
 type LayoutRenderingImage = { file_url?: string; path?: string };
@@ -287,19 +288,19 @@ export default function EditCampaign() {
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setFormData(prev => ({
-                ...prev,
-                thumbnail: file
-            }));
-        }
+    const handleThumbnailFile = (file: File) => {
+        setFormData(prev => ({
+            ...prev,
+            thumbnail: file
+        }));
     };
 
-    const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+        if (file) handleThumbnailFile(file);
+    };
+
+    const handleVideoFile = async (file: File) => {
         setVideoError(null);
         if (file.size > 50 * 1024 * 1024) {
             setVideoError('Video must be 50MB or smaller.');
@@ -315,6 +316,11 @@ export default function EditCampaign() {
         } finally {
             setVideoUploading(false);
         }
+    };
+
+    const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) await handleVideoFile(file);
     };
 
     const handleVideoRemove = async () => {
@@ -621,10 +627,10 @@ export default function EditCampaign() {
         finally { setLayoutUploading(prev => ({ ...prev, [layoutIdx]: false })); }
     };
 
-    const handleEditLayoutRenderings = async (layoutIdx: number, files: FileList | null) => {
+    const handleEditLayoutRenderings = async (layoutIdx: number, files: File[]) => {
         setLayoutError(null);
-        if (!files || !files.length) return;
-        const arr = Array.from(files);
+        if (!files.length) return;
+        const arr = files;
         if (arr.some(f => f.size > 10 * 1024 * 1024)) { setLayoutError('Each image must be 10MB or smaller.'); return; }
         const layoutId = layoutTypes[layoutIdx]?.id;
         if (!layoutId) {
@@ -1391,7 +1397,7 @@ export default function EditCampaign() {
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Campaign Thumbnail (Optional)
                                     </label>
-                                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-gray-400 transition-colors duration-200">
+                                    <FileDropzone accept="image" onFiles={(f) => handleThumbnailFile(f[0])} className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-gray-400 transition-colors duration-200">
                                         <div className="space-y-1 text-center">
                                             <svg
                                                 className="mx-auto h-12 w-12 text-gray-400"
@@ -1428,7 +1434,7 @@ export default function EditCampaign() {
                                                 PNG, JPG, GIF up to 10MB
                                             </p>
                                         </div>
-                                    </div>
+                                    </FileDropzone>
                                     {formData.thumbnail && (
                                         <div className="mt-4">
                                             <div className="flex items-center justify-between mb-2">
@@ -1473,7 +1479,7 @@ export default function EditCampaign() {
                                         Campaign Thumbnail Video (Optional)
                                     </label>
                                     {existingVideoUrl ? (
-                                        <div className="mt-1">
+                                        <FileDropzone accept="video" onFiles={(f) => handleVideoFile(f[0])} disabled={videoUploading} className="mt-1">
                                             <video src={existingVideoUrl} controls className="w-full h-48 object-cover rounded-lg border border-gray-200 bg-black" />
                                             <div className="mt-2 flex items-center gap-4">
                                                 <label htmlFor="thumbnail-video-replace" className="cursor-pointer text-blue-600 hover:text-blue-500 text-sm font-medium">
@@ -1496,9 +1502,9 @@ export default function EditCampaign() {
                                                     {videoUploading ? 'Removing…' : 'Remove video'}
                                                 </button>
                                             </div>
-                                        </div>
+                                        </FileDropzone>
                                     ) : (
-                                        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-gray-400 transition-colors duration-200">
+                                        <FileDropzone accept="video" onFiles={(f) => handleVideoFile(f[0])} disabled={videoUploading} className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-gray-400 transition-colors duration-200">
                                             <div className="space-y-1 text-center">
                                                 <div className="flex text-sm text-gray-600 justify-center">
                                                     <label htmlFor="thumbnail-video-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
@@ -1516,7 +1522,7 @@ export default function EditCampaign() {
                                                 </div>
                                                 <p className="text-xs text-gray-500">MP4, WebM, MOV up to 50MB</p>
                                             </div>
-                                        </div>
+                                        </FileDropzone>
                                     )}
                                     {videoError && <p className="mt-2 text-sm text-red-600">{videoError}</p>}
                                 </div>
@@ -1728,7 +1734,7 @@ export default function EditCampaign() {
                                                         Rental Projection (single image)
                                                     </label>
                                                     {layoutProjectionUrl[layoutIdx] ? (
-                                                        <div className="mt-1">
+                                                        <FileDropzone accept="image" onFiles={(f) => handleEditLayoutProjection(layoutIdx, f[0] ?? null)} disabled={layoutUploading[layoutIdx]} className="mt-1">
                                                             <img
                                                                 src={layoutProjectionUrl[layoutIdx] || ''}
                                                                 alt="Rental projection"
@@ -1754,9 +1760,9 @@ export default function EditCampaign() {
                                                                     {layoutUploading[layoutIdx] ? 'Removing…' : 'Remove image'}
                                                                 </button>
                                                             </div>
-                                                        </div>
+                                                        </FileDropzone>
                                                     ) : (
-                                                        <>
+                                                        <FileDropzone accept="image" onFiles={(f) => handleEditLayoutProjection(layoutIdx, f[0] ?? null)} disabled={layoutUploading[layoutIdx]}>
                                                             <input
                                                                 type="file"
                                                                 accept="image/*"
@@ -1776,12 +1782,12 @@ export default function EditCampaign() {
                                                                     </button>
                                                                 </div>
                                                             )}
-                                                        </>
+                                                        </FileDropzone>
                                                     )}
                                                 </div>
 
                                                 {/* Renderings (multiple images) */}
-                                                <div>
+                                                <FileDropzone accept="image" multiple onFiles={(f) => handleEditLayoutRenderings(layoutIdx, f)} disabled={layoutUploading[layoutIdx]}>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                                         Renderings (multiple images)
                                                     </label>
@@ -1789,7 +1795,7 @@ export default function EditCampaign() {
                                                         type="file"
                                                         accept="image/*"
                                                         multiple
-                                                        onChange={(e) => handleEditLayoutRenderings(layoutIdx, e.target.files)}
+                                                        onChange={(e) => handleEditLayoutRenderings(layoutIdx, Array.from(e.target.files ?? []))}
                                                         disabled={layoutUploading[layoutIdx]}
                                                         className="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200"
                                                     />
@@ -1838,7 +1844,7 @@ export default function EditCampaign() {
                                                             ))}
                                                         </ul>
                                                     )}
-                                                </div>
+                                                </FileDropzone>
 
                                                 {/* Sub-packages for this layout */}
                                                 <div className="space-y-4 pt-2 border-t border-indigo-200">
