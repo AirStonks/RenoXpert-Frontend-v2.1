@@ -1640,6 +1640,7 @@ export interface Campaign {
     internal_description?: string;
     thumbnail?: Attachment | File;
     thumbnail_video?: Attachment | File;
+    thumbnail_video_url?: string | null;
     layout_types?: CampaignLayoutType[];
     packages?: CampaignPackage[];
     base_amount?: number;

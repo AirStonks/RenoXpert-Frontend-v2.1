@@ -21,6 +21,7 @@ import {
 import { Attachment, Campaign, CampaignPackage, Order } from '../../types';
 import { bookingPaymentIntent, getCampaign } from '../../services/publicApi';
 import { getQuotationTotal } from '../../utils/quotationPricing';
+import { getYouTubeEmbedUrl } from '../../utils/youtube';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Button } from './components/Button';
 import { buttonClasses } from './components/buttonClasses';
@@ -245,6 +246,8 @@ const CampaignDetailPage = () => {
     }
 
     const isLayered = (campaign?.layout_types?.length ?? 0) > 0;
+    const youtubeEmbed = getYouTubeEmbedUrl(campaign?.thumbnail_video_url);
+    const hasVideo = !!youtubeEmbed || !!campaign?.thumbnail_video;
 
     return (
         <div className="w-full min-h-screen bg-slate-50">
@@ -318,7 +321,7 @@ const CampaignDetailPage = () => {
                                     <Package className="h-16 w-16" />
                                 </div>
                             )}
-                            {campaign.thumbnail_video && (
+                            {hasVideo && (
                                 <button
                                     type="button"
                                     onClick={() => setVideoOpen(true)}
@@ -704,7 +707,7 @@ const CampaignDetailPage = () => {
                 </div>
             )}
 
-            {videoOpen && campaign.thumbnail_video && (
+            {videoOpen && hasVideo && (
                 <div
                     className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4"
                     onClick={() => setVideoOpen(false)}
@@ -719,13 +722,23 @@ const CampaignDetailPage = () => {
                     >
                         <X className="h-6 w-6" />
                     </button>
-                    <video
-                        src={(campaign.thumbnail_video as Attachment).file_url}
-                        controls
-                        autoPlay
-                        onClick={(e) => e.stopPropagation()}
-                        className="max-h-[80vh] w-auto max-w-full rounded-xl bg-black"
-                    />
+                    {youtubeEmbed ? (
+                        <iframe
+                            src={youtubeEmbed}
+                            title="Campaign video"
+                            className="w-full aspect-video rounded-lg"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                        />
+                    ) : (
+                        <video
+                            src={(campaign.thumbnail_video as Attachment).file_url}
+                            controls
+                            autoPlay
+                            onClick={(e) => e.stopPropagation()}
+                            className="max-h-[80vh] w-auto max-w-full rounded-xl bg-black"
+                        />
+                    )}
                 </div>
             )}
 

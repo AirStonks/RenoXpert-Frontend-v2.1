@@ -54,6 +54,7 @@ export default function AddCampaign() {
         slug: '',
         description: '',
         internal_description: '',
+        thumbnail_video_url: '',
         order_id: '',
         start_date: '',
         end_date: '',
@@ -1389,6 +1390,18 @@ export default function AddCampaign() {
                                         </div>
                                     )}
                                     {videoError && <p className="mt-2 text-sm text-red-600">{videoError}</p>}
+                                    <div className="mt-3">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">YouTube link (optional)</label>
+                                        <input
+                                            type="url"
+                                            name="thumbnail_video_url"
+                                            value={formData.thumbnail_video_url}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, thumbnail_video_url: e.target.value }))}
+                                            placeholder="https://www.youtube.com/watch?v=..."
+                                            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+                                        />
+                                        <p className="text-xs text-gray-400 mt-1">If set, the public page embeds this YouTube video (takes precedence over an uploaded file).</p>
+                                    </div>
                                 </div>
 
                                 {/* Date Range */}
