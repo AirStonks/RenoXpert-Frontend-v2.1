@@ -43,6 +43,7 @@ import {
 } from '@dnd-kit/sortable';
 import { SortableCampaignItem, DragHandle } from './components/SortableCampaignItems';
 import FileDropzone from './components/FileDropzone';
+import RichTextEditor from './components/RichTextEditor';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -1286,14 +1287,7 @@ export default function AddCampaign() {
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Campaign Description (Optional)
                                     </label>
-                                    <textarea
-                                        name="description"
-                                        rows={4}
-                                        value={formData.description}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all duration-200"
-                                        placeholder="Enter campaign description"
-                                    />
+                                    <RichTextEditor value={formData.description} onChange={(html) => setFormData(prev => ({ ...prev, description: html }))} />
                                 </div>
 
                                 {/* Campaign Thumbnail */}

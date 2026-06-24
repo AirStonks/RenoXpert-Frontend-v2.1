@@ -29,6 +29,7 @@ import { Card } from './components/Card';
 import { Field } from './components/Field';
 import { Pill } from './components/Pill';
 import { CampaignHeader } from './components/CampaignHeader';
+import RichTextContent from './components/RichTextContent';
 
 const CampaignDetailPage = () => {
     const { campaignSlug } = useParams<{ campaignSlug: string }>();
@@ -268,11 +269,7 @@ const CampaignDetailPage = () => {
                         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 leading-[1.08] mt-4">
                             {campaign.title}
                         </h1>
-                        {campaign.description && (
-                            <p className="text-base sm:text-lg text-slate-500 leading-relaxed mt-4 max-w-prose">
-                                {campaign.description.split('\n').map((line, idx) => (<span key={idx}>{line}<br /></span>))}
-                            </p>
-                        )}
+                        {campaign.description && <RichTextContent html={campaign.description} className="text-slate-500 leading-relaxed" />}
                         {/* benefits — single 3-up row that reflows */}
                         <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-x-6 sm:gap-y-3 mt-6">
                             {[
@@ -547,9 +544,7 @@ const CampaignDetailPage = () => {
                                                     <Package className="h-6 w-6" />
                                                 </span>
                                                 <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">{campaign.title}</h3>
-                                                {campaign.description && (
-                                                    <p className="text-slate-500 leading-relaxed">{campaign.description}</p>
-                                                )}
+                                                {campaign.description && <RichTextContent html={campaign.description} className="text-slate-500 leading-relaxed" />}
                                             </div>
 
                                             {/* Campaign Features */}
