@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
 
 interface RichTextEditorProps {
     value: string;
@@ -48,7 +47,7 @@ const Toolbar = ({ editor }: { editor: Editor }) => {
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeholder }) => {
     const editor = useEditor({
-        extensions: [StarterKit, Link.configure({ openOnClick: false, autolink: true })],
+        extensions: [StarterKit.configure({ link: { openOnClick: false, autolink: true } })],
         content: value || '',
         onUpdate: ({ editor }) => onChange(editor.getHTML()),
         editorProps: {
