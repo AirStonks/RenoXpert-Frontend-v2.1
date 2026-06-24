@@ -726,9 +726,10 @@ const CampaignDetailPage = () => {
                         <iframe
                             src={youtubeEmbed}
                             title="Campaign video"
-                            className="w-full aspect-video rounded-lg"
+                            className="w-full aspect-video rounded-lg max-w-4xl mx-auto"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
+                            onClick={(e) => e.stopPropagation()}
                         />
                     ) : (
                         <video
