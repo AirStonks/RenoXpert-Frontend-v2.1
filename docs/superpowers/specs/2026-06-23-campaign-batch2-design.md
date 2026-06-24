@@ -3,7 +3,7 @@
 - **Date:** 2026-06-23
 - **Status:** Proposed — awaiting user review before implementation planning
 - **Repos:** Backend `RenoXpert-Backend` (deploys from `production`, PR-protected) + Frontend `RenoXpert-Frontend-v2.1` (deploys from `production`, merge+push)
-- **Combined spec** for three independent items (A, B, C). B is frontend-only; A and C span backend + admin + public.
+- **Combined spec** for four independent items (A, B, C, D). B and D are frontend-only; A and C span backend + admin + public.
 
 ---
 
@@ -13,12 +13,14 @@ Three campaign enhancements:
 - **A — YouTube video:** a campaign may have a YouTube link in addition to (or instead of) the uploaded thumbnail video. On the public campaign page, "Watch video" shows an embedded YouTube player when a link is set.
 - **B — Start-from total:** the public "Start from RMxxx" figure (currently the per-program **Initial Down Payment**) becomes the **full quotation total**, and the "initial down" wording is removed.
 - **C — Layout thumbnail:** layout types gain a new `layout_thumbnail` image; public layout cards display it (placeholder when unset).
+- **D — Rich-text campaign description:** the campaign description becomes a TipTap rich-text editor (Notion/markdown-like) in admin; the public campaign page renders the resulting formatted HTML.
 
 ## 2. Decisions (locked with user)
 
 - **B amount** = full quotation total: the sum of all **included** package prices in the quote (program-agnostic), or `order.total_amount` when `f_1`. **Applies to both** the layout-detail package cards and the landing layout-card teaser. Keep the "Start from" label; remove "initial down".
 - **A precedence**: both an uploaded file and a YouTube URL may be stored; on public, **the YouTube URL wins if set** (iframe embed), otherwise the uploaded `<video>`. "Watch video" shows if either exists.
 - **C fallback**: public layout cards show `layout_thumbnail` only; when unset, show the existing **placeholder** icon (do NOT fall back to `rental_projection`).
+- **D scope/library**: **campaign description only** (not package/layout/internal descriptions). Editor = TipTap **StarterKit + Link** with a small toolbar and markdown input rules (toolbar + markdown shortcuts; no Notion slash menu). **Add** `@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/extension-link`, and `dompurify` (sanitize the HTML before rendering it publicly). Stored as **HTML in the existing `description` column** (no schema change). Legacy plain-text descriptions render correctly (back-compat).
 
 ## 3. Item A — YouTube video
 
@@ -66,12 +68,44 @@ Three campaign enhancements:
 ### Public frontend (`CampaignDetailPage.tsx`)
 - Landing layout cards (~375): replace the image source from `lt.rental_projection` to `lt.layout_thumbnail` (as `Attachment | undefined`); when `file_url` is absent, render the **existing placeholder** (the `Package` icon block) — do NOT fall back to `rental_projection`.
 
+## 5b. Item D — Rich-text campaign description (TipTap)
+
+**Frontend only.** No backend/schema change — the formatted output is HTML stored in the existing `description` string column.
+
+### Dependencies (new)
+- `@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/extension-link`, `dompurify` (+ `@types/dompurify` if types aren't bundled). Installed via `npm install`; `package.json`/`package-lock.json` committed. (Quill stays as-is — out of scope to remove.)
+
+### Editor component
+- **New** `src/pages/Campaign/components/RichTextEditor.tsx`:
+  ```ts
+  interface RichTextEditorProps { value: string; onChange: (html: string) => void; placeholder?: string; }
+  ```
+  Uses `useEditor` with `StarterKit` + `Link` (StarterKit's input rules give markdown shortcuts — `# `, `- `, `1. `, `> `, `**bold**`, etc.). `content` initialised from `value`; `onUpdate` calls `onChange(editor.getHTML())`. Renders a small toolbar (bold, italic, strike, H1/H2/H3, bullet list, ordered list, blockquote, code, link add/remove, undo/redo) above the `EditorContent`. The editable area uses the shared `.rich-content` class (below) so editing matches the public render (WYSIWYG). Guard the `value`→editor sync so external resets (Edit form load) update content without clobbering the cursor on every keystroke.
+
+### Shared rich-text styles
+- Add a scoped `.rich-content` CSS block to `src/index.css` styling `h1/h2/h3`, `p`, `ul/ol/li`, `blockquote`, `code`, `a`, `strong/em` (no `@tailwindcss/typography` dependency). Used by **both** the editor's editable area and the public renderer so they look identical.
+
+### Public renderer
+- **New** `src/pages/CampaignPages/components/RichTextContent.tsx`:
+  ```ts
+  interface RichTextContentProps { html?: string | null; className?: string; }
+  ```
+  - If `html` is empty → render nothing.
+  - **Back-compat:** if the string contains **no** HTML tags (legacy plain text), render it with line breaks preserved (the existing `whitespace-pre-line`/`\n`→`<br>` behavior) — do NOT treat it as HTML.
+  - If it contains HTML, **sanitize with DOMPurify** and render via `dangerouslySetInnerHTML` inside a `<div className="rich-content ...">`.
+
+### Admin wiring
+- **AddCampaign / EditCampaign:** replace the campaign description `<textarea name="description">` (Add ~line 1272) with `<RichTextEditor value={formData.description} onChange={(html) => setFormData(prev => ({ ...prev, description: html }))} />`. `formData.description` already flows to the backend through the existing `createCampaign`/`updateCampaign` FormData (top-level field). Edit loads `formData.description` from `campaign.description` as today (HTML or legacy text). **`internal_description` and package/layout descriptions stay plain `<textarea>`** (out of scope).
+
+### Public wiring
+- **CampaignDetailPage:** replace the two campaign-description render spots (the hero/intro at ~line 270 and the secondary block at ~line 548) with `<RichTextContent html={campaign.description} />`. (Package/layout description spots stay unchanged.)
+
 ## 6. Constraints
 
 - **Backend schema** = authored Laravel migrations (additive `ADD COLUMN`, nullable); **NEVER run `php artisan migrate` ourselves** — the user runs it. Both repos deploy from **`production`**; backend changes go via a **PR to `production`**, frontend via **merge+push to `production`**.
-- **No new npm dependencies** (YouTube via a plain `<iframe>`; no player lib). Reuse the existing `FileDropzone` for the new upload.
+- **No new npm dependencies for items A/B/C** (YouTube via a plain `<iframe>`; reuse the existing `FileDropzone` for the new upload). **Item D is the sole exception** and adds exactly: `@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/extension-link`, `dompurify` (no `@tailwindcss/typography`, no Notion-menu extensions).
 - **`php` CLI is unavailable** — backend verified by manual review.
-- **Frontend verification gate:** `npm run build` exit 0 + scoped eslint introduces no NEW errors. Baselines: `AddCampaign.tsx` = 1, `EditCampaign.tsx` = 1, `CampaignDetailPage.tsx` = 0, `CampaignLayoutDetailPage.tsx` = 0, `quotationPricing.ts` = 0, `services/api.ts` = 17 (pre-existing), new util file = 0. No test runner.
+- **Frontend verification gate:** `npm run build` exit 0 + scoped eslint introduces no NEW errors. Baselines: `AddCampaign.tsx` = 1, `EditCampaign.tsx` = 1, `CampaignDetailPage.tsx` = 0, `CampaignLayoutDetailPage.tsx` = 0, `quotationPricing.ts` = 0, `services/api.ts` = 17 (pre-existing), new files (YouTube util, `RichTextEditor.tsx`, `RichTextContent.tsx`) = 0. No test runner. (Item D: run `npm install` first so the build resolves the new TipTap/DOMPurify deps.)
 - **Graceful degradation:** the FE must not break before the migrations are run — `thumbnail_video_url`/`layout_thumbnail` simply read as absent (empty link / placeholder) until the columns exist and are populated.
 
 ## 7. Verification plan
@@ -82,6 +116,7 @@ Three campaign enhancements:
   - A: set a YouTube link in admin → public "Watch video" opens an embedded YouTube player; with only an uploaded file → `<video>` plays; with both → YouTube shown; with neither → no button.
   - B: package cards and landing teaser show the full quotation total (≈ 2× the old initial-down figure for full-payment), no "initial down" text; the Booking-Fee fallback still appears when total is 0.
   - C: upload a layout thumbnail (drag-and-drop works) → it appears on the layout card; a layout with no thumbnail shows the placeholder (not the rental projection).
+  - D: in admin, format the campaign description (headings/bold/lists, and markdown shortcuts like `# `/`- `) → public campaign page renders the formatting; an existing plain-text campaign still renders with its line breaks intact; pasted/edited HTML is sanitized (no script execution).
 
 ## 8. Risks & mitigations
 
@@ -93,6 +128,7 @@ Three campaign enhancements:
 ## 9. Non-goals
 
 - No video player library; no YouTube thumbnail auto-fetch; no multiple videos. No change to the per-product Qty table or to owner/admin pricing pages. No change to `rental_projection`/`rendering_images` behavior (they stay; only the public **card image** switches to `layout_thumbnail`). No reordering of layout thumbnail vs other images.
+- **Item D:** rich text for the **campaign description only** — not package/layout/internal descriptions; no Notion slash-command menu; no image embeds/tables/mentions in the editor; no removal of the existing Quill dependency; no markdown-file import/export (HTML is the stored format).
 
 ## 10. Suggested plan task grouping
 
@@ -101,4 +137,5 @@ Three campaign enhancements:
 3. **FE-B:** `getQuotationTotal` + switch both card/teaser sites + remove "initial down".
 4. **FE-A:** admin YouTube input + public embed (`getYouTubeEmbedUrl` + iframe modal).
 5. **FE-C:** admin layout-thumbnail upload (DnD + maps + reorder bundle + reindex) + public card image swap + API functions.
-6. **Verify + finalize:** FE build/eslint, BE manual review; BE PR to `production`; FE merge+push.
+6. **FE-D:** `npm install` TipTap + DOMPurify; `RichTextEditor` component + `.rich-content` styles; `RichTextContent` public renderer (with plain-text back-compat + sanitize); swap the admin description textarea and the two public render spots.
+7. **Verify + finalize:** FE build/eslint, BE manual review; BE PR to `production`; FE merge+push.
