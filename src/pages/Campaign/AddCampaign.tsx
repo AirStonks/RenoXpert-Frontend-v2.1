@@ -22,6 +22,7 @@ import {
     orderIndex,
     uploadCampaignThumbnailVideo,
     uploadCampaignLayoutTypeRentalProjection,
+    uploadCampaignLayoutTypeThumbnail,
     uploadCampaignLayoutTypeRenderings,
 } from '../../services/api';
 import { Order, CampaignPackage } from '../../types';
@@ -85,6 +86,7 @@ export default function AddCampaign() {
     const [layoutTypes, setLayoutTypes] = useState<{ id?: number | string; name: string; description?: string }[]>([]);
     const [packageLayoutIndex, setPackageLayoutIndex] = useState<Record<number, number>>({});
     const [layoutProjectionFile, setLayoutProjectionFile] = useState<Record<number, File>>({});
+    const [layoutThumbnailFile, setLayoutThumbnailFile] = useState<Record<number, File>>({});
     const [layoutRenderingFiles, setLayoutRenderingFiles] = useState<Record<number, File[]>>({});
     const [layoutError, setLayoutError] = useState<string | null>(null);
     const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
@@ -374,6 +376,7 @@ export default function AddCampaign() {
             return next;
         });
         setLayoutProjectionFile(prev => shiftNumericIndexMap(prev, idx));
+        setLayoutThumbnailFile(prev => shiftNumericIndexMap(prev, idx));
         setLayoutRenderingFiles(prev => shiftNumericIndexMap(prev, idx));
         setCollapsedLayoutTypes(prev => shiftNumericIndexMap(prev, idx));
     };
@@ -429,6 +432,7 @@ export default function AddCampaign() {
             lt,
             col: collapsedLayoutTypes[i],
             proj: layoutProjectionFile[i],
+            thumb: layoutThumbnailFile[i],
             rend: layoutRenderingFiles[i],
             oldIdx: i,
         }));
@@ -443,6 +447,9 @@ export default function AddCampaign() {
         ));
         setLayoutProjectionFile(Object.fromEntries(
             moved.map((d, i) => [i, d.proj] as const).filter(([, v]) => v !== undefined),
+        ));
+        setLayoutThumbnailFile(Object.fromEntries(
+            moved.map((d, i) => [i, d.thumb] as const).filter(([, v]) => v !== undefined),
         ));
         setLayoutRenderingFiles(Object.fromEntries(
             moved.map((d, i) => [i, d.rend] as const).filter(([, v]) => v !== undefined),
@@ -491,6 +498,13 @@ export default function AddCampaign() {
         if (!file) return;
         if (file.size > 10 * 1024 * 1024) { setLayoutError('Image must be 10MB or smaller.'); return; }
         setLayoutProjectionFile(prev => ({ ...prev, [layoutIdx]: file }));
+    };
+
+    const handleLayoutThumbnailChange = (layoutIdx: number, file: File | null) => {
+        setLayoutError(null);
+        if (!file) return;
+        if (file.size > 10 * 1024 * 1024) { setLayoutError('Image must be 10MB or smaller.'); return; }
+        setLayoutThumbnailFile(prev => ({ ...prev, [layoutIdx]: file }));
     };
 
     const handleLayoutRenderingsChange = (layoutIdx: number, files: File[]) => {
@@ -685,6 +699,9 @@ export default function AddCampaign() {
                         if (!layoutId) continue;
                         if (layoutProjectionFile[i]) {
                             await uploadCampaignLayoutTypeRentalProjection(layoutId, layoutProjectionFile[i]);
+                        }
+                        if (layoutThumbnailFile[i]) {
+                            await uploadCampaignLayoutTypeThumbnail(layoutId, layoutThumbnailFile[i]);
                         }
                         if (layoutRenderingFiles[i]?.length) {
                             await uploadCampaignLayoutTypeRenderings(layoutId, layoutRenderingFiles[i]);
@@ -1622,6 +1639,31 @@ export default function AddCampaign() {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setLayoutProjectionFile(prev => { const n = { ...prev }; delete n[layoutIdx]; return n; })}
+                                                                className="text-red-600 hover:text-red-800 font-medium"
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </FileDropzone>
+
+                                                {/* Layout Thumbnail (single image) */}
+                                                <FileDropzone accept="image" onFiles={(f) => handleLayoutThumbnailChange(layoutIdx, f[0] ?? null)}>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        Layout Thumbnail (single image)
+                                                    </label>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => handleLayoutThumbnailChange(layoutIdx, e.target.files?.[0] ?? null)}
+                                                        className="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200"
+                                                    />
+                                                    {layoutThumbnailFile[layoutIdx] && (
+                                                        <div className="mt-2 flex items-center justify-between text-sm text-gray-600">
+                                                            <span>{layoutThumbnailFile[layoutIdx].name}</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setLayoutThumbnailFile(prev => { const n = { ...prev }; delete n[layoutIdx]; return n; })}
                                                                 className="text-red-600 hover:text-red-800 font-medium"
                                                             >
                                                                 Remove

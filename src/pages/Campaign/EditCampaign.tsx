@@ -24,6 +24,8 @@ import {
     deleteCampaignThumbnailVideo,
     uploadCampaignLayoutTypeRentalProjection,
     deleteCampaignLayoutTypeRentalProjection,
+    uploadCampaignLayoutTypeThumbnail,
+    deleteCampaignLayoutTypeThumbnail,
     uploadCampaignLayoutTypeRenderings,
     deleteCampaignLayoutTypeRendering,
 } from '../../services/api';
@@ -98,11 +100,13 @@ export default function EditCampaign() {
     const [layoutTypes, setLayoutTypes] = useState<{ id?: number | string; name: string; description?: string }[]>([]);
     const [packageLayoutIndex, setPackageLayoutIndex] = useState<Record<number, number>>({});
     const [layoutProjectionUrl, setLayoutProjectionUrl] = useState<Record<number, string | null>>({});
+    const [layoutThumbnailUrl, setLayoutThumbnailUrl] = useState<Record<number, string | null>>({});
     const [layoutRenderingImgs, setLayoutRenderingImgs] = useState<Record<number, LayoutRenderingImage[]>>({});
     const [layoutUploading, setLayoutUploading] = useState<Record<number, boolean>>({});
     const [layoutError, setLayoutError] = useState<string | null>(null);
     // Pending files for newly-added layouts (no id yet) — uploaded after the next save.
     const [pendingLayoutProjectionFile, setPendingLayoutProjectionFile] = useState<Record<number, File>>({});
+    const [pendingLayoutThumbnailFile, setPendingLayoutThumbnailFile] = useState<Record<number, File>>({});
     const [pendingLayoutRenderingFiles, setPendingLayoutRenderingFiles] = useState<Record<number, File[]>>({});
 
     const campaignId = id ? parseInt(id, 10) : null;
@@ -177,12 +181,15 @@ export default function EditCampaign() {
                 setLayoutTypes(campaign.layout_types.map((lt) => ({ id: lt.id, name: lt.name || '', description: lt.description || '' })));
 
                 const projUrls: Record<number, string | null> = {};
+                const thumbUrls: Record<number, string | null> = {};
                 const renderImgs: Record<number, LayoutRenderingImage[]> = {};
                 campaign.layout_types.forEach((lt, i) => {
                     projUrls[i] = (lt.rental_projection as Attachment | null)?.file_url ?? null;
+                    thumbUrls[i] = (lt.layout_thumbnail as Attachment | null)?.file_url ?? null;
                     renderImgs[i] = (lt.rendering_images as (Attachment & { path?: string })[] | null)?.map((r) => ({ file_url: r.file_url, path: r.path })) ?? [];
                 });
                 setLayoutProjectionUrl(projUrls);
+                setLayoutThumbnailUrl(thumbUrls);
                 setLayoutRenderingImgs(renderImgs);
 
                 // Map each loaded package to its layout index by matching layout_type_id
@@ -484,9 +491,11 @@ export default function EditCampaign() {
             return next;
         });
         setLayoutProjectionUrl(prev => shiftNumericIndexMap(prev, idx));
+        setLayoutThumbnailUrl(prev => shiftNumericIndexMap(prev, idx));
         setLayoutRenderingImgs(prev => shiftNumericIndexMap(prev, idx));
         setLayoutUploading(prev => shiftNumericIndexMap(prev, idx));
         setPendingLayoutProjectionFile(prev => shiftNumericIndexMap(prev, idx));
+        setPendingLayoutThumbnailFile(prev => shiftNumericIndexMap(prev, idx));
         setPendingLayoutRenderingFiles(prev => shiftNumericIndexMap(prev, idx));
         setCollapsedLayoutTypes(prev => shiftNumericIndexMap(prev, idx));
     };
@@ -542,9 +551,11 @@ export default function EditCampaign() {
             lt,
             col: collapsedLayoutTypes[i],
             projUrl: layoutProjectionUrl[i],
+            thumbUrl: layoutThumbnailUrl[i],
             rendImgs: layoutRenderingImgs[i],
             uploading: layoutUploading[i],
             pendProj: pendingLayoutProjectionFile[i],
+            pendThumb: pendingLayoutThumbnailFile[i],
             pendRend: pendingLayoutRenderingFiles[i],
             oldIdx: i,
         }));
@@ -560,6 +571,9 @@ export default function EditCampaign() {
         setLayoutProjectionUrl(Object.fromEntries(
             moved.map((d, i) => [i, d.projUrl] as const).filter(([, v]) => v !== undefined),
         ));
+        setLayoutThumbnailUrl(Object.fromEntries(
+            moved.map((d, i) => [i, d.thumbUrl] as const).filter(([, v]) => v !== undefined),
+        ));
         setLayoutRenderingImgs(Object.fromEntries(
             moved.map((d, i) => [i, d.rendImgs] as const).filter(([, v]) => v !== undefined),
         ));
@@ -568,6 +582,9 @@ export default function EditCampaign() {
         ));
         setPendingLayoutProjectionFile(Object.fromEntries(
             moved.map((d, i) => [i, d.pendProj] as const).filter(([, v]) => v !== undefined),
+        ));
+        setPendingLayoutThumbnailFile(Object.fromEntries(
+            moved.map((d, i) => [i, d.pendThumb] as const).filter(([, v]) => v !== undefined),
         ));
         setPendingLayoutRenderingFiles(Object.fromEntries(
             moved.map((d, i) => [i, d.pendRend] as const).filter(([, v]) => v !== undefined),
@@ -629,6 +646,24 @@ export default function EditCampaign() {
         finally { setLayoutUploading(prev => ({ ...prev, [layoutIdx]: false })); }
     };
 
+    const handleEditLayoutThumbnail = async (layoutIdx: number, file: File | null) => {
+        setLayoutError(null);
+        if (!file) return;
+        if (file.size > 10 * 1024 * 1024) { setLayoutError('Image must be 10MB or smaller.'); return; }
+        const layoutId = layoutTypes[layoutIdx]?.id;
+        if (!layoutId) {
+            // New layout (no id yet): hold the file until the next save.
+            setPendingLayoutThumbnailFile(prev => ({ ...prev, [layoutIdx]: file }));
+            return;
+        }
+        setLayoutUploading(prev => ({ ...prev, [layoutIdx]: true }));
+        try {
+            const res = await uploadCampaignLayoutTypeThumbnail(layoutId, file);
+            setLayoutThumbnailUrl(prev => ({ ...prev, [layoutIdx]: res?.data?.layout_thumbnail?.file_url ?? null }));
+        } catch (e) { console.error(e); setLayoutError('Upload failed.'); }
+        finally { setLayoutUploading(prev => ({ ...prev, [layoutIdx]: false })); }
+    };
+
     const handleEditLayoutRenderings = async (layoutIdx: number, files: File[]) => {
         setLayoutError(null);
         if (!files.length) return;
@@ -653,6 +688,15 @@ export default function EditCampaign() {
         if (!layoutId) return;
         setLayoutUploading(prev => ({ ...prev, [layoutIdx]: true }));
         try { await deleteCampaignLayoutTypeRentalProjection(layoutId); setLayoutProjectionUrl(prev => ({ ...prev, [layoutIdx]: null })); }
+        catch (e) { console.error(e); setLayoutError('Remove failed.'); }
+        finally { setLayoutUploading(prev => ({ ...prev, [layoutIdx]: false })); }
+    };
+
+    const handleEditRemoveThumbnail = async (layoutIdx: number) => {
+        const layoutId = layoutTypes[layoutIdx]?.id;
+        if (!layoutId) return;
+        setLayoutUploading(prev => ({ ...prev, [layoutIdx]: true }));
+        try { await deleteCampaignLayoutTypeThumbnail(layoutId); setLayoutThumbnailUrl(prev => ({ ...prev, [layoutIdx]: null })); }
         catch (e) { console.error(e); setLayoutError('Remove failed.'); }
         finally { setLayoutUploading(prev => ({ ...prev, [layoutIdx]: false })); }
     };
@@ -830,9 +874,13 @@ export default function EditCampaign() {
                         const savedId = savedLayouts[i]?.id;
                         if (savedId == null) continue;
                         const pendingProjection = pendingLayoutProjectionFile[i];
+                        const pendingThumbnail = pendingLayoutThumbnailFile[i];
                         const pendingRenderings = pendingLayoutRenderingFiles[i];
                         if (pendingProjection) {
                             await uploadCampaignLayoutTypeRentalProjection(savedId, pendingProjection);
+                        }
+                        if (pendingThumbnail) {
+                            await uploadCampaignLayoutTypeThumbnail(savedId, pendingThumbnail);
                         }
                         if (pendingRenderings?.length) {
                             await uploadCampaignLayoutTypeRenderings(savedId, pendingRenderings);
@@ -1790,6 +1838,64 @@ export default function EditCampaign() {
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => setPendingLayoutProjectionFile(prev => { const n = { ...prev }; delete n[layoutIdx]; return n; })}
+                                                                        className="text-red-600 hover:text-red-800 font-medium"
+                                                                    >
+                                                                        Remove
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </FileDropzone>
+                                                    )}
+                                                </div>
+
+                                                {/* Layout Thumbnail (single image) */}
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        Layout Thumbnail (single image)
+                                                    </label>
+                                                    {layoutThumbnailUrl[layoutIdx] ? (
+                                                        <FileDropzone accept="image" onFiles={(f) => handleEditLayoutThumbnail(layoutIdx, f[0] ?? null)} disabled={layoutUploading[layoutIdx]} className="mt-1">
+                                                            <img
+                                                                src={layoutThumbnailUrl[layoutIdx] || ''}
+                                                                alt="Layout thumbnail"
+                                                                className="w-full h-48 object-cover rounded-lg border border-gray-200"
+                                                            />
+                                                            <div className="mt-2 flex items-center gap-4">
+                                                                <label className="cursor-pointer text-indigo-600 hover:text-indigo-500 text-sm font-medium">
+                                                                    {layoutUploading[layoutIdx] ? 'Uploading…' : 'Replace image'}
+                                                                    <input
+                                                                        type="file"
+                                                                        accept="image/*"
+                                                                        onChange={(e) => handleEditLayoutThumbnail(layoutIdx, e.target.files?.[0] ?? null)}
+                                                                        disabled={layoutUploading[layoutIdx]}
+                                                                        className="sr-only"
+                                                                    />
+                                                                </label>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleEditRemoveThumbnail(layoutIdx)}
+                                                                    disabled={layoutUploading[layoutIdx]}
+                                                                    className="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50"
+                                                                >
+                                                                    {layoutUploading[layoutIdx] ? 'Removing…' : 'Remove image'}
+                                                                </button>
+                                                            </div>
+                                                        </FileDropzone>
+                                                    ) : (
+                                                        <FileDropzone accept="image" onFiles={(f) => handleEditLayoutThumbnail(layoutIdx, f[0] ?? null)} disabled={layoutUploading[layoutIdx]}>
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                onChange={(e) => handleEditLayoutThumbnail(layoutIdx, e.target.files?.[0] ?? null)}
+                                                                disabled={layoutUploading[layoutIdx]}
+                                                                className="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200"
+                                                            />
+                                                            {pendingLayoutThumbnailFile[layoutIdx] && (
+                                                                <div className="mt-2 flex items-center justify-between text-sm text-gray-600">
+                                                                    <span>{pendingLayoutThumbnailFile[layoutIdx].name} (uploads on save)</span>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setPendingLayoutThumbnailFile(prev => { const n = { ...prev }; delete n[layoutIdx]; return n; })}
                                                                         className="text-red-600 hover:text-red-800 font-medium"
                                                                     >
                                                                         Remove

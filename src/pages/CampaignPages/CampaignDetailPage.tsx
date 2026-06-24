@@ -375,7 +375,7 @@ const CampaignDetailPage = () => {
                                     const v = getQuotationTotal(p.order as Order | undefined);
                                     return v > 0 && (min === 0 || v < min) ? v : min;
                                 }, 0);
-                                const proj = lt.rental_projection as Attachment | undefined;
+                                const thumb = lt.layout_thumbnail as Attachment | undefined;
                                 return (
                                     <Link
                                         key={String(lt.id)}
@@ -383,8 +383,8 @@ const CampaignDetailPage = () => {
                                         className="group block rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_28px_rgba(16,24,40,0.06)] hover:shadow-lg transition"
                                     >
                                         <div className="h-36 w-full bg-slate-100">
-                                            {proj?.file_url ? (
-                                                <img src={proj.file_url} alt={lt.name} className="h-36 w-full object-cover" />
+                                            {thumb?.file_url ? (
+                                                <img src={thumb.file_url} alt={lt.name} className="h-36 w-full object-cover" />
                                             ) : (
                                                 <div className="h-36 w-full grid place-items-center text-slate-400"><Package className="h-10 w-10" /></div>
                                             )}

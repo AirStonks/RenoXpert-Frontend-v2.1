@@ -3111,6 +3111,22 @@ export const deleteCampaignLayoutTypeRentalProjection = async (layoutTypeId: num
     return response.data;
 };
 
+export const uploadCampaignLayoutTypeThumbnail = async (layoutTypeId: number | string, file: File) => {
+    const formData = new FormData();
+    formData.append('layout_thumbnail', file);
+    const response = await axios.post(`${API_URL}campaign-layout-types/${layoutTypeId}/layout-thumbnail`, formData, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+};
+
+export const deleteCampaignLayoutTypeThumbnail = async (layoutTypeId: number | string) => {
+    const response = await axios.delete(`${API_URL}campaign-layout-types/${layoutTypeId}/layout-thumbnail`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    });
+    return response.data;
+};
+
 export const uploadCampaignLayoutTypeRenderings = async (layoutTypeId: number | string, files: File[]) => {
     const formData = new FormData();
     files.forEach((file) => formData.append('rendering_images[]', file));

@@ -1629,6 +1629,7 @@ export interface CampaignLayoutType {
     description?: string;
     sort?: number;
     rental_projection?: Attachment | null;
+    layout_thumbnail?: Attachment | null;
     rendering_images?: Attachment[] | null;
 }
 
