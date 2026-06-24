@@ -268,6 +268,14 @@ const CampaignLayoutDetailPage = () => {
     const rentalProjection = layout.rental_projection as Attachment | null | undefined;
     const renderings = (layout.rendering_images ?? []) as Attachment[];
 
+    // Bento tile sizing: repeating 6-cycle — large feature, wide, then small tiles.
+    const bentoSpan = (i: number): string => {
+        const m = i % 6;
+        if (m === 0) return 'col-span-2 row-span-2';
+        if (m === 3) return 'col-span-2 row-span-1';
+        return 'col-span-1 row-span-1';
+    };
+
     return (
         <div className="w-full min-h-screen bg-slate-50">
             <CampaignHeader
@@ -327,14 +335,14 @@ const CampaignLayoutDetailPage = () => {
                                     <h2 className="text-base sm:text-lg font-bold text-slate-900">Renderings</h2>
                                     <span className="text-xs text-slate-400">{renderings.length} photos · tap to enlarge</span>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 auto-rows-[140px] sm:auto-rows-[170px] gap-3 grid-flow-dense">
                                     {renderings.map((img, index) => (
                                         <button
                                             key={img.id || index}
                                             type="button"
                                             onClick={() => setPhoto(img.file_url ?? null)}
                                             aria-label={`Enlarge rendering ${index + 1}`}
-                                            className="block aspect-[4/3] overflow-hidden rounded-xl ring-1 ring-slate-200 bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-campaign/40"
+                                            className={`${bentoSpan(index)} overflow-hidden rounded-xl ring-1 ring-slate-200 bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-campaign/40`}
                                         >
                                             {img.file_url ? (
                                                 <img
