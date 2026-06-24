@@ -100,3 +100,20 @@ export function getInitialDownPayment(order?: OrderWithQuotation | null): number
     }, 0);
     return total / 2;
 }
+
+/**
+ * Full quotation total: sum of all INCLUDED package prices (program-agnostic),
+ * or order.total_amount when f_1. This is the "Start from" figure (replaces the
+ * per-program Initial Down Payment on the public cards).
+ */
+export function getQuotationTotal(order?: OrderWithQuotation | null): number {
+    if (!order) return 0;
+    if (order.f_1 && order.total_amount != null) {
+        return Number(order.total_amount) || 0;
+    }
+    const packages: Package[] = order.latest_quotation?.packages ?? [];
+    return packages.reduce((sum, pkg) => {
+        if (pkg.is_addon === true && pkg.is_addon_included === false) return sum;
+        return sum + getQuotationPackagePrice(pkg, order);
+    }, 0);
+}

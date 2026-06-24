@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { Attachment, Campaign, CampaignPackage, Order } from '../../types';
 import { bookingPaymentIntent, getCampaign } from '../../services/publicApi';
-import { getInitialDownPayment } from '../../utils/quotationPricing';
+import { getQuotationTotal } from '../../utils/quotationPricing';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Button } from './components/Button';
 import { buttonClasses } from './components/buttonClasses';
@@ -369,7 +369,7 @@ const CampaignDetailPage = () => {
                             {(campaign.layout_types ?? []).map((lt) => {
                                 const ltPackages = (campaign.packages ?? []).filter((p) => String(p.layout_type_id) === String(lt.id));
                                 const startFrom = ltPackages.reduce((min, p) => {
-                                    const v = getInitialDownPayment(p.order as Order | undefined);
+                                    const v = getQuotationTotal(p.order as Order | undefined);
                                     return v > 0 && (min === 0 || v < min) ? v : min;
                                 }, 0);
                                 const proj = lt.rental_projection as Attachment | undefined;

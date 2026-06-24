@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { Attachment, Campaign, CampaignLayoutType, CampaignPackage, Order } from '../../types';
 import { bookingPaymentIntent, getCampaign } from '../../services/publicApi';
-import { getInitialDownPayment } from '../../utils/quotationPricing';
+import { getQuotationTotal } from '../../utils/quotationPricing';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Button } from './components/Button';
 import { buttonClasses } from './components/buttonClasses';
@@ -373,7 +373,7 @@ const CampaignLayoutDetailPage = () => {
                                     {layoutPackages.map((pkg, index) => {
                                         const isSelected = String(selectedPackage?.id) === String(pkg.id);
                                         const isSoldOut = pkg.slot_remaining === 0;
-                                        const startFrom = getInitialDownPayment(pkg.order as Order | undefined);
+                                        const startFrom = getQuotationTotal(pkg.order as Order | undefined);
                                         return (
                                             <div key={pkg.id || index} className="relative">
                                                 <input
@@ -443,7 +443,6 @@ const CampaignLayoutDetailPage = () => {
                                                                     <div className="text-xs text-slate-400 leading-none mb-1">Start from</div>
                                                                     <div className="text-2xl sm:text-3xl font-bold text-campaign">
                                                                         RM {formatRM(startFrom)}
-                                                                        <span className="text-xs sm:text-sm font-medium text-slate-400"> initial down</span>
                                                                     </div>
                                                                     {pkg.booking_amount && pkg.booking_amount > 0 && (
                                                                         <div className="mt-2">
