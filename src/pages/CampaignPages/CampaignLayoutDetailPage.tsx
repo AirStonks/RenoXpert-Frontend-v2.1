@@ -444,7 +444,7 @@ const CampaignLayoutDetailPage = () => {
                                                             </p>
                                                         )}
 
-                                                        {/* Pricing — Start from (Initial Down Payment) */}
+                                                        {/* Pricing — Start from (full quotation total) */}
                                                         <div className="pt-4 border-t border-slate-100">
                                                             {startFrom > 0 ? (
                                                                 <>
