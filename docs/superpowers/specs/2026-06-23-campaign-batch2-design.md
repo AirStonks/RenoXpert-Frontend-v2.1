@@ -3,7 +3,7 @@
 - **Date:** 2026-06-23
 - **Status:** Proposed — awaiting user review before implementation planning
 - **Repos:** Backend `RenoXpert-Backend` (deploys from `production`, PR-protected) + Frontend `RenoXpert-Frontend-v2.1` (deploys from `production`, merge+push)
-- **Combined spec** for four independent items (A, B, C, D). B and D are frontend-only; A and C span backend + admin + public.
+- **Combined spec** for five independent items (A, B, C, D, E). B, D, E are frontend-only; A and C span backend + admin + public.
 
 ---
 
@@ -14,12 +14,14 @@ Three campaign enhancements:
 - **B — Start-from total:** the public "Start from RMxxx" figure (currently the per-program **Initial Down Payment**) becomes the **full quotation total**, and the "initial down" wording is removed.
 - **C — Layout thumbnail:** layout types gain a new `layout_thumbnail` image; public layout cards display it (placeholder when unset).
 - **D — Rich-text campaign description:** the campaign description becomes a TipTap rich-text editor (Notion/markdown-like) in admin; the public campaign page renders the resulting formatted HTML.
+- **E — Bento renderings:** the public layout-detail Renderings section becomes a bento grid (mixed tile sizes) instead of the uniform grid.
 
 ## 2. Decisions (locked with user)
 
 - **B amount** = full quotation total: the sum of all **included** package prices in the quote (program-agnostic), or `order.total_amount` when `f_1`. **Applies to both** the layout-detail package cards and the landing layout-card teaser. Keep the "Start from" label; remove "initial down".
 - **A precedence**: both an uploaded file and a YouTube URL may be stored; on public, **the YouTube URL wins if set** (iframe embed), otherwise the uploaded `<video>`. "Watch video" shows if either exists.
 - **C fallback**: public layout cards show `layout_thumbnail` only; when unset, show the existing **placeholder** icon (do NOT fall back to `rental_projection`).
+- **E layout**: **classic boxy bento** (mixed tile sizes, `object-cover` crop) — the user chose this over a no-crop masonry despite some renderings having in-image labels and varied native ratios (the bento crop may clip labels on off-ratio images; accepted in favor of the bento look). Frontend only, renderings section of the layout-detail page.
 - **D scope/library**: **campaign description only** (not package/layout/internal descriptions). Editor = TipTap **StarterKit + Link** with a small toolbar and markdown input rules (toolbar + markdown shortcuts; no Notion slash menu). **Add** `@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/extension-link`, and `dompurify` (sanitize the HTML before rendering it publicly). Stored as **HTML in the existing `description` column** (no schema change). Legacy plain-text descriptions render correctly (back-compat).
 
 ## 3. Item A — YouTube video
@@ -100,6 +102,14 @@ Three campaign enhancements:
 ### Public wiring
 - **CampaignDetailPage:** replace the two campaign-description render spots (the hero/intro at ~line 270 and the secondary block at ~line 548) with `<RichTextContent html={campaign.description} />`. (Package/layout description spots stay unchanged.)
 
+## 5c. Item E — Bento renderings layout (frontend only)
+
+**`CampaignLayoutDetailPage.tsx`**, the Renderings section (~line 330). Replace the uniform `grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3` with a **bento grid**:
+- Container: `grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 auto-rows-[140px] sm:auto-rows-[170px] gap-3 grid-flow-dense`.
+- Per-tile span via a small `bentoSpan(index)` helper (repeating 6-cycle): `i % 6 === 0` → `col-span-2 row-span-2` (large feature); `i % 6 === 3` → `col-span-2 row-span-1` (wide); else `col-span-1 row-span-1`. `grid-flow-dense` fills the gaps.
+- Each tile drops `aspect-[4/3]` and uses `h-full w-full`; the `<img>` keeps `object-cover` + hover zoom; preserve the existing tap-to-enlarge (`setPhoto`), `key`, aria-label, ring, and the no-`file_url` placeholder. The lightbox itself is unchanged.
+- **Label-crop note:** `object-cover` may crop in-image labels on off-ratio renderings — accepted per the E decision.
+
 ## 6. Constraints
 
 - **Backend schema** = authored Laravel migrations (additive `ADD COLUMN`, nullable); **NEVER run `php artisan migrate` ourselves** — the user runs it. Both repos deploy from **`production`**; backend changes go via a **PR to `production`**, frontend via **merge+push to `production`**.
@@ -116,6 +126,7 @@ Three campaign enhancements:
   - A: set a YouTube link in admin → public "Watch video" opens an embedded YouTube player; with only an uploaded file → `<video>` plays; with both → YouTube shown; with neither → no button.
   - B: package cards and landing teaser show the full quotation total (≈ 2× the old initial-down figure for full-payment), no "initial down" text; the Booking-Fee fallback still appears when total is 0.
   - C: upload a layout thumbnail (drag-and-drop works) → it appears on the layout card; a layout with no thumbnail shows the placeholder (not the rental projection).
+  - E: the layout-detail Renderings section shows a bento grid (mixed tile sizes, dense fill); tap-to-enlarge still opens each image; layouts with 1-2 renderings still render sensibly.
   - D: in admin, format the campaign description (headings/bold/lists, and markdown shortcuts like `# `/`- `) → public campaign page renders the formatting; an existing plain-text campaign still renders with its line breaks intact; pasted/edited HTML is sanitized (no script execution).
 
 ## 8. Risks & mitigations
@@ -138,4 +149,5 @@ Three campaign enhancements:
 4. **FE-A:** admin YouTube input + public embed (`getYouTubeEmbedUrl` + iframe modal).
 5. **FE-C:** admin layout-thumbnail upload (DnD + maps + reorder bundle + reindex) + public card image swap + API functions.
 6. **FE-D:** `npm install` TipTap + DOMPurify; `RichTextEditor` component + `.rich-content` styles; `RichTextContent` public renderer (with plain-text back-compat + sanitize); swap the admin description textarea and the two public render spots.
-7. **Verify + finalize:** FE build/eslint, BE manual review; BE PR to `production`; FE merge+push.
+7. **FE-E:** bento renderings grid in `CampaignLayoutDetailPage` (mixed tile spans + dense flow; lightbox/placeholder preserved).
+8. **Verify + finalize:** FE build/eslint, BE manual review; BE PR to `production`; FE merge+push.

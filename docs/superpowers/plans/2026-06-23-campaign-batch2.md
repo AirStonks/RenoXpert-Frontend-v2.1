@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Four campaign enhancements — (A) optional YouTube link for the campaign video, (B) public "Start from" shows the full quotation total, (C) a new layout-type thumbnail image used on public layout cards, (D) a TipTap rich-text editor for the campaign description.
+**Goal:** Five campaign enhancements — (A) optional YouTube link for the campaign video, (B) public "Start from" shows the full quotation total, (C) a new layout-type thumbnail image used on public layout cards, (D) a TipTap rich-text editor for the campaign description, (E) a bento grid for the layout-detail renderings.
 
 **Architecture:** Backend (Laravel, `RenoXpert-Backend`) adds two additive nullable columns + a layout-thumbnail upload/delete endpoint pair; frontend (`RenoXpert-Frontend-v2.1`) adds admin inputs/uploads and public rendering. A and C span both repos; B and D are frontend-only. Reuse the existing `FileDropzone` for the new upload; YouTube via a plain `<iframe>`; rich text via TipTap with DOMPurify-sanitized public rendering.
 
@@ -692,7 +692,58 @@ Claude-Session: https://claude.ai/code/session_01J2tswg9TLbEnKfxdrZexhS"
 
 ---
 
-### Task 7: Verify + finalize
+### Task 7 (FE-E): Bento renderings layout
+
+**Repo/branch:** `RenoXpert-Frontend-v2.1`, `feature/campaign-batch2`.
+
+**Files:**
+- Modify: `src/pages/CampaignPages/CampaignLayoutDetailPage.tsx` (Renderings section ~lines 330-352)
+
+**Interfaces:** none exported. Self-contained presentational change. (Classic boxy bento with `object-cover` per the E decision — may crop in-image labels on off-ratio renderings; accepted.)
+
+- [ ] **Step 1: Add the span helper**
+
+In `src/pages/CampaignPages/CampaignLayoutDetailPage.tsx`, inside the component (near the other derived values, before the return), add:
+```tsx
+// Bento tile sizing: repeating 6-cycle — large feature, wide, then small tiles.
+const bentoSpan = (i: number): string => {
+    const m = i % 6;
+    if (m === 0) return 'col-span-2 row-span-2';
+    if (m === 3) return 'col-span-2 row-span-1';
+    return 'col-span-1 row-span-1';
+};
+```
+
+- [ ] **Step 2: Convert the renderings grid to bento**
+
+Replace the renderings grid container (currently `<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">` at ~line 330) with:
+```tsx
+<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 auto-rows-[140px] sm:auto-rows-[170px] gap-3 grid-flow-dense">
+```
+On the per-image `<button>` (~line 332-337), replace its `className` — remove `block aspect-[4/3]` and add the bento span — so it reads:
+```tsx
+className={`${bentoSpan(index)} overflow-hidden rounded-xl ring-1 ring-slate-200 bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-campaign/40`}
+```
+Leave the inner `<img>` (with `w-full h-full object-cover hover:scale-[1.05] ...`), the `onClick={() => setPhoto(img.file_url ?? null)}`, the `key`, the aria-label, and the no-`file_url` placeholder block unchanged (the placeholder div already uses `w-full h-full`, which now fills the bento tile).
+
+- [ ] **Step 3: Build + lint**
+
+Run: `npm run build` → exit 0.
+Run: `npx eslint src/pages/CampaignPages/CampaignLayoutDetailPage.tsx --ext ts,tsx --format unix | grep -c ':[0-9]*:[0-9]*:'` → `0` (baseline). Fix any new error.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/pages/CampaignPages/CampaignLayoutDetailPage.tsx
+git commit -m "feat(campaign): bento grid for layout-detail renderings
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01J2tswg9TLbEnKfxdrZexhS"
+```
+
+---
+
+### Task 8: Verify + finalize
 
 **Files:** none (verification + integration).
 
@@ -743,6 +794,7 @@ Report the QA checklist to the user (after they merge the BE PR + run `php artis
 - B (`getQuotationTotal` + both card sites, drop "initial down") → Task 3. ✅
 - C (BE migration/model/resource/endpoints/routes) → Task 2; C (admin upload + maps + reorder bundle + reindex; public card) → Task 5. ✅
 - D (deps + RichTextEditor + RichTextContent + styles + admin swap + public render + back-compat + sanitize) → Task 6. ✅
+- E (bento renderings grid + dense flow, lightbox/placeholder preserved) → Task 7. ✅
 - Constraints (migrations authored/user-runs; BE PR + FE merge+push; deps only for D; eslint baselines) → Global Constraints + Task 7. ✅
 
 **Placeholder scan:** No TBD/TODO. BE PR body has a `<...>` description placeholder — that is an instruction to compose the summary at finalize time, not code. FE big-file edits give exact snippets + anchors; the implementer reads the file for surrounding markup.
