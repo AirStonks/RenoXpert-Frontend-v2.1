@@ -45,10 +45,15 @@ const ReferrerCell = ({ booking, campaignId, onChanged }: { booking: Booking; ca
         if (!code.trim()) return;
         setSaving(true);
         try {
-            await setBookingReferral(campaignId, booking.id!, { referral_code: code.trim() });
-            onChanged();
+            const res = await setBookingReferral(campaignId, booking.id!, { referral_code: code.trim() });
+            if (res && res.success) {
+                onChanged();
+                toast.success('Referrer set.');
+            } else {
+                toast.error((res && res.message) ? res.message : 'Failed to set referrer.');
+            }
         } catch {
-            /* api layer handles 401; surface a toast if available */
+            toast.error('Failed to set referrer.');
         } finally {
             setSaving(false);
         }
