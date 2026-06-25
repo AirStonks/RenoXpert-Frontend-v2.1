@@ -4,6 +4,7 @@ import { ArrowLeft, Package as PackageIcon, Award, CreditCard } from 'lucide-rea
 import { InformationCircleIcon } from '@heroicons/react/24/solid';
 import { getCampaign } from '../../services/publicApi';
 import type { Campaign, CampaignPackage, Order, OrderQuotation, Package, Product } from '../../types';
+import { captureReferralFromUrl } from '../../utils/referral';
 import { getRenoSubscriptionFixedOverrideNettAmount } from '../../utils/renoSubscription';
 import { getQuotationPackagePrice } from '../../utils/quotationPricing';
 import { Card } from './components/Card';
@@ -56,6 +57,10 @@ export default function CampaignPackageDetailPage() {
     // [Q3] mobile sticky bar visibility, driven by an IntersectionObserver on the Payment Summary card.
     const [showStickyBar, setShowStickyBar] = useState<boolean>(false);
     const paymentSummaryRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        captureReferralFromUrl(window.location.search);
+    }, []);
 
     useEffect(() => {
         const run = async () => {

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getReferralCode } from '../utils/referral';
 
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -94,7 +95,8 @@ export const validateBookingReference = async (campaignId: string, bookingRefere
 
 export const bookingPaymentIntent = async (campaignSlug: string, name: string, phone: string, email: string, packageId?: string) => {
     try {
-        const response = await axios.post(API_URL + `public/campaigns/${campaignSlug}/booking/payment/intent`, { name, phone, email, packageId });
+        const referral_code = getReferralCode() || undefined;
+        const response = await axios.post(API_URL + `public/campaigns/${campaignSlug}/booking/payment/intent`, { name, phone, email, packageId, referral_code });
         return response.data;
     } catch (error) {
         console.error('Error creating booking payment intent:', error);

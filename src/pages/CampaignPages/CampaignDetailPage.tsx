@@ -21,6 +21,7 @@ import {
 import { Attachment, Campaign, CampaignPackage, Order } from '../../types';
 import { bookingPaymentIntent, getCampaign } from '../../services/publicApi';
 import { getQuotationTotal } from '../../utils/quotationPricing';
+import { captureReferralFromUrl } from '../../utils/referral';
 import { getYouTubeEmbedUrl } from '../../utils/youtube';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Button } from './components/Button';
@@ -48,6 +49,10 @@ const CampaignDetailPage = () => {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [isFullyBooked, setIsFullyBooked] = useState<boolean>(false);
     const [videoOpen, setVideoOpen] = useState<boolean>(false);
+
+    useEffect(() => {
+        captureReferralFromUrl(window.location.search);
+    }, []);
 
     useEffect(() => {
         if (!videoOpen) return;

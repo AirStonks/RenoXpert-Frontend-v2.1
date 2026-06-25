@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Attachment, Campaign, CampaignLayoutType, CampaignPackage, Order } from '../../types';
 import { bookingPaymentIntent, getCampaign } from '../../services/publicApi';
+import { captureReferralFromUrl } from '../../utils/referral';
 import { getQuotationTotal } from '../../utils/quotationPricing';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Button } from './components/Button';
@@ -49,6 +50,10 @@ const CampaignLayoutDetailPage = () => {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [isFullyBooked, setIsFullyBooked] = useState<boolean>(false);
     const [photo, setPhoto] = useState<string | null>(null);
+
+    useEffect(() => {
+        captureReferralFromUrl(window.location.search);
+    }, []);
 
     // Esc closes the photo lightbox (mirrors the landing's video modal pattern).
     useEffect(() => {
