@@ -18,8 +18,10 @@ export function getReferralCode(): string | null {
 export function captureReferralFromUrl(search: string): void {
     if (typeof document === 'undefined' || !search) return;
     const ref = new URLSearchParams(search).get('ref');
-    if (ref && ref.trim()) {
-        setReferralCookie(ref.trim().toUpperCase());
+    if (!ref) return;
+    const code = ref.trim().toUpperCase();
+    if (/^[A-Z0-9]{1,32}$/.test(code)) {
+        setReferralCookie(code);
     }
 }
 
