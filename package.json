@@ -16,6 +16,7 @@
     "@figuro/chatwoot-sdk": "^1.1.17",
     "@heroicons/react": "^2.2.0",
     "@popperjs/core": "^2.11.8",
+    "@react-oauth/google": "^0.13.5",
     "@react-pdf/renderer": "^4.2.1",
     "@tiptap/extension-link": "^3.27.1",
     "@tiptap/react": "^3.27.1",

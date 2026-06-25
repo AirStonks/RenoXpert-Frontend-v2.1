@@ -130,6 +130,10 @@ import CampaignLayoutDetailPage from './pages/CampaignPages/CampaignLayoutDetail
 import FAQPage from './pages/CampaignPages/FAQPage';
 import KayaHeigIIFMain from './pages/InvestorInterestForm/KayaHeigIIFMain';
 import KayaHeigIIFDetail from './pages/InvestorInterestForm/KayaHeigIIFDetail';
+import AgentProtectedRoute from './utils/AgentProtectedRoute';
+import AgentLogin from './pages/AgentPages/AgentLogin';
+import AgentOnboarding from './pages/AgentPages/AgentOnboarding';
+import AgentHome from './pages/AgentPages/AgentHome';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -311,6 +315,12 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/investor-interest-form', element: <InvestorInterestForm />, layout: null },
         { path: '/kayana-heights-interest-form', element: <KayaHeigForm />, layout: null },
     ],
+    // routeCat[7] — Agent (production paths)
+    [
+        { path: '/login', element: <AgentLogin />, layout: null },
+        { path: '/onboarding', element: <AgentProtectedRoute><AgentOnboarding /></AgentProtectedRoute>, layout: null },
+        { path: '/', element: <AgentProtectedRoute><AgentHome /></AgentProtectedRoute>, layout: null },
+    ],
 ];
 
 const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<ProtectedLayoutProps> | null }[][] = [
@@ -464,6 +474,12 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/public/investor-interest-form', element: <InvestorInterestForm />, layout: null },
         { path: '/public/kayana-heights-interest-form', element: <KayaHeigForm />, layout: null },
     ],
+    // routeCatLocal[7] — Agent (local-prefixed paths)
+    [
+        { path: '/agent/login', element: <AgentLogin />, layout: null },
+        { path: '/agent/onboarding', element: <AgentProtectedRoute><AgentOnboarding /></AgentProtectedRoute>, layout: null },
+        { path: '/agent', element: <AgentProtectedRoute><AgentHome /></AgentProtectedRoute>, layout: null },
+    ],
 ]
 
 function App() {
@@ -478,6 +494,7 @@ function App() {
     const isPublicDomain = hostname === 'public.renoxpert.my' || hostname === 'staging.renoxpert.my' || hostname === 'localhost';
     const isFormDomain = hostname === 'form.renoxpert.my' || hostname === 'sform.renoxpert.my' || hostname === 'localhost';
     const isCampaignDomain = hostname === 'campaign.renoxpert.my' || hostname === 's-campaign.renoxpert.my' || hostname === 'localhost';
+    const isAgentDomain = hostname === 'agent.renoxpert.my' || hostname === 's-agent.renoxpert.my' || hostname === 'localhost';
 
     useEffect(() => {
         KTComponent.init();
@@ -496,7 +513,7 @@ function App() {
 
     if (hostname === 'localhost') {
         // All routes in routeCatLocal
-        filteredRoutes = [...routeCatLocal[0], ...routeCatLocal[1], ...routeCatLocal[2], ...routeCatLocal[3], ...routeCatLocal[4], ...routeCatLocal[5], ...routeCatLocal[6]];
+        filteredRoutes = [...routeCatLocal[0], ...routeCatLocal[1], ...routeCatLocal[2], ...routeCatLocal[3], ...routeCatLocal[4], ...routeCatLocal[5], ...routeCatLocal[6], ...routeCatLocal[7]];
     } else {
         if (isMainDomain) {
             // Main domain: Owner, Vendor, and General routes
@@ -522,6 +539,8 @@ function App() {
         } else if (isPublicDomain) {
             // Campaign domain: Campaign routes
             filteredRoutes = routeCat[6]; // Public
+        } else if (isAgentDomain) {
+            filteredRoutes = routeCat[7]; // Agent
         } else {
             // Fallback for invalid domains
             // filteredRoutes = [{ path: '*', element: <NotFound />, layout: null }];
