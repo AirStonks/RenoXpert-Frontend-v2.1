@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
 import {
     ArrowLeft,
@@ -20,7 +20,8 @@ import { Booking, CampaignPackage, Campaign } from '../../types';
 import useFetchCampaign from '../../hook/useFetchCampaign';
 import useFetchCampaignBookings from '../../hook/useFetchCampaignBookings';
 import { Slide, toast } from 'react-toastify';
-import { setBookingReferral } from '../../services/api';
+import { setBookingReferral, getCurrentUser } from '../../services/api';
+import { buildReferralLink } from '../../utils/referral';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -415,6 +416,16 @@ export default function CampaignDetail() {
     const { state } = useLocation();
     const [showInternalDescription, setShowInternalDescription] = useState<boolean>(false);
     const [activeTab, setActiveTab] = useState<string>("bookings");
+    const [myReferralCode, setMyReferralCode] = useState<string | null>(null);
+    useEffect(() => {
+        let active = true;
+        getCurrentUser().then((res) => {
+            if (!active) return;
+            const u = (res && res.data) ? res.data : res; // payload may or may not be {data:...}-wrapped
+            setMyReferralCode(u?.referral_code ?? null);
+        }).catch(() => { /* non-fatal: fall back to plain campaign URL */ });
+        return () => { active = false; };
+    }, []);
 
     const campaignId = id ? parseInt(id, 10) : null;
     const { campaign, loading, error } = useFetchCampaign(campaignId);
@@ -451,10 +462,12 @@ export default function CampaignDetail() {
             return;
         }
 
-        const campaignUrl = `${CAMPAIGN_URL}campaigns/${campaign.slug}`;
+        const campaignUrl = myReferralCode
+            ? buildReferralLink(CAMPAIGN_URL, campaign.slug, myReferralCode)
+            : `${CAMPAIGN_URL}campaigns/${campaign.slug}`;
         try {
             await navigator.clipboard.writeText(campaignUrl);
-            notify('success', 'Campaign URL copied to clipboard!');
+            notify('success', myReferralCode ? 'Referral link copied to clipboard!' : 'Campaign URL copied to clipboard!');
         } catch (err) {
             // Fallback for older browsers
             const textArea = document.createElement('textarea');
@@ -463,7 +476,7 @@ export default function CampaignDetail() {
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            notify('success', 'Campaign URL copied to clipboard!');
+            notify('success', myReferralCode ? 'Referral link copied to clipboard!' : 'Campaign URL copied to clipboard!');
         }
     };
 
@@ -681,7 +694,7 @@ export default function CampaignDetail() {
                                 onClick={handleCopyCampaignUrl}
                                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
                             >
-                                Copy Campaign URL
+                                Copy Referral Link
                             </button>
                             <button
                                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2"

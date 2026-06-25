@@ -47,6 +47,15 @@ export const user = async () => {
     }
 };
 
+export const getCurrentUser = async () => {
+    try {
+        const response = await axios.get(API_URL + 'user', { headers: getAuthHeaders() });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
 export const changePassword = async (formData: any) => {
     try {
         const response = await axios.post(API_URL + 'change-password', formData, {
