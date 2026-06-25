@@ -47,8 +47,8 @@ const AgentVisibilityToggle = ({ campaign, onChanged }: { campaign: Campaign; on
         onChanged(campaign.id!, next); // optimistic
         try {
             const res = await setCampaignAgentVisibility(campaign.id!, next);
-            if (res && res.success === false) { onChanged(campaign.id!, on); toast.error(res.message || 'Failed to update agent visibility.'); }
-            else { toast.success('Agent visibility updated.'); }
+            if (res && res.success) { toast.success('Agent visibility updated.'); }
+            else { onChanged(campaign.id!, on); toast.error((res && res.message) ? res.message : 'Failed to update agent visibility.'); }
         } catch {
             onChanged(campaign.id!, on); toast.error('Failed to update agent visibility.');
         } finally { setBusy(false); }

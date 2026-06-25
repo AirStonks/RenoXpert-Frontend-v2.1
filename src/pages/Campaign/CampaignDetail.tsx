@@ -444,11 +444,11 @@ export default function CampaignDetail() {
         setAgentVisible(next); // optimistic
         try {
             const res = await setCampaignAgentVisibility(campaign.id!, next);
-            if (res && res.success === false) {
-                setAgentVisible(!next);
-                toast.error(res.message || 'Failed to update agent visibility.');
-            } else {
+            if (res && res.success) {
                 toast.success('Agent visibility updated.');
+            } else {
+                setAgentVisible(!next);
+                toast.error((res && res.message) ? res.message : 'Failed to update agent visibility.');
             }
         } catch {
             setAgentVisible(!next);
