@@ -3199,6 +3199,23 @@ export const getCampaignBookings = async (campaignId: string | number) => {
     }
 };
 
+export const setBookingReferral = async (
+    campaignId: string | number,
+    bookingId: string | number,
+    payload: { referral_code?: string; referred_by_user_id?: number }
+) => {
+    try {
+        const response = await axios.put(
+            API_URL + `campaigns/${campaignId}/bookings/${bookingId}/referral`,
+            payload,
+            { headers: getAuthHeaders() }
+        );
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
 export const updateBooking = async (id: string | number, bookingData: any) => {
     try {
         const response = await axios.put(API_URL + `bookings/${id}`, bookingData, {

@@ -276,6 +276,7 @@ function UsersMain() {
                             >
                                 <div className="flex items-center justify-center gap-2">Status {getSortIcon("status")}</div>
                             </th>
+                            <th className="px-4 py-3 w-36">Referral Code</th>
                             <th className="px-4 py-3 w-32 text-center">Action</th>
                         </tr>
                     </thead>
@@ -301,6 +302,9 @@ function UsersMain() {
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         <div className="h-6 bg-gray-200 rounded-full w-16 mx-auto"></div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="h-4 bg-gray-200 rounded w-24"></div>
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         <div className="h-8 bg-gray-200 rounded w-20 mx-auto"></div>
@@ -332,6 +336,9 @@ function UsersMain() {
                                             {user.status}
                                         </span>
                                     </td>
+                                    <td className="px-4 py-3">
+                                        <span className="text-xs font-mono text-gray-700">{user.referral_code ?? '-'}</span>
+                                    </td>
                                     <td className="px-4 py-3 text-center">
                                         <div className="flex justify-center gap-2">
                                             <Link
@@ -358,7 +365,7 @@ function UsersMain() {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                                <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
                                     No users available
                                 </td>
                             </tr>

@@ -127,6 +127,7 @@ export interface User {
     address?: Address;
     password?: string;
     pivot?: Permission;
+    referral_code?: string | null;
     created_at?: string;
     updated_at?: string;
 }
@@ -1707,6 +1708,9 @@ export interface Booking {
     internal_remark?: string;
     status?: string;
     metadata?: JSON;
+    referred_by_user_id?: number | null;
+    referral_code?: string | null;
+    referred_by?: { id: number; name: string; referral_code: string } | null;
     created_at?: string;
     updated_at?: string;
     created_by?: User;

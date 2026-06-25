@@ -20,6 +20,7 @@ import { Booking, CampaignPackage, Campaign } from '../../types';
 import useFetchCampaign from '../../hook/useFetchCampaign';
 import useFetchCampaignBookings from '../../hook/useFetchCampaignBookings';
 import { Slide, toast } from 'react-toastify';
+import { setBookingReferral } from '../../services/api';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -34,13 +35,43 @@ const CAMPAIGN_URL =
 
 
 
+const ReferrerCell = ({ booking, campaignId, onChanged }: { booking: Booking; campaignId: string | number; onChanged: () => void }) => {
+    const [code, setCode] = useState('');
+    const [saving, setSaving] = useState(false);
+    if (booking.referred_by) {
+        return <span className="text-xs text-gray-600">Referred by <span className="font-semibold">{booking.referred_by.name}</span> ({booking.referred_by.referral_code})</span>;
+    }
+    const save = async () => {
+        if (!code.trim()) return;
+        setSaving(true);
+        try {
+            await setBookingReferral(campaignId, booking.id!, { referral_code: code.trim() });
+            onChanged();
+        } catch {
+            /* api layer handles 401; surface a toast if available */
+        } finally {
+            setSaving(false);
+        }
+    };
+    return (
+        <div className="flex items-center gap-2">
+            <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Referral code" className="border border-gray-300 rounded px-2 py-1 text-xs w-32" />
+            <button type="button" disabled={saving} onClick={save} className="text-xs font-semibold text-green-700 disabled:opacity-50">Set</button>
+        </div>
+    );
+};
+
 // Reusable: Bookings list view
 const BookingsListView = ({
     bookings,
     campaign,
+    campaignId,
+    onChanged,
 }: {
     bookings: Booking[]
     campaign?: Campaign
+    campaignId: string | number
+    onChanged: () => void
 }) => {
     const currency = (v: number) => new Intl.NumberFormat("en-MY", { style: "currency", currency: "MYR", minimumFractionDigits: 2 }).format(v || 0)
     const format = (d?: string) => (d ? new Date(d).toLocaleDateString("en-MY", { year: "numeric", month: "short", day: "numeric" }) : "-")
@@ -74,7 +105,7 @@ const BookingsListView = ({
                             <p className="text-sm text-gray-600">Manage and track all bookings</p>
                         </div>
                     </div>
-                    <div className="grid grid-cols-[60px_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 text-xs font-semibold text-green-700 uppercase tracking-wider">
+                    <div className="grid grid-cols-[60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 text-xs font-semibold text-green-700 uppercase tracking-wider">
                         <div>#</div>
                         <div>Booking Details</div>
                         <div>User Detail</div>
@@ -82,6 +113,7 @@ const BookingsListView = ({
                         <div>Amount</div>
                         <div>Status</div>
                         <div>Campaign Package</div>
+                        <div>Referred By</div>
                     </div>
                 </div>
 
@@ -89,7 +121,7 @@ const BookingsListView = ({
                 <div className="divide-y divide-green-100/50">
                     {bookings.map((booking, idx) => (
                         <div key={booking.id} className="px-6 py-4 hover:bg-white/70 transition-all duration-200 group">
-                            <div className="grid grid-cols-[60px_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 items-center">
+                            <div className="grid grid-cols-[60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 items-center">
                                 {/* Numbering */}
                                 <div className="text-sm font-semibold text-gray-500">{idx + 1}</div>
                                 <div className="flex items-center gap-3">
@@ -153,6 +185,9 @@ const BookingsListView = ({
                                     ) : (
                                         <span className="text-sm text-gray-500">-</span>
                                     )}
+                                </div>
+                                <div>
+                                    <ReferrerCell booking={booking} campaignId={campaignId} onChanged={onChanged} />
                                 </div>
                             </div>
                         </div>
@@ -378,7 +413,7 @@ export default function CampaignDetail() {
 
     const campaignId = id ? parseInt(id, 10) : null;
     const { campaign, loading, error } = useFetchCampaign(campaignId);
-    const { bookings, loading: bookingsLoading } = useFetchCampaignBookings(campaignId);
+    const { bookings, loading: bookingsLoading, refetch: refetchBookings } = useFetchCampaignBookings(campaignId);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -886,6 +921,8 @@ export default function CampaignDetail() {
                                         <BookingsListView
                                             bookings={bookings}
                                             campaign={campaign}
+                                            campaignId={campaignId ?? ''}
+                                            onChanged={refetchBookings}
                                         />
                                     ) : (
                                         <div className="p-8 bg-gray-50/50 rounded-xl text-center">
