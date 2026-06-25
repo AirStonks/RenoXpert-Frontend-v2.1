@@ -1658,6 +1658,7 @@ export interface Campaign {
     slot_remaining?: number;
     status?: string;
     metadata?: string;
+    visible_to_agents?: boolean;
     created_at?: string;
     updated_at?: string;
 }

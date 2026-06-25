@@ -3246,3 +3246,12 @@ export const deleteBooking = async (id: string | number) => {
         handle401Error(error as AxiosError);
     }
 };
+
+export const setCampaignAgentVisibility = async (id: string | number, visible: boolean) => {
+    try {
+        const response = await axios.patch(API_URL + `campaigns/${id}/agent-visibility`, { visible_to_agents: visible }, { headers: getAuthHeaders() });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};

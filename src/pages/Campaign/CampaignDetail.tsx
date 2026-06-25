@@ -20,7 +20,7 @@ import { Booking, CampaignPackage, Campaign } from '../../types';
 import useFetchCampaign from '../../hook/useFetchCampaign';
 import useFetchCampaignBookings from '../../hook/useFetchCampaignBookings';
 import { Slide, toast } from 'react-toastify';
-import { setBookingReferral, getCurrentUser } from '../../services/api';
+import { setBookingReferral, getCurrentUser, setCampaignAgentVisibility } from '../../services/api';
 import { buildReferralLink } from '../../utils/referral';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
@@ -431,6 +431,33 @@ export default function CampaignDetail() {
     const { campaign, loading, error } = useFetchCampaign(campaignId);
     const { bookings, loading: bookingsLoading, refetch: refetchBookings } = useFetchCampaignBookings(campaignId);
 
+    const [agentVisible, setAgentVisible] = useState<boolean>(false);
+    const [agentVisibleBusy, setAgentVisibleBusy] = useState<boolean>(false);
+    useEffect(() => {
+        if (campaign) setAgentVisible(!!campaign.visible_to_agents);
+    }, [campaign]);
+
+    const handleToggleAgentVisibility = async () => {
+        if (agentVisibleBusy || !campaign) return;
+        setAgentVisibleBusy(true);
+        const next = !agentVisible;
+        setAgentVisible(next); // optimistic
+        try {
+            const res = await setCampaignAgentVisibility(campaign.id!, next);
+            if (res && res.success === false) {
+                setAgentVisible(!next);
+                toast.error(res.message || 'Failed to update agent visibility.');
+            } else {
+                toast.success('Agent visibility updated.');
+            }
+        } catch {
+            setAgentVisible(!next);
+            toast.error('Failed to update agent visibility.');
+        } finally {
+            setAgentVisibleBusy(false);
+        }
+    };
+
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
             position: "top-center",
@@ -690,6 +717,13 @@ export default function CampaignDetail() {
                             <span className={`px-3 py-1 rounded-full border text-sm font-medium ${getStatusBadgeClass(campaign.status)}`}>
                                 {campaign.status?.charAt(0).toUpperCase() + campaign.status?.slice(1)}
                             </span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-gray-700">Visible to agents</span>
+                                <button type="button" onClick={handleToggleAgentVisibility} disabled={agentVisibleBusy} aria-pressed={agentVisible}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${agentVisible ? 'bg-green-500' : 'bg-gray-300'} disabled:opacity-50`}>
+                                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${agentVisible ? 'translate-x-5' : 'translate-x-1'}`} />
+                                </button>
+                            </div>
                             <button
                                 onClick={handleCopyCampaignUrl}
                                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
