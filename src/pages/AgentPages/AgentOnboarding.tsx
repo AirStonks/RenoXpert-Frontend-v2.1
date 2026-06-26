@@ -8,7 +8,7 @@ const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/agent/' :
 const AgentOnboarding: React.FC = () => {
     const navigate = useNavigate();
     const [name, setName] = useState('');
-    const [countryCode, setCountryCode] = useState('+60');
+    const [countryCode, setCountryCode] = useState('60');
     const [phone, setPhone] = useState('');
     const [agree, setAgree] = useState(false);
     const [saving, setSaving] = useState(false);

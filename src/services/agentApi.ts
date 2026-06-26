@@ -8,7 +8,7 @@ const API_URL =
 
 export const getAgentAuthHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('a_token')}` });
 
-export interface AgentUser { id: number; name: string; email: string; type: string; referral_code?: string; onboarded_at?: string | null; country_code?: string | null; phone_no?: string | null; }
+export interface AgentUser { id: number; name: string; email: string; type: string; referral_code?: string; onboarded_at?: string | null; agent_approved_at?: string | null; country_code?: string | null; phone_no?: string | null; }
 
 export const agentGoogleLogin = async (credential: string): Promise<{ token: string; user: AgentUser; needs_onboarding: boolean }> => {
     const response = await axios.post(API_URL + 'agent/google-login', { credential });
@@ -42,4 +42,22 @@ export interface AgentCampaign {
 export const getAgentCampaigns = async (): Promise<AgentCampaign[]> => {
     const response = await axios.get(API_URL + 'agent/campaigns', { headers: getAgentAuthHeaders() });
     return response.data?.data ?? response.data ?? [];
+};
+
+export interface AgentReferralRow {
+    campaign_title: string | null;
+    customer_name: string | null;
+    amount: number | null;
+    status: string | null;
+    date: string | null;
+}
+export interface AgentReferrals {
+    summary: { total: number; paid: number; total_amount: number };
+    bookings: AgentReferralRow[];
+}
+
+export const getAgentReferrals = async (): Promise<AgentReferrals> => {
+    const response = await axios.get(API_URL + 'agent/referrals', { headers: getAgentAuthHeaders() });
+    const d = response.data?.data ?? response.data;
+    return { summary: d?.summary ?? { total: 0, paid: 0, total_amount: 0 }, bookings: d?.bookings ?? [] };
 };

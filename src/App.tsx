@@ -134,6 +134,7 @@ import AgentProtectedRoute from './utils/AgentProtectedRoute';
 import AgentLogin from './pages/AgentPages/AgentLogin';
 import AgentOnboarding from './pages/AgentPages/AgentOnboarding';
 import AgentHome from './pages/AgentPages/AgentHome';
+import AgentDashboard from './pages/AgentPages/AgentDashboard';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -320,6 +321,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/login', element: <AgentLogin />, layout: null },
         { path: '/onboarding', element: <AgentProtectedRoute><AgentOnboarding /></AgentProtectedRoute>, layout: null },
         { path: '/', element: <AgentProtectedRoute><AgentHome /></AgentProtectedRoute>, layout: null },
+        { path: '/dashboard', element: <AgentProtectedRoute><AgentDashboard /></AgentProtectedRoute>, layout: null },
     ],
 ];
 
@@ -479,6 +481,7 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/agent/login', element: <AgentLogin />, layout: null },
         { path: '/agent/onboarding', element: <AgentProtectedRoute><AgentOnboarding /></AgentProtectedRoute>, layout: null },
         { path: '/agent', element: <AgentProtectedRoute><AgentHome /></AgentProtectedRoute>, layout: null },
+        { path: '/agent/dashboard', element: <AgentProtectedRoute><AgentDashboard /></AgentProtectedRoute>, layout: null },
     ],
 ]
 

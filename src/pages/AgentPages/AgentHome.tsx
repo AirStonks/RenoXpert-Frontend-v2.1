@@ -12,6 +12,7 @@ const AgentHome: React.FC = () => {
     const [campaigns, setCampaigns] = useState<AgentCampaign[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState(false);
+    const [pending, setPending] = useState(false);
 
     useEffect(() => {
         let active = true;
@@ -26,6 +27,7 @@ const AgentHome: React.FC = () => {
             if (!active) return;
             if (!u?.onboarded_at) { navigate(LOCAL_PATH_PREFIX + 'onboarding', { replace: true }); return; }
             setUser(u);
+            if (!u.agent_approved_at) { setPending(true); setLoading(false); return; }
             try {
                 const list = await getAgentCampaigns();
                 if (active) setCampaigns(Array.isArray(list) ? list : []);
@@ -50,16 +52,42 @@ const AgentHome: React.FC = () => {
         catch { toast.error('Copy failed.'); }
     };
 
+    const Header = () => (
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 py-4">
+            <div className="flex items-center gap-4">
+                <span className="font-bold text-slate-900">Agent Portal</span>
+                {!pending && (
+                    <nav className="flex items-center gap-3 text-sm">
+                        <span className="font-semibold text-campaign">Campaigns</span>
+                        <button type="button" onClick={() => navigate(LOCAL_PATH_PREFIX + 'dashboard')} className="text-slate-500 hover:text-slate-700">Dashboard</button>
+                    </nav>
+                )}
+            </div>
+            <div className="flex items-center gap-3">
+                {user?.name && <span className="hidden sm:inline text-sm text-slate-500">{user.name}</span>}
+                <button type="button" onClick={signOut} className="text-sm font-semibold text-slate-500 hover:text-slate-700">Sign out</button>
+            </div>
+        </header>
+    );
+
+    if (pending) {
+        return (
+            <div className="fixed inset-0 overflow-y-auto bg-slate-50">
+                <Header />
+                <main className="mx-auto w-full max-w-md px-4 py-16 text-center">
+                    <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+                        <h1 className="text-xl font-bold text-slate-900">Account pending approval</h1>
+                        <p className="mt-2 text-sm text-slate-500">Thanks for signing up{user?.name ? `, ${user.name}` : ''}. A RenoXpert admin will approve your agent account shortly — you'll get access to campaigns once approved.</p>
+                    </div>
+                </main>
+                <ToastContainer position="top-right" transition={Slide} />
+            </div>
+        );
+    }
+
     return (
         <div className="fixed inset-0 overflow-y-auto bg-slate-50">
-            <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 py-4">
-                <span className="font-bold text-slate-900">Agent Portal</span>
-                <div className="flex items-center gap-3">
-                    {user?.name && <span className="hidden sm:inline text-sm text-slate-500">{user.name}</span>}
-                    <button type="button" onClick={signOut} className="text-sm font-semibold text-slate-500 hover:text-slate-700">Sign out</button>
-                </div>
-            </header>
-
+            <Header />
             <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6 sm:py-10">
                 {code && (
                     <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-4">
@@ -75,7 +103,7 @@ const AgentHome: React.FC = () => {
                 {loading ? (
                     <div className="py-16 text-center text-slate-400">Loading…</div>
                 ) : loadError ? (
-                    <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center text-slate-500">Couldn&apos;t load campaigns. Please refresh.</div>
+                    <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center text-slate-500">Couldn't load campaigns. Please refresh.</div>
                 ) : campaigns.length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center text-slate-500">No campaigns available yet.</div>
                 ) : (
