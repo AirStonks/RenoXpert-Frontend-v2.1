@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Slide, ToastContainer } from 'react-toastify';
 import { agentLogout, getAgentUser, getAgentReferrals, AgentReferrals } from '../../services/agentApi';
-import AgentBrand from './AgentBrand';
+import AgentHeader from './AgentHeader';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/agent/' : '/';
 const currency = (n: number | null) => 'RM ' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -32,25 +32,11 @@ const AgentDashboard: React.FC = () => {
         return () => { active = false; };
     }, [navigate]);
 
-    const signOut = () => { agentLogout(); navigate(LOCAL_PATH_PREFIX + 'login', { replace: true }); };
-
     return (
         <div className="fixed inset-0 overflow-y-auto bg-slate-50">
-            <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 py-4">
-                <div className="flex items-center gap-4">
-                    <AgentBrand />
-                    <nav className="flex items-center gap-3 text-sm">
-                        <button type="button" onClick={() => navigate(LOCAL_PATH_PREFIX)} className="text-slate-500 hover:text-slate-700">Campaigns</button>
-                        <span className="font-semibold text-campaign">Dashboard</span>
-                    </nav>
-                </div>
-                <div className="flex items-center gap-3">
-                    {name && <span className="hidden sm:inline text-sm text-slate-500">{name}</span>}
-                    <button type="button" onClick={signOut} className="text-sm font-semibold text-slate-500 hover:text-slate-700">Sign out</button>
-                </div>
-            </header>
+            <AgentHeader active="dashboard" userName={name} />
 
-            <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6 sm:py-10">
+            <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 pt-6 sm:pt-10 pb-24 sm:pb-10">
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Your referrals</h1>
 
                 {loading ? (
