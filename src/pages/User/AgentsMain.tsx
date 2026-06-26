@@ -51,7 +51,7 @@ const AgentsMain: React.FC = () => {
                                 <tr key={a.id}>
                                     <td className="px-4 py-3 text-gray-900">{a.name || '-'}</td>
                                     <td className="px-4 py-3 text-gray-600">{a.email}</td>
-                                    <td className="px-4 py-3 text-gray-600">{a.phone_no ? `${a.country_code || ''}${a.phone_no}` : '-'}</td>
+                                    <td className="px-4 py-3 text-gray-600">{a.phone_no ? `+${a.country_code || ''} ${a.phone_no}` : '-'}</td>
                                     <td className="px-4 py-3">
                                         {a.agent_approved_at
                                             ? <span className="rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">Approved</span>
