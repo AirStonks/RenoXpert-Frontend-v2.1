@@ -29,3 +29,12 @@ export function captureReferralFromUrl(search: string): void {
 export function buildReferralLink(base: string, slug: string, code: string): string {
     return `${base}campaigns/${slug}?ref=${encodeURIComponent(code)}`;
 }
+
+/** Public campaign base URL (mirrors CampaignDetail's CAMPAIGN_URL env logic). */
+export function getCampaignBaseUrl(): string {
+    const env = import.meta.env.VITE_APP_ENV;
+    if (env === 'production') return import.meta.env.VITE_CAMPAIGN_URL || '';
+    if (env === 'staging') return import.meta.env.VITE_STAGING_CAMPAIGN_URL || '';
+    if (env === 'local') return 'localhost:5173/campaign/';
+    return '';
+}

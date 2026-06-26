@@ -28,3 +28,18 @@ export const getAgentUser = async (): Promise<AgentUser> => {
 };
 
 export const agentLogout = () => { localStorage.removeItem('a_token'); };
+
+export interface AgentCampaign {
+    id: number;
+    title: string;
+    slug: string;
+    thumbnail?: { file_url?: string } | null;
+    booking_amount?: number | null;
+    start_date?: string | null;
+    end_date?: string | null;
+}
+
+export const getAgentCampaigns = async (): Promise<AgentCampaign[]> => {
+    const response = await axios.get(API_URL + 'agent/campaigns', { headers: getAgentAuthHeaders() });
+    return response.data?.data ?? response.data ?? [];
+};
