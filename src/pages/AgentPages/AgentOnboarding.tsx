@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Slide, toast, ToastContainer } from 'react-toastify';
-import { agentOnboarding, getAgentUser } from '../../services/agentApi';
+import { agentOnboarding, getAgentUser, agentLogout } from '../../services/agentApi';
 import AgentBrand from './AgentBrand';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/agent/' : '/';
@@ -18,6 +18,7 @@ const AgentOnboarding: React.FC = () => {
         let active = true;
         getAgentUser().then((u) => {
             if (!active) return;
+            if (u && u.status && u.status !== 'active') { agentLogout(); navigate(LOCAL_PATH_PREFIX + 'login', { replace: true }); return; }
             if (u?.onboarded_at) { navigate(LOCAL_PATH_PREFIX, { replace: true }); return; }
             setName(u?.name || '');
         }).catch(() => { navigate(LOCAL_PATH_PREFIX + 'login', { replace: true }); });
