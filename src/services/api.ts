@@ -3273,3 +3273,12 @@ export const approveAgent = async (id: string | number) => {
         handle401Error(error as AxiosError);
     }
 };
+
+export const setAgentStatus = async (id: string | number, status: 'active' | 'inactive') => {
+    try {
+        const response = await axios.post(API_URL + `admin/agents/${id}/status`, { status }, { headers: getAuthHeaders() });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};

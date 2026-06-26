@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Slide, toast, ToastContainer } from 'react-toastify';
-import { getAdminAgents, approveAgent } from '../../services/api';
+import { getAdminAgents, approveAgent, setAgentStatus } from '../../services/api';
 
 interface AdminAgent { id: number; name: string; email: string; country_code?: string | null; phone_no?: string | null; status?: string | null; onboarded_at?: string | null; agent_approved_at?: string | null; }
 
@@ -17,15 +17,24 @@ const AgentsMain: React.FC = () => {
 
     useEffect(() => { load().catch(() => toast.error('Failed to load agents.')).finally(() => setLoading(false)); }, []);
 
-    const approve = async (a: AdminAgent) => {
-        setBusyId(a.id);
+    const run = async (id: number, fn: () => Promise<{ success?: boolean; message?: string } | undefined>, okMsg: string) => {
+        setBusyId(id);
         try {
-            const res = await approveAgent(a.id);
-            if (res && res.success === false) { toast.error(res.message || 'Approve failed.'); }
-            else { toast.success('Agent approved.'); await load(); }
-        } catch { toast.error('Approve failed.'); }
+            const res = await fn();
+            if (res && res.success === false) { toast.error(res.message || 'Action failed.'); }
+            else { toast.success(okMsg); await load(); }
+        } catch { toast.error('Action failed.'); }
         finally { setBusyId(null); }
     };
+
+    const approve = (a: AdminAgent) => run(a.id, () => approveAgent(a.id), 'Agent approved.');
+    const reject = (a: AdminAgent) => { if (!window.confirm(`Reject ${a.name || a.email}? They won't be able to log in.`)) return; run(a.id, () => setAgentStatus(a.id, 'inactive'), 'Agent rejected.'); };
+    const deactivate = (a: AdminAgent) => { if (!window.confirm(`Deactivate ${a.name || a.email}?`)) return; run(a.id, () => setAgentStatus(a.id, 'inactive'), 'Agent deactivated.'); };
+    const reactivate = (a: AdminAgent) => run(a.id, () => setAgentStatus(a.id, 'active'), 'Agent reactivated.');
+
+    const Badge = ({ ok, yes, no }: { ok: boolean; yes: string; no: string }) => (
+        <span className={`rounded-full px-2 py-1 text-xs font-medium ${ok ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>{ok ? yes : no}</span>
+    );
 
     return (
         <div className="p-4 sm:p-6">
@@ -43,30 +52,39 @@ const AgentsMain: React.FC = () => {
                                 <th className="px-4 py-3 font-semibold">Email</th>
                                 <th className="px-4 py-3 font-semibold">Phone</th>
                                 <th className="px-4 py-3 font-semibold">Approval</th>
+                                <th className="px-4 py-3 font-semibold">Status</th>
                                 <th className="px-4 py-3 font-semibold text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {agents.map((a) => (
-                                <tr key={a.id}>
-                                    <td className="px-4 py-3 text-gray-900">{a.name || '-'}</td>
-                                    <td className="px-4 py-3 text-gray-600">{a.email}</td>
-                                    <td className="px-4 py-3 text-gray-600">{a.phone_no ? `+${a.country_code || ''} ${a.phone_no}` : '-'}</td>
-                                    <td className="px-4 py-3">
-                                        {a.agent_approved_at
-                                            ? <span className="rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">Approved</span>
-                                            : <span className="rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">Pending</span>}
-                                    </td>
-                                    <td className="px-4 py-3 text-right">
-                                        {!a.agent_approved_at && (
-                                            <button type="button" disabled={busyId === a.id} onClick={() => approve(a)}
-                                                className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50">
-                                                {busyId === a.id ? 'Approving…' : 'Approve'}
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
+                            {agents.map((a) => {
+                                const active = a.status === 'active';
+                                const approved = !!a.agent_approved_at;
+                                const busy = busyId === a.id;
+                                return (
+                                    <tr key={a.id}>
+                                        <td className="px-4 py-3 text-gray-900">{a.name || '-'}</td>
+                                        <td className="px-4 py-3 text-gray-600">{a.email}</td>
+                                        <td className="px-4 py-3 text-gray-600">{a.phone_no ? `+${a.country_code || ''} ${a.phone_no}` : '-'}</td>
+                                        <td className="px-4 py-3"><Badge ok={approved} yes="Approved" no="Pending" /></td>
+                                        <td className="px-4 py-3"><Badge ok={active} yes="Active" no="Inactive" /></td>
+                                        <td className="px-4 py-3 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                {!active ? (
+                                                    <button type="button" disabled={busy} onClick={() => reactivate(a)} className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50">{busy ? '…' : 'Reactivate'}</button>
+                                                ) : !approved ? (
+                                                    <>
+                                                        <button type="button" disabled={busy} onClick={() => approve(a)} className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50">{busy ? '…' : 'Approve'}</button>
+                                                        <button type="button" disabled={busy} onClick={() => reject(a)} className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-600 disabled:opacity-50">Reject</button>
+                                                    </>
+                                                ) : (
+                                                    <button type="button" disabled={busy} onClick={() => deactivate(a)} className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-600 disabled:opacity-50">{busy ? '…' : 'Deactivate'}</button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
