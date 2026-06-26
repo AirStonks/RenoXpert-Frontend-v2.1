@@ -135,6 +135,7 @@ import AgentLogin from './pages/AgentPages/AgentLogin';
 import AgentOnboarding from './pages/AgentPages/AgentOnboarding';
 import AgentHome from './pages/AgentPages/AgentHome';
 import AgentDashboard from './pages/AgentPages/AgentDashboard';
+import AgentsMain from './pages/User/AgentsMain';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -251,6 +252,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/campaigns/add', element: <AddCampaign />, layout: ProtectedLayout },
         { path: '/campaigns/:id', element: <CampaignDetail />, layout: ProtectedLayout },
         { path: '/campaigns/:id/edit', element: <EditCampaign />, layout: ProtectedLayout },
+        { path: '/agents', element: <AgentsMain />, layout: ProtectedLayout },
     ],
     // Owner
     [
@@ -411,6 +413,7 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff/campaigns/add', element: <AddCampaign />, layout: ProtectedLayout },
         { path: '/staff/campaigns/:id', element: <CampaignDetail />, layout: ProtectedLayout },
         { path: '/staff/campaigns/:id/edit', element: <EditCampaign />, layout: ProtectedLayout },
+        { path: '/staff/agents', element: <AgentsMain />, layout: ProtectedLayout },
     ],
     // Owner
     [
