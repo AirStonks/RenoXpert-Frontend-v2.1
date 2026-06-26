@@ -38,10 +38,10 @@ const AgentOnboarding: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-            <form onSubmit={submit} className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-sm space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-50 px-4 py-8">
+            <form onSubmit={submit} className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4 sm:max-w-md sm:p-8">
                 <div>
-                    <h1 className="text-xl font-bold text-slate-900">Welcome — let's finish setup</h1>
+                    <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">Welcome — let's finish setup</h1>
                     <p className="mt-1 text-sm text-slate-500">A couple of details to activate your agent account.</p>
                 </div>
                 <label className="block text-sm font-medium text-slate-700">Name

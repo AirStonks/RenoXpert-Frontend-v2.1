@@ -11,9 +11,9 @@ const AgentLogin: React.FC = () => {
     const [loading, setLoading] = useState(false);
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-            <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-sm text-center">
-                <h1 className="text-xl font-bold text-slate-900">Agent Portal</h1>
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-50 px-4 py-8">
+            <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-sm text-center sm:max-w-md sm:p-8">
+                <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">Agent Portal</h1>
                 <p className="mt-1 mb-6 text-sm text-slate-500">Sign in with Google to continue</p>
                 <div className="flex justify-center">
                     <GoogleLogin
