@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { agentLogout, getAgentUser, getAgentCampaigns, AgentUser, AgentCampaign } from '../../services/agentApi';
 import AgentBrand from './AgentBrand';
+import AgentHeader from './AgentHeader';
 import { buildReferralLink, getCampaignBaseUrl } from '../../utils/referral';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/agent/' : '/';
@@ -47,8 +48,6 @@ const AgentHome: React.FC = () => {
         return () => { active = false; };
     }, [navigate]);
 
-    const signOut = () => { agentLogout(); navigate(LOCAL_PATH_PREFIX + 'login', { replace: true }); };
-
     const code = user?.referral_code || '';
     const base = getCampaignBaseUrl();
     const linkFor = (slug: string) => (code ? buildReferralLink(base, slug, code) : '');
@@ -59,28 +58,10 @@ const AgentHome: React.FC = () => {
         catch { toast.error('Copy failed.'); }
     };
 
-    const Header = () => (
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 py-4">
-            <div className="flex items-center gap-4">
-                <AgentBrand />
-                {!pending && (
-                    <nav className="flex items-center gap-3 text-sm">
-                        <span className="font-semibold text-campaign">Campaigns</span>
-                        <button type="button" onClick={() => navigate(LOCAL_PATH_PREFIX + 'dashboard')} className="text-slate-500 hover:text-slate-700">Dashboard</button>
-                    </nav>
-                )}
-            </div>
-            <div className="flex items-center gap-3">
-                {user?.name && <span className="hidden sm:inline text-sm text-slate-500">{user.name}</span>}
-                <button type="button" onClick={signOut} className="text-sm font-semibold text-slate-500 hover:text-slate-700">Sign out</button>
-            </div>
-        </header>
-    );
-
     if (pending) {
         return (
             <div className="fixed inset-0 overflow-y-auto bg-slate-50">
-                <Header />
+                <AgentHeader showNav={false} userName={user?.name} />
                 <main className="mx-auto w-full max-w-md px-4 py-16 text-center">
                     <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
                         <AgentBrand showLabel={false} className="justify-center mb-4" />
@@ -95,8 +76,8 @@ const AgentHome: React.FC = () => {
 
     return (
         <div className="fixed inset-0 overflow-y-auto bg-slate-50">
-            <Header />
-            <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6 sm:py-10">
+            <AgentHeader active="campaigns" userName={user?.name} />
+            <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 pt-6 sm:pt-10 pb-24 sm:pb-10">
                 {code && (
                     <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-4">
                         <span className="text-sm text-slate-500">Your referral code</span>
