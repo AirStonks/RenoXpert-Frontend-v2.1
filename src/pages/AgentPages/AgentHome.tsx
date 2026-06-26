@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { agentLogout, getAgentUser, getAgentCampaigns, AgentUser, AgentCampaign } from '../../services/agentApi';
+import AgentBrand from './AgentBrand';
 import { buildReferralLink, getCampaignBaseUrl } from '../../utils/referral';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/agent/' : '/';
@@ -25,6 +26,12 @@ const AgentHome: React.FC = () => {
                 return;
             }
             if (!active) return;
+            if (u && u.status && u.status !== 'active') {
+                toast.error('Your account has been deactivated.');
+                agentLogout();
+                navigate(LOCAL_PATH_PREFIX + 'login', { replace: true });
+                return;
+            }
             if (!u?.onboarded_at) { navigate(LOCAL_PATH_PREFIX + 'onboarding', { replace: true }); return; }
             setUser(u);
             if (!u.agent_approved_at) { setPending(true); setLoading(false); return; }
@@ -55,7 +62,7 @@ const AgentHome: React.FC = () => {
     const Header = () => (
         <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 py-4">
             <div className="flex items-center gap-4">
-                <span className="font-bold text-slate-900">Agent Portal</span>
+                <AgentBrand />
                 {!pending && (
                     <nav className="flex items-center gap-3 text-sm">
                         <span className="font-semibold text-campaign">Campaigns</span>
@@ -76,6 +83,7 @@ const AgentHome: React.FC = () => {
                 <Header />
                 <main className="mx-auto w-full max-w-md px-4 py-16 text-center">
                     <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+                        <AgentBrand showLabel={false} className="justify-center mb-4" />
                         <h1 className="text-xl font-bold text-slate-900">Account pending approval</h1>
                         <p className="mt-2 text-sm text-slate-500">Thanks for signing up{user?.name ? `, ${user.name}` : ''}. A RenoXpert admin will approve your agent account shortly — you'll get access to campaigns once approved.</p>
                     </div>

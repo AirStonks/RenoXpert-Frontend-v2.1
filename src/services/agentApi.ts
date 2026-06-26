@@ -8,7 +8,7 @@ const API_URL =
 
 export const getAgentAuthHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('a_token')}` });
 
-export interface AgentUser { id: number; name: string; email: string; type: string; referral_code?: string; onboarded_at?: string | null; agent_approved_at?: string | null; country_code?: string | null; phone_no?: string | null; }
+export interface AgentUser { id: number; name: string; email: string; type: string; referral_code?: string; onboarded_at?: string | null; agent_approved_at?: string | null; country_code?: string | null; phone_no?: string | null; status?: string | null; }
 
 export const agentGoogleLogin = async (credential: string): Promise<{ token: string; user: AgentUser; needs_onboarding: boolean }> => {
     const response = await axios.post(API_URL + 'agent/google-login', { credential });

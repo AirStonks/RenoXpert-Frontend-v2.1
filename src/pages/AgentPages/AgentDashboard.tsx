@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Slide, ToastContainer } from 'react-toastify';
 import { agentLogout, getAgentUser, getAgentReferrals, AgentReferrals } from '../../services/agentApi';
+import AgentBrand from './AgentBrand';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/agent/' : '/';
 const currency = (n: number | null) => 'RM ' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -20,6 +21,7 @@ const AgentDashboard: React.FC = () => {
             let u;
             try { u = await getAgentUser(); } catch { if (active) navigate(LOCAL_PATH_PREFIX + 'login', { replace: true }); return; }
             if (!active) return;
+            if (u && u.status && u.status !== 'active') { agentLogout(); navigate(LOCAL_PATH_PREFIX + 'login', { replace: true }); return; }
             if (!u?.onboarded_at) { navigate(LOCAL_PATH_PREFIX + 'onboarding', { replace: true }); return; }
             if (!u.agent_approved_at) { navigate(LOCAL_PATH_PREFIX, { replace: true }); return; }
             setName(u.name || '');
@@ -36,7 +38,7 @@ const AgentDashboard: React.FC = () => {
         <div className="fixed inset-0 overflow-y-auto bg-slate-50">
             <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 py-4">
                 <div className="flex items-center gap-4">
-                    <span className="font-bold text-slate-900">Agent Portal</span>
+                    <AgentBrand />
                     <nav className="flex items-center gap-3 text-sm">
                         <button type="button" onClick={() => navigate(LOCAL_PATH_PREFIX)} className="text-slate-500 hover:text-slate-700">Campaigns</button>
                         <span className="font-semibold text-campaign">Dashboard</span>

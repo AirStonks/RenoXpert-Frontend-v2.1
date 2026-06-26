@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { agentOnboarding, getAgentUser } from '../../services/agentApi';
+import AgentBrand from './AgentBrand';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/agent/' : '/';
 
@@ -41,6 +42,7 @@ const AgentOnboarding: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-50 px-4 py-8">
             <form onSubmit={submit} className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4 sm:max-w-md sm:p-8">
                 <div>
+                    <AgentBrand showLabel={false} className="justify-center mb-4" />
                     <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">Welcome — let's finish setup</h1>
                     <p className="mt-1 text-sm text-slate-500">A couple of details to activate your agent account.</p>
                 </div>
