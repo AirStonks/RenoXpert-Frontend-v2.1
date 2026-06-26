@@ -11,20 +11,26 @@ const AgentHome: React.FC = () => {
     const [user, setUser] = useState<AgentUser | null>(null);
     const [campaigns, setCampaigns] = useState<AgentCampaign[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(false);
 
     useEffect(() => {
         let active = true;
         (async () => {
+            let u: AgentUser;
             try {
-                const u = await getAgentUser();
-                if (!active) return;
-                if (!u?.onboarded_at) { navigate(LOCAL_PATH_PREFIX + 'onboarding', { replace: true }); return; }
-                setUser(u);
-                const list = await getAgentCampaigns();
-                if (!active) return;
-                setCampaigns(Array.isArray(list) ? list : []);
+                u = await getAgentUser();
             } catch {
                 if (active) navigate(LOCAL_PATH_PREFIX + 'login', { replace: true });
+                return;
+            }
+            if (!active) return;
+            if (!u?.onboarded_at) { navigate(LOCAL_PATH_PREFIX + 'onboarding', { replace: true }); return; }
+            setUser(u);
+            try {
+                const list = await getAgentCampaigns();
+                if (active) setCampaigns(Array.isArray(list) ? list : []);
+            } catch {
+                if (active) setLoadError(true);
             } finally {
                 if (active) setLoading(false);
             }
@@ -68,6 +74,8 @@ const AgentHome: React.FC = () => {
 
                 {loading ? (
                     <div className="py-16 text-center text-slate-400">Loading…</div>
+                ) : loadError ? (
+                    <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center text-slate-500">Couldn&apos;t load campaigns. Please refresh.</div>
                 ) : campaigns.length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center text-slate-500">No campaigns available yet.</div>
                 ) : (
