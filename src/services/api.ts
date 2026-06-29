@@ -3256,6 +3256,46 @@ export const setCampaignAgentVisibility = async (id: string | number, visible: b
     }
 };
 
+export const getAgentCampaignIds = async (agentId: number) => {
+    try {
+        const response = await axios.get(API_URL + `admin/agents/${agentId}/campaigns`, { headers: getAuthHeaders() });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
+
+export const setAgentCampaignIds = async (agentId: number, campaignIds: number[]) => {
+    try {
+        const response = await axios.put(API_URL + `admin/agents/${agentId}/campaigns`, { campaign_ids: campaignIds }, { headers: getAuthHeaders() });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
+
+export const getCampaignAgentIds = async (campaignId: number) => {
+    try {
+        const response = await axios.get(API_URL + `admin/campaigns/${campaignId}/agents`, { headers: getAuthHeaders() });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
+
+export const setCampaignAgentIds = async (campaignId: number, userIds: number[]) => {
+    try {
+        const response = await axios.put(API_URL + `admin/campaigns/${campaignId}/agents`, { user_ids: userIds }, { headers: getAuthHeaders() });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
+
 export const getAdminAgents = async () => {
     try {
         const response = await axios.get(API_URL + 'admin/agents', { headers: getAuthHeaders() });
