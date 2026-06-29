@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Slide, toast, ToastContainer } from 'react-toastify';
-import { getAdminAgents, approveAgent, setAgentStatus } from '../../services/api';
+import { getAdminAgents, approveAgent, setAgentStatus, campaignIndex, getAgentCampaignIds, setAgentCampaignIds } from '../../services/api';
+import AssignmentModal, { AssignmentItem } from './AssignmentModal';
 
 interface AdminAgent { id: number; name: string; email: string; country_code?: string | null; phone_no?: string | null; status?: string | null; onboarded_at?: string | null; agent_approved_at?: string | null; }
 
@@ -8,6 +9,47 @@ const AgentsMain: React.FC = () => {
     const [agents, setAgents] = useState<AdminAgent[]>([]);
     const [loading, setLoading] = useState(true);
     const [busyId, setBusyId] = useState<number | null>(null);
+
+    const [manageAgent, setManageAgent] = useState<AdminAgent | null>(null);
+    const [campaignItems, setCampaignItems] = useState<AssignmentItem[]>([]);
+    const [assignedCampaignIds, setAssignedCampaignIds] = useState<number[]>([]);
+    const [modalLoading, setModalLoading] = useState(false);
+    const [modalSaving, setModalSaving] = useState(false);
+
+    const openManage = async (a: AdminAgent) => {
+        setManageAgent(a);
+        setModalLoading(true);
+        setCampaignItems([]);
+        setAssignedCampaignIds([]);
+        try {
+            const [campaignsRes, assignedRes] = await Promise.all([
+                campaignIndex(1000, 1),
+                getAgentCampaignIds(a.id),
+            ]);
+            const list: Array<{ id: number | string; title?: string; status?: string }> = campaignsRes?.data || [];
+            setCampaignItems(list.map((c) => ({ id: Number(c.id), label: c.title || `Campaign #${c.id}`, sublabel: c.status || undefined })));
+            setAssignedCampaignIds((assignedRes?.data?.campaign_ids || []).map((n: number) => Number(n)));
+        } catch {
+            toast.error('Could not load campaigns.');
+            setManageAgent(null);
+        } finally {
+            setModalLoading(false);
+        }
+    };
+
+    const saveManage = async (ids: number[]) => {
+        if (!manageAgent) return;
+        setModalSaving(true);
+        try {
+            await setAgentCampaignIds(manageAgent.id, ids);
+            toast.success('Campaign access updated.');
+            setManageAgent(null);
+        } catch {
+            toast.error('Could not save campaign access.');
+        } finally {
+            setModalSaving(false);
+        }
+    };
 
     const load = async () => {
         const res = await getAdminAgents();
@@ -70,6 +112,7 @@ const AgentsMain: React.FC = () => {
                                         <td className="px-4 py-3"><Badge ok={active} yes="Active" no="Inactive" /></td>
                                         <td className="px-4 py-3 text-right">
                                             <div className="flex items-center justify-end gap-2">
+                                                <button type="button" disabled={busy} onClick={() => openManage(a)} className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 disabled:opacity-50">Campaigns</button>
                                                 {!active ? (
                                                     <button type="button" disabled={busy} onClick={() => reactivate(a)} className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50">{busy ? '…' : 'Reactivate'}</button>
                                                 ) : !approved ? (
@@ -88,6 +131,17 @@ const AgentsMain: React.FC = () => {
                         </tbody>
                     </table>
                 </div>
+            )}
+            {manageAgent && (
+                <AssignmentModal
+                    title={`Campaigns for ${manageAgent.name || manageAgent.email}`}
+                    items={campaignItems}
+                    selectedIds={assignedCampaignIds}
+                    loading={modalLoading}
+                    saving={modalSaving}
+                    onSave={saveManage}
+                    onClose={() => setManageAgent(null)}
+                />
             )}
             <ToastContainer position="top-right" transition={Slide} />
         </div>
