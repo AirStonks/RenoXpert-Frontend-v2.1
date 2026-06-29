@@ -3247,15 +3247,6 @@ export const deleteBooking = async (id: string | number) => {
     }
 };
 
-export const setCampaignAgentVisibility = async (id: string | number, visible: boolean) => {
-    try {
-        const response = await axios.patch(API_URL + `campaigns/${id}/agent-visibility`, { visible_to_agents: visible }, { headers: getAuthHeaders() });
-        return response.data;
-    } catch (error) {
-        handle401Error(error as AxiosError);
-    }
-};
-
 export const getAgentCampaignIds = async (agentId: number) => {
     try {
         const response = await axios.get(API_URL + `admin/agents/${agentId}/campaigns`, { headers: getAuthHeaders() });
