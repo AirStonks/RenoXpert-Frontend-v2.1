@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { campaignIndex, setCampaignAgentVisibility } from '../../services/api';
-import { toast } from 'react-toastify';
+import { campaignIndex } from '../../services/api';
 import { Campaign } from '../../types';
 import { 
     Plus, 
@@ -37,29 +36,6 @@ const statusConfig: Record<string, StatusConfig> = {
     ended: { label: "Ended", color: "bg-red-50 border-red-300", textColor: "text-red-600" },
 };
 
-const AgentVisibilityToggle = ({ campaign, onChanged }: { campaign: Campaign; onChanged: (id: string, v: boolean) => void }) => {
-    const [busy, setBusy] = useState(false);
-    const on = !!campaign.visible_to_agents;
-    const toggle = async () => {
-        if (busy) return;
-        setBusy(true);
-        const next = !on;
-        onChanged(campaign.id!, next); // optimistic
-        try {
-            const res = await setCampaignAgentVisibility(campaign.id!, next);
-            if (res && res.success) { toast.success('Agent visibility updated.'); }
-            else { onChanged(campaign.id!, on); toast.error((res && res.message) ? res.message : 'Failed to update agent visibility.'); }
-        } catch {
-            onChanged(campaign.id!, on); toast.error('Failed to update agent visibility.');
-        } finally { setBusy(false); }
-    };
-    return (
-        <button type="button" onClick={toggle} disabled={busy} aria-pressed={on}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${on ? 'bg-green-500' : 'bg-gray-300'} disabled:opacity-50`}>
-            <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${on ? 'translate-x-5' : 'translate-x-1'}`} />
-        </button>
-    );
-};
 
 export default function CampaignMain() {
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -168,10 +144,6 @@ export default function CampaignMain() {
         } catch (error) {
             console.error('Error deleting campaign:', error);
         }
-    };
-
-    const updateRowVisibility = (id: string, visible: boolean) => {
-        setCampaigns((prev) => prev.map((c) => (c.id === id ? { ...c, visible_to_agents: visible } : c)));
     };
 
     const totalPages = Math.ceil(totalItems / size);
@@ -304,7 +276,6 @@ export default function CampaignMain() {
                             <th className="px-6 py-4 font-semibold">End Date</th>
                             <th className="px-6 py-4 font-semibold">Slots</th>
                             <th className="px-6 py-4 font-semibold">Created</th>
-                            <th className="px-6 py-4 font-semibold">Agents</th>
                             <th className="px-6 py-4 font-semibold">Actions</th>
                         </tr>
                     </thead>
@@ -374,9 +345,6 @@ export default function CampaignMain() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <AgentVisibilityToggle campaign={campaign} onChanged={updateRowVisibility} />
-                                        </td>
-                                        <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     onClick={() => handleViewDetails(campaign.id!)}
@@ -404,7 +372,7 @@ export default function CampaignMain() {
                                     </tr>
                                     {expandedRows.includes(campaign.id!) && (
                                         <tr className="border-b">
-                                            <td colSpan={9} className="px-6 py-4">
+                                            <td colSpan={8} className="px-6 py-4">
                                                 <div className="bg-gray-50 rounded-lg p-6 transition-all duration-300 ease-in-out">
                                                     <h3 className="text-base font-semibold text-gray-800 mb-4">Campaign Details</h3>
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
