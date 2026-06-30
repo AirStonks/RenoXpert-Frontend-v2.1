@@ -67,6 +67,8 @@ const RoiBuilder: React.FC<Props> = ({ value, packages, onChange }) => {
         const mo = paybackMonths(reno, total, whole[0]);
         return mo == null ? '–' : `${mo.toFixed(1)} mo`;
     };
+    const roiCell = (r: readonly [number, number]) =>
+        m.spa_price > 0 ? fmtRange(roiPercent(r[0], m.spa_price), roiPercent(r[1], m.spa_price), (v) => v.toFixed(1) + '%') : '–';
 
     const inputCls = 'border border-gray-300 rounded-md px-2 py-1 text-sm';
 
@@ -78,6 +80,10 @@ const RoiBuilder: React.FC<Props> = ({ value, packages, onChange }) => {
             </label>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <label className="text-xs font-medium text-gray-600">Layout name
+                    <input type="text" className={`mt-1 block w-full ${inputCls}`} value={m.unit_facts.name ?? ''}
+                        onChange={(e) => patch({ unit_facts: { ...m.unit_facts, name: e.target.value } })} />
+                </label>
                 <label className="text-xs font-medium text-gray-600">SPA price (RM)
                     <input type="number" className={`mt-1 block w-full ${inputCls}`} value={m.spa_price}
                         onChange={(e) => patch({ spa_price: Number(e.target.value) || 0 })} />
@@ -97,6 +103,21 @@ const RoiBuilder: React.FC<Props> = ({ value, packages, onChange }) => {
                 <label className="text-xs font-medium text-gray-600">Beds / baths
                     <input type="text" className={`mt-1 block w-full ${inputCls}`} value={m.unit_facts.beds_baths ?? ''}
                         onChange={(e) => patch({ unit_facts: { ...m.unit_facts, beds_baths: e.target.value } })} />
+                </label>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+                <label className="text-xs font-medium text-gray-600">Occupancy — Worst %
+                    <input type="number" className={`mt-1 block w-full ${inputCls}`} value={m.occupancy_steps.worst}
+                        onChange={(e) => patch({ occupancy_steps: { ...m.occupancy_steps, worst: Number(e.target.value) || 0 } })} />
+                </label>
+                <label className="text-xs font-medium text-gray-600">Normal %
+                    <input type="number" className={`mt-1 block w-full ${inputCls}`} value={m.occupancy_steps.normal}
+                        onChange={(e) => patch({ occupancy_steps: { ...m.occupancy_steps, normal: Number(e.target.value) || 0 } })} />
+                </label>
+                <label className="text-xs font-medium text-gray-600">Best %
+                    <input type="number" className={`mt-1 block w-full ${inputCls}`} value={m.occupancy_steps.best}
+                        onChange={(e) => patch({ occupancy_steps: { ...m.occupancy_steps, best: Number(e.target.value) || 0 } })} />
                 </label>
             </div>
 
@@ -154,6 +175,11 @@ const RoiBuilder: React.FC<Props> = ({ value, packages, onChange }) => {
                 </label>
             </div>
 
+            <label className="block text-xs font-medium text-gray-600">Disclaimers (one per line)
+                <textarea rows={2} className={`mt-1 block w-full ${inputCls}`} value={m.disclaimers.join('\n')}
+                    onChange={(e) => patch({ disclaimers: e.target.value.split('\n').filter((s) => s.trim()) })} />
+            </label>
+
             <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
                 <h5 className="text-xs font-semibold text-gray-500 uppercase mb-2">Preview @100% occupancy</h5>
                 <table className="w-full text-sm text-right">
@@ -161,9 +187,9 @@ const RoiBuilder: React.FC<Props> = ({ value, packages, onChange }) => {
                     <tbody>
                         <tr><td className="text-left font-semibold">Total/mo</td><td>{fmtRange(whole[0], whole[1], money)}</td><td>{fmtRange(co[0], co[1], money)}</td>{hasPart && <td>{fmtRange(opt[0], opt[1], money)}</td>}</tr>
                         <tr className="text-red-600 font-semibold"><td className="text-left">ROI %</td>
-                            <td>{fmtRange(roiPercent(whole[0], m.spa_price), roiPercent(whole[1], m.spa_price), (v) => v.toFixed(1) + '%')}</td>
-                            <td>{fmtRange(roiPercent(co[0], m.spa_price), roiPercent(co[1], m.spa_price), (v) => v.toFixed(1) + '%')}</td>
-                            {hasPart && <td>{fmtRange(roiPercent(opt[0], m.spa_price), roiPercent(opt[1], m.spa_price), (v) => v.toFixed(1) + '%')}</td>}</tr>
+                            <td>{roiCell(whole)}</td>
+                            <td>{roiCell(co)}</td>
+                            {hasPart && <td>{roiCell(opt)}</td>}</tr>
                         <tr className="text-gray-500"><td className="text-left">Payback</td><td>–</td><td>{pay(co[0], priceOf(m.packages.without_partition))}</td>{hasPart && <td>{pay(opt[0], priceOf(m.packages.with_partition))}</td>}</tr>
                     </tbody>
                 </table>
