@@ -1623,6 +1623,26 @@ export interface ApiKeyUpdateRequest {
     expires_at?: string;
 }
 
+export interface RoiRoom {
+    id: string;
+    label: string;
+    amount: number;
+    mode: 'fixed' | 'pm';
+    partition: boolean;
+}
+
+export interface RoiCalculator {
+    enabled: boolean;
+    spa_price: number;
+    unit_facts: { name?: string; size?: string; beds_baths?: string };
+    pm_spread: number;
+    occupancy_steps: { worst: number; normal: number; best: number };
+    whole_unit: { amount: number };
+    rooms: RoiRoom[];
+    packages: { without_partition: number | null; with_partition: number | null };
+    disclaimers: string[];
+}
+
 export interface CampaignLayoutType {
     id?: number | string;
     campaign_id?: number | string;
@@ -1632,6 +1652,7 @@ export interface CampaignLayoutType {
     rental_projection?: Attachment | null;
     layout_thumbnail?: Attachment | null;
     rendering_images?: Attachment[] | null;
+    roi_calculator?: RoiCalculator | null;
 }
 
 export interface Campaign {
