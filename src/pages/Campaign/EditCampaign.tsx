@@ -30,7 +30,9 @@ import {
     deleteCampaignLayoutTypeRendering,
 } from '../../services/api';
 import useFetchCampaign from '../../hook/useFetchCampaign';
-import { Attachment, CampaignLayoutType, CampaignPackage, Order } from '../../types';
+import { Attachment, CampaignLayoutType, CampaignPackage, Order, RoiCalculator } from '../../types';
+import RoiBuilder, { RoiPackageOption } from './RoiBuilder';
+import { getQuotationTotal } from '../../utils/quotationPricing';
 import {
     DndContext,
     closestCenter,
@@ -98,7 +100,7 @@ export default function EditCampaign() {
 
     // Layout Type state (nested-under-layouts UX; off = today's flat behavior)
     const [useLayoutTypes, setUseLayoutTypes] = useState<boolean>(false);
-    const [layoutTypes, setLayoutTypes] = useState<{ id?: number | string; name: string; description?: string }[]>([]);
+    const [layoutTypes, setLayoutTypes] = useState<{ id?: number | string; name: string; description?: string; roi_calculator?: RoiCalculator | null }[]>([]);
     const [packageLayoutIndex, setPackageLayoutIndex] = useState<Record<number, number>>({});
     const [layoutProjectionUrl, setLayoutProjectionUrl] = useState<Record<number, string | null>>({});
     const [layoutThumbnailUrl, setLayoutThumbnailUrl] = useState<Record<number, string | null>>({});
@@ -179,7 +181,7 @@ export default function EditCampaign() {
             // Load existing layout types (images come from campaign.layout_types, NOT packages)
             if (campaign.layout_types && campaign.layout_types.length > 0) {
                 setUseLayoutTypes(true);
-                setLayoutTypes(campaign.layout_types.map((lt) => ({ id: lt.id, name: lt.name || '', description: lt.description || '' })));
+                setLayoutTypes(campaign.layout_types.map((lt) => ({ id: lt.id, name: lt.name || '', description: lt.description || '', roi_calculator: lt.roi_calculator ?? null })));
 
                 const projUrls: Record<number, string | null> = {};
                 const thumbUrls: Record<number, string | null> = {};
@@ -473,6 +475,10 @@ export default function EditCampaign() {
 
     const updateLayoutType = (idx: number, field: 'name' | 'description', value: string) => {
         setLayoutTypes(prev => prev.map((lt, i) => (i === idx ? { ...lt, [field]: value } : lt)));
+    };
+
+    const setLayoutRoi = (idx: number, value: RoiCalculator) => {
+        setLayoutTypes(prev => prev.map((lt, i) => (i === idx ? { ...lt, roi_calculator: value } : lt)));
     };
 
     const removeLayoutType = (idx: number) => {
@@ -855,7 +861,7 @@ export default function EditCampaign() {
                 packages: campaignMode === 'packages' ? processedPackages : undefined,
                 // Nested layout types (only when the toggle is on)
                 layout_types: (campaignMode === 'packages' && useLayoutTypes)
-                    ? layoutTypes.map((lt, i) => ({ id: lt.id, name: lt.name, description: lt.description ?? '', sort: i }))
+                    ? layoutTypes.map((lt, i) => ({ id: lt.id, name: lt.name, description: lt.description ?? '', sort: i, roi_calculator: lt.roi_calculator ?? null }))
                     : undefined,
                 // Package-level template linkage only
                 order_id: undefined as string | undefined,
@@ -1959,6 +1965,19 @@ export default function EditCampaign() {
                                                         </ul>
                                                     )}
                                                 </FileDropzone>
+
+                                                {/* ROI Calculator */}
+                                                <div className="space-y-3 pt-2 border-t border-indigo-200">
+                                                    <h4 className="text-sm font-semibold text-gray-900">ROI Calculator</h4>
+                                                    <RoiBuilder
+                                                        value={layoutTypes[layoutIdx]?.roi_calculator ?? null}
+                                                        packages={packages
+                                                            .map((pkg, index) => ({ pkg, index }))
+                                                            .filter(({ index, pkg }) => packageLayoutIndex[index] === layoutIdx && pkg.id != null)
+                                                            .map(({ pkg }): RoiPackageOption => ({ id: Number(pkg.id), label: pkg.name || `Package #${pkg.id}`, price: getQuotationTotal(pkg.order ?? null) }))}
+                                                        onChange={(next) => setLayoutRoi(layoutIdx, next)}
+                                                    />
+                                                </div>
 
                                                 {/* Sub-packages for this layout */}
                                                 <div className="space-y-4 pt-2 border-t border-indigo-200">
