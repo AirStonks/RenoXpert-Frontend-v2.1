@@ -7,6 +7,8 @@ import type { Campaign, CampaignPackage, Order, OrderQuotation, Package, Product
 import { captureReferralFromUrl } from '../../utils/referral';
 import { getRenoSubscriptionFixedOverrideNettAmount } from '../../utils/renoSubscription';
 import { getQuotationPackagePrice } from '../../utils/quotationPricing';
+import { getQuotationTotal } from '../../utils/quotationPricing';
+import RoiCalculatorDrawer, { RoiCalcPackage } from './components/RoiCalculatorDrawer';
 import { Card } from './components/Card';
 import { Tabs } from './components/Tabs';
 import { AccordionItem } from './components/AccordionItem';
@@ -101,6 +103,10 @@ export default function CampaignPackageDetailPage() {
         const found = pkgs.find((p) => String(p.id) === String(campaignPackageId));
         return found || null;
     }, [campaign?.packages, campaignPackageId]);
+
+    const roiLayoutTypeId = selectedCampaignPackage?.layout_type_id;
+    const roiLayout = (campaign?.layout_types ?? []).find((lt) => String(lt.id) === String(roiLayoutTypeId)) ?? null;
+    const roiLayoutPackages = (campaign?.packages ?? []).filter((p) => String(p.layout_type_id) === String(roiLayoutTypeId));
 
     const templateOrder: TemplateOrderLike | null = useMemo(() => {
         return (selectedCampaignPackage?.order as TemplateOrderLike | undefined) || null;
@@ -1122,6 +1128,12 @@ export default function CampaignPackageDetailPage() {
                         </div>
                     )}
                 </div>
+            )}
+            {roiLayout?.roi_calculator && roiLayout.roi_calculator.enabled && (
+                <RoiCalculatorDrawer
+                    roi={roiLayout.roi_calculator}
+                    packages={roiLayoutPackages.map((p): RoiCalcPackage => ({ id: Number(p.id), name: p.name ?? '', price: getQuotationTotal(p.order as Order | undefined) }))}
+                />
             )}
         </div>
     );
