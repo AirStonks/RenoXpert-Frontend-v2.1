@@ -27,6 +27,7 @@ import { Card } from './components/Card';
 import { Field } from './components/Field';
 import { Pill } from './components/Pill';
 import { CampaignHeader } from './components/CampaignHeader';
+import RoiCalculatorDrawer, { RoiCalcPackage } from './components/RoiCalculatorDrawer';
 
 const formatRM = (value: number): string =>
     value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -661,6 +662,12 @@ const CampaignLayoutDetailPage = () => {
                 </div>
             )}
 
+                {layout.roi_calculator && layout.roi_calculator.enabled && (
+                    <RoiCalculatorDrawer
+                        roi={layout.roi_calculator}
+                        packages={layoutPackages.map((p): RoiCalcPackage => ({ id: Number(p.id), name: p.name ?? '', price: getQuotationTotal(p.order as Order | undefined) }))}
+                    />
+                )}
             <ToastContainer />
         </div>
     );
