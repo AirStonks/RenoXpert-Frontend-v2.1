@@ -3030,10 +3030,13 @@ export const createCampaign = async (campaignData: any) => {
                 });
             } else if (key === 'layout_types' && campaignData[key]) {
                 // Handle layout_types array
-                (campaignData[key] as Record<string, string | Blob>[]).forEach((lt, index: number) => {
+                (campaignData[key] as Record<string, unknown>[]).forEach((lt, index: number) => {
                     Object.keys(lt).forEach(ltKey => {
-                        if (lt[ltKey] !== null && lt[ltKey] !== undefined) {
-                            formData.append(`layout_types[${index}][${ltKey}]`, lt[ltKey]);
+                        const v = lt[ltKey];
+                        if (v !== null && v !== undefined) {
+                            // Nested objects (e.g. roi_calculator) can't ride in FormData as-is
+                            // (they coerce to "[object Object]") — JSON-encode them; the backend decodes.
+                            formData.append(`layout_types[${index}][${ltKey}]`, typeof v === 'object' ? JSON.stringify(v) : (v as string | Blob));
                         }
                     });
                 });
@@ -3077,10 +3080,13 @@ export const updateCampaign = async (id: string | number, campaignData: any) => 
                 });
             } else if (key === 'layout_types' && campaignData[key]) {
                 // Handle layout_types array
-                (campaignData[key] as Record<string, string | Blob>[]).forEach((lt, index: number) => {
+                (campaignData[key] as Record<string, unknown>[]).forEach((lt, index: number) => {
                     Object.keys(lt).forEach(ltKey => {
-                        if (lt[ltKey] !== null && lt[ltKey] !== undefined) {
-                            formData.append(`layout_types[${index}][${ltKey}]`, lt[ltKey]);
+                        const v = lt[ltKey];
+                        if (v !== null && v !== undefined) {
+                            // Nested objects (e.g. roi_calculator) can't ride in FormData as-is
+                            // (they coerce to "[object Object]") — JSON-encode them; the backend decodes.
+                            formData.append(`layout_types[${index}][${ltKey}]`, typeof v === 'object' ? JSON.stringify(v) : (v as string | Blob));
                         }
                     });
                 });
