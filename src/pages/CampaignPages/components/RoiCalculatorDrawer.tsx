@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calculator, X } from 'lucide-react';
 import type { RoiCalculator } from '../../../types';
 import { scenarioMonthlyRange, roiPercent, annual, paybackMonths, roomRange, hasPartition } from '../../../utils/roiCalculator';
@@ -22,6 +22,14 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
     const [partition, setPartition] = useState<'no' | 'yes'>(part ? 'yes' : 'no');
     const [occ, setOcc] = useState<number>(roi.occupancy_steps.normal);
     const [spa, setSpa] = useState<number>(roi.spa_price);
+
+    // Close on Escape while the drawer is open.
+    useEffect(() => {
+        if (!open) return;
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [open]);
 
     const pkgById = (id: number | null) => (id == null ? null : packages.find((p) => p.id === id) ?? null);
     const active: RoiScenario = strategy === 'whole' ? 'whole' : (part && partition === 'yes' ? 'opt' : 'co');
@@ -61,18 +69,21 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
             </button>
 
             {open && (
-                <div className="fixed inset-0 z-50 bg-black/40" onClick={() => setOpen(false)} role="dialog" aria-modal="true" aria-label="ROI Calculator">
+                <div className="fixed inset-0 z-50 bg-black/40" onClick={() => setOpen(false)}>
                     {/* Mobile: bottom sheet · Desktop: right side panel */}
                     <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="ROI Calculator"
                         className="absolute inset-x-0 bottom-0 flex h-[92dvh] flex-col rounded-t-2xl bg-white shadow-xl sm:inset-y-0 sm:left-auto sm:right-0 sm:h-full sm:w-full sm:max-w-lg sm:rounded-none"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
                             <div>
                                 <h2 className="text-lg font-bold text-slate-900">ROI Calculator</h2>
-                                {(roi.unit_facts.size || roi.unit_facts.beds_baths) && (
+                                {(roi.unit_facts?.size || roi.unit_facts?.beds_baths) && (
                                     <p className="text-xs text-slate-400">
-                                        {[roi.unit_facts.size, roi.unit_facts.beds_baths].filter(Boolean).join(' · ')}
+                                        {[roi.unit_facts?.size, roi.unit_facts?.beds_baths].filter(Boolean).join(' · ')}
                                     </p>
                                 )}
                             </div>
