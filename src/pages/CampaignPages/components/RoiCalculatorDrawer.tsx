@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Calculator, X } from 'lucide-react';
 import type { RoiCalculator } from '../../../types';
 import { scenarioMonthlyRange, roiPercent, annual, paybackMonths, roomRange, hasPartition } from '../../../utils/roiCalculator';
 import type { RoiScenario } from '../../../utils/roiCalculator';
@@ -22,13 +23,21 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
     const [occ, setOcc] = useState<number>(roi.occupancy_steps.normal);
     const [spa, setSpa] = useState<number>(roi.spa_price);
 
+    // Close on Escape while the drawer is open.
+    useEffect(() => {
+        if (!open) return;
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [open]);
+
     const pkgById = (id: number | null) => (id == null ? null : packages.find((p) => p.id === id) ?? null);
     const active: RoiScenario = strategy === 'whole' ? 'whole' : (part && partition === 'yes' ? 'opt' : 'co');
 
     const cols: { key: RoiScenario; label: string }[] = [
         { key: 'whole', label: 'Whole Unit' },
         { key: 'co', label: 'Co-Living' },
-        ...(part ? [{ key: 'opt' as RoiScenario, label: 'Optimized Co-Living' }] : []),
+        ...(part ? [{ key: 'opt' as RoiScenario, label: 'Optimized' }] : []),
     ];
     const totals: Record<string, [number, number]> = {};
     cols.forEach((c) => { totals[c.key] = scenarioMonthlyRange(roi, c.key, occ); });
@@ -41,142 +50,176 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
     const diffM: [number, number] = [t[0] - wholeM, t[1] - wholeM];
     const months = renoPkg ? paybackMonths(renoPkg.price, t[0], wholeM) : null;
 
-    const seg = (on: boolean) => `flex-1 px-3 py-2 text-sm font-semibold ${on ? 'bg-campaign text-white' : 'bg-white text-slate-500'}`;
+    const seg = (on: boolean) =>
+        `flex-1 px-2 py-2.5 text-sm font-semibold transition-colors ${on ? 'bg-campaign text-white' : 'bg-white text-slate-500 hover:text-slate-700'}`;
     const featCell = (on: boolean) => (on ? 'bg-rose-50' : '');
     const roiCell = (r: [number, number]) =>
         spa > 0 ? fmtRange(roiPercent(r[0], spa), roiPercent(r[1], spa), (v) => v.toFixed(1) + '%') : '–';
 
     return (
         <>
+            {/* Floating button — lifted above the lg:hidden sticky bottom bar on mobile */}
             <button
                 type="button"
                 onClick={() => setOpen(true)}
-                className="fixed bottom-5 right-5 z-40 rounded-full bg-campaign px-5 py-3 text-sm font-bold text-white shadow-lg hover:opacity-90"
+                aria-label="ROI Calculator"
+                className="fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-campaign text-white shadow-xl transition-transform hover:scale-105 lg:bottom-6 lg:right-6"
             >
-                ROI Calculator
+                <Calculator className="h-6 w-6" />
             </button>
 
             {open && (
-                <div className="fixed inset-0 z-50 flex justify-end bg-black/40" onClick={() => setOpen(false)}>
-                    <div className="h-full w-full max-w-md overflow-y-auto bg-white p-5 shadow-xl sm:p-6" onClick={(e) => e.stopPropagation()}>
-                        <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-lg font-bold text-slate-900">ROI Calculator</h2>
-                            <button type="button" onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600" aria-label="Close">✕</button>
+                <div className="fixed inset-0 z-50 bg-black/40" onClick={() => setOpen(false)}>
+                    {/* Mobile: bottom sheet · Desktop: right side panel */}
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="ROI Calculator"
+                        className="absolute inset-x-0 bottom-0 flex h-[92dvh] flex-col rounded-t-2xl bg-white shadow-xl sm:inset-y-0 sm:left-auto sm:right-0 sm:h-full sm:w-full sm:max-w-lg sm:rounded-none"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
+                            <div>
+                                <h2 className="text-lg font-bold text-slate-900">ROI Calculator</h2>
+                                {(roi.unit_facts?.size || roi.unit_facts?.beds_baths) && (
+                                    <p className="text-xs text-slate-400">
+                                        {[roi.unit_facts?.size, roi.unit_facts?.beds_baths].filter(Boolean).join(' · ')}
+                                    </p>
+                                )}
+                            </div>
+                            <button type="button" onClick={() => setOpen(false)} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="Close">
+                                <X className="h-5 w-5" />
+                            </button>
                         </div>
 
-                        <div className="space-y-3">
-                            <div>
-                                <label className="mb-1 block text-xs font-semibold text-slate-600">Rental strategy</label>
-                                <div className="flex overflow-hidden rounded-lg border border-slate-200">
-                                    <button type="button" className={seg(strategy === 'whole')} onClick={() => setStrategy('whole')}>Whole Unit</button>
-                                    <button type="button" className={seg(strategy === 'co')} onClick={() => setStrategy('co')}>Co-Living</button>
-                                </div>
-                            </div>
-                            {strategy === 'co' && part && (
+                        <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
+                            {/* Controls */}
+                            <div className="space-y-4">
                                 <div>
-                                    <label className="mb-1 block text-xs font-semibold text-slate-600">Renovation</label>
-                                    <div className="flex overflow-hidden rounded-lg border border-slate-200">
-                                        <button type="button" className={seg(partition === 'no')} onClick={() => setPartition('no')}>W/o partition</button>
-                                        <button type="button" className={seg(partition === 'yes')} onClick={() => setPartition('yes')}>With partition</button>
+                                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">Rental strategy</label>
+                                    <div className="flex divide-x divide-slate-200 overflow-hidden rounded-xl border border-slate-200">
+                                        <button type="button" className={seg(strategy === 'whole')} onClick={() => setStrategy('whole')}>Whole Unit</button>
+                                        <button type="button" className={seg(strategy === 'co')} onClick={() => setStrategy('co')}>Co-Living</button>
                                     </div>
                                 </div>
-                            )}
-                            <div>
-                                <label className="mb-1 block text-xs font-semibold text-slate-600">Occupancy</label>
-                                <div className="flex overflow-hidden rounded-lg border border-slate-200">
-                                    {([['Worst', roi.occupancy_steps.worst], ['Normal', roi.occupancy_steps.normal], ['Best', roi.occupancy_steps.best]] as [string, number][]).map(([lbl, val]) => (
-                                        <button key={lbl} type="button" className={seg(occ === val)} onClick={() => setOcc(val)}>{lbl} {val}%</button>
-                                    ))}
+                                {strategy === 'co' && part && (
+                                    <div>
+                                        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">Renovation</label>
+                                        <div className="flex divide-x divide-slate-200 overflow-hidden rounded-xl border border-slate-200">
+                                            <button type="button" className={seg(partition === 'no')} onClick={() => setPartition('no')}>W/o partition</button>
+                                            <button type="button" className={seg(partition === 'yes')} onClick={() => setPartition('yes')}>With partition</button>
+                                        </div>
+                                    </div>
+                                )}
+                                <div>
+                                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">Occupancy</label>
+                                    <div className="flex divide-x divide-slate-200 overflow-hidden rounded-xl border border-slate-200">
+                                        {([['Worst', roi.occupancy_steps.worst], ['Normal', roi.occupancy_steps.normal], ['Best', roi.occupancy_steps.best]] as [string, number][]).map(([lbl, val]) => (
+                                            <button key={lbl} type="button" className={seg(occ === val)} onClick={() => setOcc(val)}>
+                                                <span className="block leading-tight">{lbl}</span>
+                                                <span className={`block text-[11px] leading-tight ${occ === val ? 'text-white/80' : 'text-slate-400'}`}>{val}%</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">Purchase price (SPA)</label>
+                                    <input type="number" value={spa} onChange={(e) => setSpa(Number(e.target.value) || 0)}
+                                        className="block w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-semibold text-slate-900" />
                                 </div>
                             </div>
-                            <div>
-                                <label className="mb-1 block text-xs font-semibold text-slate-600">Purchase price (SPA)</label>
-                                <input type="number" value={spa} onChange={(e) => setSpa(Number(e.target.value) || 0)}
-                                    className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+
+                            {/* Profit -> Difference -> Cost emphasis band */}
+                            <div className="rounded-2xl border border-slate-200 p-4 sm:p-5">
+                                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                                    <span className="w-full text-[10px] font-bold uppercase tracking-wider text-slate-400 sm:w-20">Profit</span>
+                                    <span className="text-3xl font-extrabold leading-none text-green-600">{fmtRange(profA[0], profA[1], money)}</span>
+                                    <span className="text-xs text-slate-400">{fmtRange(t[0], t[1], money)}/mo · per year</span>
+                                </div>
+                                <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-dashed border-slate-200 pt-3">
+                                    <span className="w-full text-[10px] font-bold uppercase tracking-wider text-slate-400 sm:w-20">Difference</span>
+                                    {active === 'whole'
+                                        ? <span className="text-xl font-extrabold text-slate-400">Baseline</span>
+                                        : (<>
+                                            <span className="text-xl font-extrabold text-campaign">+{fmtRange(annual(diffM[0]), annual(diffM[1]), money)}</span>
+                                            <span className="text-xs text-slate-400">+{fmtRange(diffM[0], diffM[1], money)}/mo vs whole unit</span>
+                                        </>)}
+                                </div>
+                                <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-dashed border-slate-200 pt-3">
+                                    <span className="w-full text-[10px] font-bold uppercase tracking-wider text-slate-400 sm:w-20">Cost</span>
+                                    {renoPkg
+                                        ? (<>
+                                            <span className="text-sm font-bold text-slate-900">{money(renoPkg.price)}</span>
+                                            <span className="text-xs text-slate-400">{months != null ? `pays back in ${months.toFixed(1)} mo` : 'one-time renovation'}</span>
+                                        </>)
+                                        : <span className="text-sm font-bold text-slate-400">–</span>}
+                                </div>
                             </div>
+
+                            {/* Always-on comparison table */}
+                            <div className="overflow-hidden rounded-2xl border border-slate-200">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full min-w-[420px] text-right text-[13px]">
+                                        <thead>
+                                            <tr className="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-400">
+                                                <th className="px-3 py-2.5 text-left font-bold">Condo</th>
+                                                {cols.map((c) => (
+                                                    <th key={c.key} className={`px-3 py-2.5 font-bold ${c.key === active ? 'text-campaign' : ''}`}>
+                                                        {c.label}{c.key === active ? ' ★' : ''}
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {roi.rooms.map((rm, i) => (
+                                                <tr key={rm.id} className="border-t border-slate-100">
+                                                    <td className="px-3 py-2.5 text-left text-slate-700">{rm.label}</td>
+                                                    {cols.map((c) => {
+                                                        if (c.key === 'whole') {
+                                                            return i === 0
+                                                                ? <td key={c.key} rowSpan={roi.rooms.length} className={`px-3 text-center align-middle font-semibold ${featCell(active === 'whole')}`}>{money(roi.whole_unit.amount)}<div className="text-[10px] font-normal text-slate-400">whole unit</div></td>
+                                                                : null;
+                                                        }
+                                                        const show = c.key === 'opt' ? true : !rm.partition;
+                                                        if (!show) return <td key={c.key} className={`px-3 py-2.5 ${featCell(c.key === active)}`}><span className="text-slate-300">–</span></td>;
+                                                        const [lo, hi] = roomRange(rm, roi.pm_spread);
+                                                        return <td key={c.key} className={`whitespace-nowrap px-3 py-2.5 ${featCell(c.key === active)}`}>{fmtRange(lo, hi, money)}</td>;
+                                                    })}
+                                                </tr>
+                                            ))}
+                                            <tr className="border-t-2 border-slate-300 font-extrabold">
+                                                <td className="px-3 py-2.5 text-left">Total / month</td>
+                                                {cols.map((c) => <td key={c.key} className={`whitespace-nowrap px-3 py-2.5 ${featCell(c.key === active)}`}>{fmtRange(totals[c.key][0], totals[c.key][1], money)}</td>)}
+                                            </tr>
+                                            <tr className="font-extrabold text-campaign">
+                                                <td className="px-3 py-2.5 text-left">ROI %</td>
+                                                {cols.map((c) => <td key={c.key} className={`whitespace-nowrap px-3 py-2.5 ${featCell(c.key === active)}`}>{roiCell(totals[c.key])}</td>)}
+                                            </tr>
+                                            <tr className="border-b-0 font-semibold text-slate-500">
+                                                <td className="px-3 py-2.5 text-left">Annual income</td>
+                                                {cols.map((c) => <td key={c.key} className={`whitespace-nowrap px-3 py-2.5 ${featCell(c.key === active)}`}>{fmtRange(annual(totals[c.key][0]), annual(totals[c.key][1]), money)}</td>)}
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {renoPkg && (
+                                <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5">
+                                    <div>
+                                        <p className="text-sm font-semibold text-slate-800">{renoPkg.name}</p>
+                                        <p className="text-xs text-slate-400">Renovation package</p>
+                                    </div>
+                                    <span className="whitespace-nowrap text-base font-extrabold text-campaign">{money(renoPkg.price)}</span>
+                                </div>
+                            )}
+
+                            {roi.disclaimers.length > 0 && (
+                                <ul className="space-y-1 text-[11px] leading-relaxed text-slate-400">
+                                    {roi.disclaimers.map((d, i) => <li key={i}>* {d}</li>)}
+                                </ul>
+                            )}
                         </div>
-
-                        {/* Profit -> Difference -> Cost emphasis band */}
-                        <div className="my-4 rounded-xl border border-slate-200 p-4">
-                            <div className="flex flex-wrap items-baseline gap-2">
-                                <span className="w-20 text-[10px] font-bold uppercase tracking-wide text-slate-400">Profit</span>
-                                <span className="text-2xl font-extrabold text-green-600">{fmtRange(profA[0], profA[1], money)}</span>
-                                <span className="text-xs text-slate-400">{fmtRange(t[0], t[1], money)}/mo · per year</span>
-                            </div>
-                            <div className="mt-2 flex flex-wrap items-baseline gap-2 border-t border-dashed border-slate-200 pt-2">
-                                <span className="w-20 text-[10px] font-bold uppercase tracking-wide text-slate-400">Difference</span>
-                                {active === 'whole'
-                                    ? <span className="text-lg font-extrabold text-slate-400">Baseline</span>
-                                    : (<>
-                                        <span className="text-lg font-extrabold text-campaign">+{fmtRange(annual(diffM[0]), annual(diffM[1]), money)}</span>
-                                        <span className="text-xs text-slate-400">+{fmtRange(diffM[0], diffM[1], money)}/mo vs whole unit</span>
-                                    </>)}
-                            </div>
-                            <div className="mt-2 flex flex-wrap items-baseline gap-2 border-t border-dashed border-slate-200 pt-2">
-                                <span className="w-20 text-[10px] font-bold uppercase tracking-wide text-slate-400">Cost</span>
-                                {renoPkg
-                                    ? (<>
-                                        <span className="text-sm font-bold text-slate-900">{money(renoPkg.price)}</span>
-                                        <span className="text-xs text-slate-400">{months != null ? `pays back in ${months.toFixed(1)} mo` : 'one-time renovation'}</span>
-                                    </>)
-                                    : <span className="text-sm font-bold text-slate-400">–</span>}
-                            </div>
-                        </div>
-
-                        {/* Always-on comparison table */}
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-right text-sm">
-                                <thead>
-                                    <tr className="text-[11px] uppercase text-slate-400">
-                                        <th className="text-left">Condo</th>
-                                        {cols.map((c) => <th key={c.key} className={c.key === active ? 'text-campaign' : ''}>{c.label}{c.key === active ? ' ★' : ''}</th>)}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {roi.rooms.map((rm, i) => (
-                                        <tr key={rm.id} className="border-t border-slate-100">
-                                            <td className="py-2 text-left text-slate-700">{rm.label}</td>
-                                            {cols.map((c) => {
-                                                if (c.key === 'whole') {
-                                                    return i === 0
-                                                        ? <td key={c.key} rowSpan={roi.rooms.length} className={`align-middle text-center font-semibold ${featCell(active === 'whole')}`}>{money(roi.whole_unit.amount)}<div className="text-[10px] font-normal text-slate-400">whole unit</div></td>
-                                                        : null;
-                                                }
-                                                const show = c.key === 'opt' ? true : !rm.partition;
-                                                if (!show) return <td key={c.key} className={featCell(c.key === active)}><span className="text-slate-300">–</span></td>;
-                                                const [lo, hi] = roomRange(rm, roi.pm_spread);
-                                                return <td key={c.key} className={featCell(c.key === active)}>{fmtRange(lo, hi, money)}</td>;
-                                            })}
-                                        </tr>
-                                    ))}
-                                    <tr className="border-t-2 border-slate-800 font-extrabold">
-                                        <td className="py-2 text-left">Total / month</td>
-                                        {cols.map((c) => <td key={c.key} className={featCell(c.key === active)}>{fmtRange(totals[c.key][0], totals[c.key][1], money)}</td>)}
-                                    </tr>
-                                    <tr className="font-extrabold text-campaign">
-                                        <td className="text-left">ROI %</td>
-                                        {cols.map((c) => <td key={c.key} className={featCell(c.key === active)}>{roiCell(totals[c.key])}</td>)}
-                                    </tr>
-                                    <tr className="font-semibold text-slate-500">
-                                        <td className="text-left">Annual income</td>
-                                        {cols.map((c) => <td key={c.key} className={featCell(c.key === active)}>{fmtRange(annual(totals[c.key][0]), annual(totals[c.key][1]), money)}</td>)}
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {renoPkg && (
-                            <div className="mt-3 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3">
-                                <span className="text-sm font-semibold text-slate-700">{renoPkg.name}</span>
-                                <span className="text-sm font-extrabold text-campaign">{money(renoPkg.price)}</span>
-                            </div>
-                        )}
-
-                        {roi.disclaimers.length > 0 && (
-                            <ul className="mt-3 space-y-1 text-[11px] text-slate-400">
-                                {roi.disclaimers.map((d, i) => <li key={i}>* {d}</li>)}
-                            </ul>
-                        )}
                     </div>
                 </div>
             )}
