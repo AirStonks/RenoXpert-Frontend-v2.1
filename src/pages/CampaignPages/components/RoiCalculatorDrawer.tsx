@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Calculator, X } from 'lucide-react';
 import type { RoiCalculator } from '../../../types';
 import { scenarioMonthlyRange, roiPercent, annual, paybackMonths, roomRange, hasPartition } from '../../../utils/roiCalculator';
@@ -15,21 +15,37 @@ const money = (n: number) => 'RM' + Math.round(n).toLocaleString('en-MY');
 const fmtRange = (lo: number, hi: number, f: (n: number) => string) =>
     Math.round(lo) === Math.round(hi) ? f(lo) : `${f(lo)} - ${f(hi)}`;
 
+const ANIM_MS = 300;
+
 const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
     const part = hasPartition(roi);
     const [open, setOpen] = useState(false);
+    const [shown, setShown] = useState(false); // drives the enter/leave transition classes
     const [strategy, setStrategy] = useState<'whole' | 'co'>('co');
     const [partition, setPartition] = useState<'no' | 'yes'>(part ? 'yes' : 'no');
     const [occ, setOcc] = useState<number>(roi.occupancy_steps.normal);
     const [spa, setSpa] = useState<number>(roi.spa_price);
 
-    // Close on Escape while the drawer is open.
+    // Animate in on mount: flip the transition classes one frame after the modal mounts.
     useEffect(() => {
         if (!open) return;
-        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+        const id = requestAnimationFrame(() => setShown(true));
+        return () => cancelAnimationFrame(id);
+    }, [open]);
+
+    // Animate out, then unmount.
+    const close = useCallback(() => {
+        setShown(false);
+        window.setTimeout(() => setOpen(false), ANIM_MS);
+    }, []);
+
+    // Close on Escape while open.
+    useEffect(() => {
+        if (!open) return;
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
-    }, [open]);
+    }, [open, close]);
 
     const pkgById = (id: number | null) => (id == null ? null : packages.find((p) => p.id === id) ?? null);
     const active: RoiScenario = strategy === 'whole' ? 'whole' : (part && partition === 'yes' ? 'opt' : 'co');
@@ -55,6 +71,7 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
     const featCell = (on: boolean) => (on ? 'bg-rose-50' : '');
     const roiCell = (r: [number, number]) =>
         spa > 0 ? fmtRange(roiPercent(r[0], spa), roiPercent(r[1], spa), (v) => v.toFixed(1) + '%') : '–';
+    const numCell = 'px-2 py-2.5 sm:px-3';
 
     return (
         <>
@@ -69,13 +86,16 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
             </button>
 
             {open && (
-                <div className="fixed inset-0 z-50 bg-black/40" onClick={() => setOpen(false)}>
-                    {/* Mobile: bottom sheet · Desktop: right side panel */}
+                <div
+                    className={`fixed inset-0 z-50 flex items-end justify-center bg-black/40 transition-opacity duration-300 sm:items-center sm:p-6 ${shown ? 'opacity-100' : 'opacity-0'}`}
+                    onClick={close}
+                >
+                    {/* Mobile: bottom sheet (slides up) · Desktop: centered modal (fade + scale) */}
                     <div
                         role="dialog"
                         aria-modal="true"
                         aria-label="ROI Calculator"
-                        className="absolute inset-x-0 bottom-0 flex h-[92dvh] flex-col rounded-t-2xl bg-white shadow-xl sm:inset-y-0 sm:left-auto sm:right-0 sm:h-full sm:w-full sm:max-w-lg sm:rounded-none"
+                        className={`flex h-[92dvh] w-full flex-col rounded-t-2xl bg-white shadow-xl transition-all duration-300 ease-out sm:h-auto sm:max-h-[88vh] sm:max-w-2xl sm:rounded-2xl ${shown ? 'translate-y-0 sm:scale-100 sm:opacity-100' : 'translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0'}`}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
@@ -87,12 +107,12 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
                                     </p>
                                 )}
                             </div>
-                            <button type="button" onClick={() => setOpen(false)} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="Close">
+                            <button type="button" onClick={close} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="Close">
                                 <X className="h-5 w-5" />
                             </button>
                         </div>
 
-                        <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
+                        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
                             {/* Controls */}
                             <div className="space-y-4">
                                 <div>
@@ -156,52 +176,51 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
                                 </div>
                             </div>
 
-                            {/* Always-on comparison table */}
+                            {/* Always-on comparison table — fits without horizontal scroll:
+                                room labels never wrap; ranges break at the " - " separator instead. */}
                             <div className="overflow-hidden rounded-2xl border border-slate-200">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full min-w-[420px] text-right text-[13px]">
-                                        <thead>
-                                            <tr className="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-400">
-                                                <th className="px-3 py-2.5 text-left font-bold">Condo</th>
-                                                {cols.map((c) => (
-                                                    <th key={c.key} className={`px-3 py-2.5 font-bold ${c.key === active ? 'text-campaign' : ''}`}>
-                                                        {c.label}{c.key === active ? ' ★' : ''}
-                                                    </th>
-                                                ))}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {roi.rooms.map((rm, i) => (
-                                                <tr key={rm.id} className="border-t border-slate-100">
-                                                    <td className="px-3 py-2.5 text-left text-slate-700">{rm.label}</td>
-                                                    {cols.map((c) => {
-                                                        if (c.key === 'whole') {
-                                                            return i === 0
-                                                                ? <td key={c.key} rowSpan={roi.rooms.length} className={`px-3 text-center align-middle font-semibold ${featCell(active === 'whole')}`}>{money(roi.whole_unit.amount)}<div className="text-[10px] font-normal text-slate-400">whole unit</div></td>
-                                                                : null;
-                                                        }
-                                                        const show = c.key === 'opt' ? true : !rm.partition;
-                                                        if (!show) return <td key={c.key} className={`px-3 py-2.5 ${featCell(c.key === active)}`}><span className="text-slate-300">–</span></td>;
-                                                        const [lo, hi] = roomRange(rm, roi.pm_spread);
-                                                        return <td key={c.key} className={`whitespace-nowrap px-3 py-2.5 ${featCell(c.key === active)}`}>{fmtRange(lo, hi, money)}</td>;
-                                                    })}
-                                                </tr>
+                                <table className="w-full text-right text-xs sm:text-[13px]">
+                                    <thead>
+                                        <tr className="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-400">
+                                            <th className="whitespace-nowrap px-2 py-2.5 text-left font-bold sm:px-3">Condo</th>
+                                            {cols.map((c) => (
+                                                <th key={c.key} className={`px-2 py-2.5 font-bold sm:px-3 ${c.key === active ? 'text-campaign' : ''}`}>
+                                                    {c.label}{c.key === active ? ' ★' : ''}
+                                                </th>
                                             ))}
-                                            <tr className="border-t-2 border-slate-300 font-extrabold">
-                                                <td className="px-3 py-2.5 text-left">Total / month</td>
-                                                {cols.map((c) => <td key={c.key} className={`whitespace-nowrap px-3 py-2.5 ${featCell(c.key === active)}`}>{fmtRange(totals[c.key][0], totals[c.key][1], money)}</td>)}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {roi.rooms.map((rm, i) => (
+                                            <tr key={rm.id} className="border-t border-slate-100">
+                                                <td className="whitespace-nowrap px-2 py-2.5 text-left text-slate-700 sm:px-3">{rm.label}</td>
+                                                {cols.map((c) => {
+                                                    if (c.key === 'whole') {
+                                                        return i === 0
+                                                            ? <td key={c.key} rowSpan={roi.rooms.length} className={`px-2 text-center align-middle font-semibold sm:px-3 ${featCell(active === 'whole')}`}>{money(roi.whole_unit.amount)}<div className="text-[10px] font-normal text-slate-400">whole unit</div></td>
+                                                            : null;
+                                                    }
+                                                    const show = c.key === 'opt' ? true : !rm.partition;
+                                                    if (!show) return <td key={c.key} className={`${numCell} ${featCell(c.key === active)}`}><span className="text-slate-300">–</span></td>;
+                                                    const [lo, hi] = roomRange(rm, roi.pm_spread);
+                                                    return <td key={c.key} className={`${numCell} ${featCell(c.key === active)}`}>{fmtRange(lo, hi, money)}</td>;
+                                                })}
                                             </tr>
-                                            <tr className="font-extrabold text-campaign">
-                                                <td className="px-3 py-2.5 text-left">ROI %</td>
-                                                {cols.map((c) => <td key={c.key} className={`whitespace-nowrap px-3 py-2.5 ${featCell(c.key === active)}`}>{roiCell(totals[c.key])}</td>)}
-                                            </tr>
-                                            <tr className="border-b-0 font-semibold text-slate-500">
-                                                <td className="px-3 py-2.5 text-left">Annual income</td>
-                                                {cols.map((c) => <td key={c.key} className={`whitespace-nowrap px-3 py-2.5 ${featCell(c.key === active)}`}>{fmtRange(annual(totals[c.key][0]), annual(totals[c.key][1]), money)}</td>)}
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        ))}
+                                        <tr className="border-t-2 border-slate-300 font-extrabold">
+                                            <td className="whitespace-nowrap px-2 py-2.5 text-left sm:px-3">Total / month</td>
+                                            {cols.map((c) => <td key={c.key} className={`${numCell} ${featCell(c.key === active)}`}>{fmtRange(totals[c.key][0], totals[c.key][1], money)}</td>)}
+                                        </tr>
+                                        <tr className="font-extrabold text-campaign">
+                                            <td className="whitespace-nowrap px-2 py-2.5 text-left sm:px-3">ROI %</td>
+                                            {cols.map((c) => <td key={c.key} className={`${numCell} ${featCell(c.key === active)}`}>{roiCell(totals[c.key])}</td>)}
+                                        </tr>
+                                        <tr className="font-semibold text-slate-500">
+                                            <td className="whitespace-nowrap px-2 py-2.5 text-left sm:px-3">Annual income</td>
+                                            {cols.map((c) => <td key={c.key} className={`${numCell} ${featCell(c.key === active)}`}>{fmtRange(annual(totals[c.key][0]), annual(totals[c.key][1]), money)}</td>)}
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
 
                             {renoPkg && (
