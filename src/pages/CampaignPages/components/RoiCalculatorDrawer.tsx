@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Calculator, X } from 'lucide-react';
 import type { RoiCalculator } from '../../../types';
 import { scenarioMonthlyRange, roiPercent, annual, paybackMonths, roomRange, hasPartition } from '../../../utils/roiCalculator';
@@ -26,17 +26,33 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
     const [occ, setOcc] = useState<number>(roi.occupancy_steps.normal);
     const [spa, setSpa] = useState<number>(roi.spa_price);
 
-    // Animate in on mount: flip the transition classes one frame after the modal mounts.
+    const closeTimer = useRef<number | null>(null);
+    const clearCloseTimer = () => {
+        if (closeTimer.current != null) { window.clearTimeout(closeTimer.current); closeTimer.current = null; }
+    };
+
+    // Animate in on mount: double rAF guarantees the hidden state paints before the transition flips.
     useEffect(() => {
         if (!open) return;
-        const id = requestAnimationFrame(() => setShown(true));
-        return () => cancelAnimationFrame(id);
+        let id2 = 0;
+        const id1 = requestAnimationFrame(() => { id2 = requestAnimationFrame(() => setShown(true)); });
+        return () => { cancelAnimationFrame(id1); cancelAnimationFrame(id2); };
     }, [open]);
+
+    // Cancel any pending unmount timer if the component itself unmounts mid-close.
+    useEffect(() => clearCloseTimer, []);
+
+    const openModal = () => {
+        clearCloseTimer();
+        if (open) setShown(true); // reopened during the close animation — animate back in
+        else setOpen(true); // fresh mount — the effect above animates in
+    };
 
     // Animate out, then unmount.
     const close = useCallback(() => {
         setShown(false);
-        window.setTimeout(() => setOpen(false), ANIM_MS);
+        clearCloseTimer();
+        closeTimer.current = window.setTimeout(() => { setOpen(false); closeTimer.current = null; }, ANIM_MS);
     }, []);
 
     // Close on Escape while open.
@@ -78,7 +94,7 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
             {/* Floating button — lifted above the lg:hidden sticky bottom bar on mobile */}
             <button
                 type="button"
-                onClick={() => setOpen(true)}
+                onClick={openModal}
                 aria-label="ROI Calculator"
                 className="fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-campaign text-white shadow-xl transition-transform hover:scale-105 lg:bottom-6 lg:right-6"
             >
@@ -95,7 +111,7 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
                         role="dialog"
                         aria-modal="true"
                         aria-label="ROI Calculator"
-                        className={`flex h-[92dvh] w-full flex-col rounded-t-2xl bg-white shadow-xl transition-all duration-300 ease-out sm:h-auto sm:max-h-[88vh] sm:max-w-2xl sm:rounded-2xl ${shown ? 'translate-y-0 sm:scale-100 sm:opacity-100' : 'translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0'}`}
+                        className={`flex h-[92dvh] w-full flex-col rounded-t-2xl bg-white shadow-xl transition-[transform,opacity] duration-300 ease-out sm:h-auto sm:max-h-[88vh] sm:max-w-2xl sm:rounded-2xl ${shown ? 'translate-y-0 sm:scale-100 sm:opacity-100' : 'translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0'}`}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
@@ -193,7 +209,10 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
                                     <tbody>
                                         {roi.rooms.map((rm, i) => (
                                             <tr key={rm.id} className="border-t border-slate-100">
-                                                <td className="whitespace-nowrap px-2 py-2.5 text-left text-slate-700 sm:px-3">{rm.label}</td>
+                                                {/* Truncate long labels with an ellipsis (title shows the full text) instead of clipping the table */}
+                                                <td className="px-2 py-2.5 text-left text-slate-700 sm:px-3">
+                                                    <span className="block max-w-[9rem] truncate sm:max-w-none" title={rm.label}>{rm.label}</span>
+                                                </td>
                                                 {cols.map((c) => {
                                                     if (c.key === 'whole') {
                                                         return i === 0
