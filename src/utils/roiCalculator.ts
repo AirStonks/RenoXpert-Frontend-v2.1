@@ -17,18 +17,19 @@ function scenarioRooms(model: RoiCalculator, scenario: RoiScenario): RoiRoom[] {
 }
 
 export function scenarioMonthlyRange(model: RoiCalculator, scenario: RoiScenario, occupancyPct: number): RoiRange {
+    // A whole unit is a single tenancy — it is either rented in full or vacant, so a
+    // fractional occupancy must NOT partially scale it. Occupancy (individual rooms sitting
+    // empty) only applies to the per-room co-living / optimized scenarios.
+    if (scenario === 'whole') {
+        return [model.whole_unit.amount, model.whole_unit.amount];
+    }
     const occ = (occupancyPct || 100) / 100;
     let lo = 0;
     let hi = 0;
-    if (scenario === 'whole') {
-        lo = model.whole_unit.amount;
-        hi = model.whole_unit.amount;
-    } else {
-        for (const r of scenarioRooms(model, scenario)) {
-            const [a, b] = roomRange(r, model.pm_spread);
-            lo += a;
-            hi += b;
-        }
+    for (const r of scenarioRooms(model, scenario)) {
+        const [a, b] = roomRange(r, model.pm_spread);
+        lo += a;
+        hi += b;
     }
     return [lo * occ, hi * occ];
 }

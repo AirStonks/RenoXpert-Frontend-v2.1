@@ -157,6 +157,7 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
                                             </button>
                                         ))}
                                     </div>
+                                    <p className="mt-1.5 text-[11px] text-slate-400">Applies to co-living rooms only — a whole unit is a single tenancy.</p>
                                 </div>
                                 <div>
                                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">Purchase price (SPA)</label>
