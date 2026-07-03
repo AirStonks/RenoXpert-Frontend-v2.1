@@ -80,6 +80,8 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
 
     const renoPkg = active === 'whole' ? null : (active === 'opt' ? pkgById(roi.packages.with_partition) : pkgById(roi.packages.without_partition));
     const diffM: [number, number] = [t[0] - wholeM, t[1] - wholeM];
+    // money() carries its own minus sign, so only prepend "+" when the difference is positive.
+    const diffSign = diffM[0] < 0 ? '' : '+';
     const months = renoPkg ? paybackMonths(renoPkg.price, t[0], wholeM) : null;
 
     const seg = (on: boolean) =>
@@ -178,8 +180,8 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
                                     {active === 'whole'
                                         ? <span className="text-xl font-extrabold text-slate-400">Baseline</span>
                                         : (<>
-                                            <span className="text-xl font-extrabold text-campaign">+{fmtRange(annual(diffM[0]), annual(diffM[1]), money)}</span>
-                                            <span className="text-xs text-slate-400">+{fmtRange(diffM[0], diffM[1], money)}/mo vs whole unit</span>
+                                            <span className="text-xl font-extrabold text-campaign">{diffSign}{fmtRange(annual(diffM[0]), annual(diffM[1]), money)}</span>
+                                            <span className="text-xs text-slate-400">{diffSign}{fmtRange(diffM[0], diffM[1], money)}/mo vs whole unit</span>
                                         </>)}
                                 </div>
                                 <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-dashed border-slate-200 pt-3">
