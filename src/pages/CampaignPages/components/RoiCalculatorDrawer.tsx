@@ -9,6 +9,8 @@ export type RoiCalcPackage = { id: number; name: string; price: number };
 interface Props {
     roi: RoiCalculator;
     packages: RoiCalcPackage[];
+    /** Show a one-time nudge bubble above the button prompting the user to open the calculator. */
+    showHint?: boolean;
 }
 
 const money = (n: number) => 'RM' + Math.round(n).toLocaleString('en-MY');
@@ -16,8 +18,15 @@ const fmtRange = (lo: number, hi: number, f: (n: number) => string) =>
     Math.round(lo) === Math.round(hi) ? f(lo) : `${f(lo)} - ${f(hi)}`;
 
 const ANIM_MS = 300;
+const HINT_KEY = 'rx_roi_hint_dismissed';
+const hintWasDismissed = () => {
+    try { return window.localStorage.getItem(HINT_KEY) === '1'; } catch { return false; }
+};
+const persistHintDismissed = () => {
+    try { window.localStorage.setItem(HINT_KEY, '1'); } catch { /* private mode / unavailable — non-fatal */ }
+};
 
-const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
+const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages, showHint = false }) => {
     const part = hasPartition(roi);
     const [open, setOpen] = useState(false);
     const [shown, setShown] = useState(false); // drives the enter/leave transition classes
@@ -25,6 +34,10 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
     const [partition, setPartition] = useState<'no' | 'yes'>(part ? 'yes' : 'no');
     const [occ, setOcc] = useState<number>(roi.occupancy_steps.normal);
     const [spa, setSpa] = useState<number>(roi.spa_price);
+
+    // Nudge bubble: done = don't show (dismissed/opened or not requested); in = visible (drives the enter transition).
+    const [hintDone, setHintDone] = useState<boolean>(() => !showHint || hintWasDismissed());
+    const [hintIn, setHintIn] = useState(false);
 
     const closeTimer = useRef<number | null>(null);
     const clearCloseTimer = () => {
@@ -42,8 +55,18 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
     // Cancel any pending unmount timer if the component itself unmounts mid-close.
     useEffect(() => clearCloseTimer, []);
 
+    // Reveal the nudge shortly after load so it doesn't fight the page render.
+    useEffect(() => {
+        if (hintDone) return;
+        const id = window.setTimeout(() => setHintIn(true), 1200);
+        return () => window.clearTimeout(id);
+    }, [hintDone]);
+
+    const dismissHint = () => { setHintDone(true); persistHintDismissed(); };
+
     const openModal = () => {
         clearCloseTimer();
+        if (!hintDone) dismissHint(); // engaging with the calculator retires the nudge for good
         if (open) setShown(true); // reopened during the close animation — animate back in
         else setOpen(true); // fresh mount — the effect above animates in
     };
@@ -102,6 +125,31 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages }) => {
             >
                 <Calculator className="h-6 w-6" />
             </button>
+
+            {/* One-time nudge bubble, anchored above the button */}
+            {!hintDone && !open && (
+                <div
+                    className={`fixed bottom-40 right-4 z-40 w-60 max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-3 shadow-xl ring-1 ring-slate-200 transition-[opacity,transform] duration-300 ease-out lg:bottom-24 lg:right-6 ${hintIn ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}
+                    role="status"
+                >
+                    <button
+                        type="button"
+                        onClick={dismissHint}
+                        aria-label="Dismiss"
+                        className="absolute right-1.5 top-1.5 rounded-full p-1 text-slate-300 hover:bg-slate-100 hover:text-slate-500"
+                    >
+                        <X className="h-3.5 w-3.5" />
+                    </button>
+                    <button type="button" onClick={openModal} className="block pr-4 text-left">
+                        <span className="flex items-center gap-1.5 text-sm font-bold text-slate-900">
+                            <Calculator className="h-4 w-4 text-campaign" /> See your rental ROI
+                        </span>
+                        <span className="mt-0.5 block text-xs leading-snug text-slate-500">
+                            Compare whole-unit vs co-living returns for this layout — tap to calculate.
+                        </span>
+                    </button>
+                </div>
+            )}
 
             {open && (
                 <div

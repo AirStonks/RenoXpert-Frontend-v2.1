@@ -666,6 +666,7 @@ const CampaignLayoutDetailPage = () => {
                     <RoiCalculatorDrawer
                         roi={layout.roi_calculator}
                         packages={layoutPackages.map((p): RoiCalcPackage => ({ id: Number(p.id), name: p.name ?? '', price: getQuotationTotal(p.order as Order | undefined) }))}
+                        showHint
                     />
                 )}
             <ToastContainer />
