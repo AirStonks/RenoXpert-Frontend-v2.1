@@ -62,7 +62,7 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages, showHint = false 
         return () => window.clearTimeout(id);
     }, [hintDone]);
 
-    const dismissHint = () => { setHintIn(false); setHintDone(true); persistHintDismissed(); };
+    const dismissHint = () => { setHintDone(true); persistHintDismissed(); };
 
     const openModal = () => {
         clearCloseTimer();
@@ -129,7 +129,7 @@ const RoiCalculatorDrawer: React.FC<Props> = ({ roi, packages, showHint = false 
             {/* One-time nudge bubble, anchored above the button */}
             {!hintDone && !open && (
                 <div
-                    className={`fixed bottom-40 right-4 z-40 w-60 max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-3 shadow-xl ring-1 ring-slate-200 transition-all duration-300 ease-out lg:bottom-24 lg:right-6 ${hintIn ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}
+                    className={`fixed bottom-40 right-4 z-40 w-60 max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-3 shadow-xl ring-1 ring-slate-200 transition-[opacity,transform] duration-300 ease-out lg:bottom-24 lg:right-6 ${hintIn ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}
                     role="status"
                 >
                     <button
