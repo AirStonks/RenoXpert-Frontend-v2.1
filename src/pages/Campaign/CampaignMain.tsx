@@ -174,6 +174,10 @@ export default function CampaignMain() {
                 <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
             </td>
             <td className="px-6 py-4">
+                <div className="h-4 w-20 bg-gray-200 rounded animate-pulse mb-1"></div>
+                <div className="h-3 w-16 bg-gray-200 rounded animate-pulse"></div>
+            </td>
+            <td className="px-6 py-4">
                 <div className="flex gap-2">
                     <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
                     <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
@@ -276,6 +280,7 @@ export default function CampaignMain() {
                             <th className="px-6 py-4 font-semibold">End Date</th>
                             <th className="px-6 py-4 font-semibold">Slots</th>
                             <th className="px-6 py-4 font-semibold">Created</th>
+                            <th className="px-6 py-4 font-semibold">Updated</th>
                             <th className="px-6 py-4 font-semibold">Actions</th>
                         </tr>
                     </thead>
@@ -345,6 +350,17 @@ export default function CampaignMain() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
+                                            <div className="flex items-center gap-1">
+                                                <Clock className="h-4 w-4 text-gray-400" />
+                                                <div>
+                                                    <p className="text-gray-900">{formatDate(campaign.updated_at)}</p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {campaign.updated_by ? `by ${campaign.updated_by.name}` : '-'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     onClick={() => handleViewDetails(campaign.id!)}
@@ -372,7 +388,7 @@ export default function CampaignMain() {
                                     </tr>
                                     {expandedRows.includes(campaign.id!) && (
                                         <tr className="border-b">
-                                            <td colSpan={8} className="px-6 py-4">
+                                            <td colSpan={9} className="px-6 py-4">
                                                 <div className="bg-gray-50 rounded-lg p-6 transition-all duration-300 ease-in-out">
                                                     <h3 className="text-base font-semibold text-gray-800 mb-4">Campaign Details</h3>
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">

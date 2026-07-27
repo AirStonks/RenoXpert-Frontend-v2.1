@@ -1681,6 +1681,8 @@ export interface Campaign {
     metadata?: string;
     created_at?: string;
     updated_at?: string;
+    created_by?: User;
+    updated_by?: User;
 }
 
 export interface CampaignPackage {
