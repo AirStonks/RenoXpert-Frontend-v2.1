@@ -4,6 +4,7 @@ import {
     ArrowLeft,
     Edit,
     Calendar,
+    Clock,
     TrendingUp,
     Eye,
     EyeOff,
@@ -837,6 +838,23 @@ export default function CampaignDetail() {
                                     </div>
                                 )}
 
+                                {/* Last Update */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="p-4 bg-gradient-to-r from-slate-50/50 to-gray-50/50 rounded-2xl">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Clock className="h-4 w-4 text-slate-600" />
+                                            <span className="text-sm font-medium text-gray-700">Last Updated</span>
+                                        </div>
+                                        <p className="font-semibold text-gray-900">{formatDate(campaign.updated_at)}</p>
+                                    </div>
+                                    <div className="p-4 bg-gradient-to-r from-slate-50/50 to-gray-50/50 rounded-2xl">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <User className="h-4 w-4 text-slate-600" />
+                                            <span className="text-sm font-medium text-gray-700">Updated By</span>
+                                        </div>
+                                        <p className="font-semibold text-gray-900">{campaign.updated_by?.name || '-'}</p>
+                                    </div>
+                                </div>
 
                                 {/* Internal Description */}
                                 {campaign.internal_description && (
