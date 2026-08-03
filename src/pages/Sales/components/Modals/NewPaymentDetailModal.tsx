@@ -73,6 +73,7 @@ const bankOptions = [
     { value: "Malayan Banking (Maybank) Berhad", label: "Malayan Banking (Maybank) Berhad" },
     { value: "OCBC Bank (Malaysia) Berhad", label: "OCBC Bank (Malaysia) Berhad" },
     { value: "Public Bank Berhad", label: "Public Bank Berhad" },
+    { value: "Qatar National Bank", label: "Qatar National Bank" },
     { value: "RHB Bank Berhad", label: "RHB Bank Berhad" },
     { value: "RHB Islamic Berhad", label: "RHB Islamic Berhad" },
     { value: "Standard Chartered Bank Malaysia Berhad", label: "Standard Chartered Bank Malaysia Berhad" },
