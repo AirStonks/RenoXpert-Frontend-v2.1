@@ -80,6 +80,7 @@ const bankOptions = [
     { value: "United Overseas Bank (Malaysia) Berhad", label: "United Overseas Bank (Malaysia) Berhad" },
     { value: "Touch 'n Go (TNG) eWallet", label: "Touch 'n Go (TNG) eWallet" },
     { value: "GrabPay", label: "GrabPay" },
+    { value: "PayEx", label: "PayEx" },
 ];
 
 const receivingAccOptions = [
