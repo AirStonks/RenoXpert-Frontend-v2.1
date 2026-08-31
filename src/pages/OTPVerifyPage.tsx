@@ -59,9 +59,25 @@ const OTPVerifyPage: React.FC<{
             });
         };
 
+        const reportSendFailure = () => {
+            setError(`We couldn't send an OTP to +${countryCode} ${mobile}. Please check the country code and phone number, then try again.`);
+            notify('error', 'Error while sending the OTP');
+            setCanResend(true);
+        };
+
         useEffect(() => {
             const handleRequestOTP = async () => {
-                await axios.post(`${API_URL}sms-otp/request/${countryCode}/${mobile}`);
+                try {
+                    const response = await axios.post(`${API_URL}sms-otp/request/${countryCode}/${mobile}`);
+
+                    if (response.data.status !== 'success') {
+                        reportSendFailure();
+                    }
+                } catch (error) {
+                    // A failed send leaves no OTP record, so verifying later would
+                    // fail with a misleading "Invalid OTP". Tell the owner now.
+                    reportSendFailure();
+                }
             }
 
             const handleLocalOTP = () => {
@@ -114,6 +130,7 @@ const OTPVerifyPage: React.FC<{
             try {
                 const response = await axios.post(`${API_URL}sms-otp/request/${countryCode}/${mobile}`);
                 if (response.data.status === 'success') {
+                    setError(null);
                     notify('success', 'OTP has been sent to the mobile no.');
                     setCountdown(60);
                     setCanResend(false);
@@ -130,10 +147,10 @@ const OTPVerifyPage: React.FC<{
                         }, 1000);
                     }, 500);
                 } else {
-                    notify('error', 'Error while sending the OTP');
+                    reportSendFailure();
                 }
             } catch (error) {
-                notify('error', 'Error while sending the OTP');
+                reportSendFailure();
             }
         };
 

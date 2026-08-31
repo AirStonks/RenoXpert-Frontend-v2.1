@@ -292,6 +292,7 @@ function OwnerQuotationRequestForm() {
                         name_preferred: response.name_preferred,
                         salutations: response.salutations,
                         email: response.email,
+                        country_code: response.country_code || '60',
                         phone_no: response.phone_no,
                         ic: response.ic,
 
@@ -861,6 +862,7 @@ function OwnerQuotationRequestForm() {
                 name_preferred: owner.name_preferred,
                 salutations: owner.salutations,
                 email: owner.email,
+                country_code: owner.country_code || '60',
                 phone_no: owner.phone_no,
             }));
         }
@@ -1910,7 +1912,7 @@ function OwnerQuotationRequestForm() {
                                                 <label className="text-slate-900 mb-2 font-medium" htmlFor="phone_no">Phone Number</label>
                                                 <div className="flex">
                                                     <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click">
-                                                        <button className="dropdown-toggle btn btn-light mr-1">
+                                                        <button type="button" className="dropdown-toggle btn btn-light mr-1" disabled={!!owner}>
                                                             +{formData.country_code}
                                                         </button>
                                                         <div className="dropdown-content w-full max-w-56 py-2" data-dropdown-dismiss="true">
