@@ -1,4 +1,5 @@
 import type { Order, Package, Product } from '../types';
+import { getRenoSubscriptionFixedOverrideNettAmount } from './renoSubscription';
 
 /**
  * Per-package quotation price — the single source of truth shared by the Owner
@@ -65,6 +66,18 @@ function parseBonusValue(bonus: unknown): number {
 }
 
 /**
+ * Reno Subscription upfront: be_powered_base_price + every included one-off package.
+ * Mirrors CampaignPackageDetailPage's `upfrontAmount`.
+ */
+function getBePoweredUpfront(order: OrderWithQuotation, packages: Package[]): number {
+    return packages.reduce((acc, pkg) => {
+        const counts = pkg.payment_method === 'one-off' && (pkg.is_addon ? pkg.is_addon_included === true : true);
+        const unit = Number(pkg.markup_amount) || Number(pkg.total_price) || 0;
+        return acc + (counts ? unit * (pkg.quantity || 1) : 0);
+    }, Number(order.be_powered_base_price) || 0);
+}
+
+/**
  * Per-program "Initial Down Payment" (the "Start from RMxxx" figure), computed
  * from a template order at DEFAULT add-on inclusion. Mirrors CampaignPackageDetailPage's
  * originalInitialDownPayment so the landing/layout "Start from" matches the
@@ -77,12 +90,7 @@ export function getInitialDownPayment(order?: OrderWithQuotation | null): number
 
     // Reno Subscription (bePowered): upfront (be_powered_base_price + one-off packages) − bonus.
     if (order.is_be_powered) {
-        const upfront = packages.reduce((acc, pkg) => {
-            const counts = pkg.payment_method === 'one-off' && (pkg.is_addon ? pkg.is_addon_included === true : true);
-            const unit = Number(pkg.markup_amount) || Number(pkg.total_price) || 0;
-            return acc + (counts ? unit * (pkg.quantity || 1) : 0);
-        }, Number(order.be_powered_base_price) || 0);
-        return upfront - bonusValue;
+        return getBePoweredUpfront(order, packages) - bonusValue;
     }
 
     // RenoNow PayLater (rnpl): the RenoNow base price.
@@ -102,18 +110,41 @@ export function getInitialDownPayment(order?: OrderWithQuotation | null): number
 }
 
 /**
- * Full quotation total: sum of all INCLUDED package prices (program-agnostic),
- * or order.total_amount when f_1. This is the "Start from" figure (replaces the
- * per-program Initial Down Payment on the public cards).
+ * Full quotation total, NETT of discount. This is the "Start from" figure on the
+ * campaign landing and layout cards.
+ *
+ * Mirrors CampaignPackageDetailPage's `displayTotalQuotationAmount`:
+ *     overrideTotalQuotationAmount ?? (totalExcludedAddonAmount - bonusValue)
+ *
+ * The quotation `bonus` (discount) MUST be subtracted here. Without it the public
+ * cards advertised the GROSS price while the Quotation Detail page showed the
+ * discounted one — e.g. a card reading "Start from RM 33,330" against a quotation
+ * total of RM 32,750 on a RM 580 discount.
  */
 export function getQuotationTotal(order?: OrderWithQuotation | null): number {
     if (!order) return 0;
-    if (order.f_1 && order.total_amount != null) {
-        return Number(order.total_amount) || 0;
-    }
+
     const packages: Package[] = order.latest_quotation?.packages ?? [];
-    return packages.reduce((sum, pkg) => {
-        if (pkg.is_addon === true && pkg.is_addon_included === false) return sum;
-        return sum + getQuotationPackagePrice(pkg, order);
-    }, 0);
+    const bonusValue = parseBonusValue(order.latest_quotation?.bonus ?? (order as { bonus?: unknown }).bonus);
+
+    // Reno Subscription on a fixed installment plan states its contract sum as
+    // upfront + installment × tenure − bonus (already nett). Returns null otherwise.
+    const override = getRenoSubscriptionFixedOverrideNettAmount({
+        isRenoSubscription: Boolean(order.is_be_powered),
+        installmentMethod: order.installment_method,
+        upfrontAmount: getBePoweredUpfront(order, packages),
+        installmentAmount: order.installment_amount,
+        tenure: order.tenure,
+        bonusValue,
+    });
+    if (override != null) return override;
+
+    const gross = order.f_1 && order.total_amount != null
+        ? Number(order.total_amount) || 0
+        : packages.reduce((sum, pkg) => {
+            if (pkg.is_addon === true && pkg.is_addon_included === false) return sum;
+            return sum + getQuotationPackagePrice(pkg, order);
+        }, 0);
+
+    return gross - bonusValue;
 }
