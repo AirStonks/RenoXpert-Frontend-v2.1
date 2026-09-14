@@ -51,6 +51,7 @@ const paymentOptions = {
 
 const bankOptions = [
     { value: "", label: "Select a bank" },
+    { value: "AEON Bank (M) Berhad", label: "AEON Bank (M) Berhad" },
     { value: "Affin Bank Berhad", label: "Affin Bank Berhad" },
     { value: "Affin Islamic Bank Berhad", label: "Affin Islamic Bank Berhad" },
     { value: "Alliance Bank Malaysia Berhad", label: "Alliance Bank Malaysia Berhad" },
